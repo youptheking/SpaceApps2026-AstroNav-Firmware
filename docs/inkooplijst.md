@@ -26,7 +26,7 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Je koopt 1 set, me
 | 11 | [LiPo 3,7 V 250 mAh](https://www.tinytronics.nl/en/power/batteries/li-po/li-po-accu-3.7v-250mah) | TinyTronics | €5,00 | 1 | €5,00 | 30,5×17,5×6,5 mm | **Gewijzigd van 500 mAh** (38×31 mm, 2–4 weken levertijd). Rekening houdend met ~70–90 mA verbruik (ESP32-S3 met BLE, SCD41 periodiek, OLED) is dat **ongeveer 3 uur**. Genoeg voor een demo, en met de single-shot-modus van de SCD41 meer. Voorraad volgens snapshots tegenstrijdig. De 150 mAh (27×20 mm) heeft 2–4 weken levertijd. De XIAO laadt via soldeerpads op de onderkant, dus de stekker gaat er toch af. |
 | 12 | [Goobay klittenbandrol 1 m](https://www.tinytronics.nl/en/tools-and-mounting/installation-and-mounting-material/cable-ties-zip-ties-tyraps/goobay-70360-hook-and-loop-fastener-roll-1m) | TinyTronics | €3,00 | 1 | €3,00 | – | **Vervangt de BINLUN-horlogeband (~€37).** Print lussen in de behuizing en knip de band op maat. 10+ op voorraad. |
 
-**Kernonderdelen totaal: ~€96–99** (was ~€165–175 voor 2 sets). Met de SCD40 in plaats van de SCD41: ~€87.
+**Kernonderdelen totaal: ~€99–102**, met elektrodes en schakelaars ~€106–109 (was ~€175–185 voor 2 sets). Met de SCD40 in plaats van de SCD41 ~€8–11 minder.
 
 ## Overig – bestellen
 
