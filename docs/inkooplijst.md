@@ -44,7 +44,7 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Je koopt 1 set, me
 | Breadboard (full size) + male-male en male-female jumperdraadjes | Prototype van set 1 op zaterdagochtend |
 | Dun siliconendraad (28–30 AWG), een paar kleuren | Bedrading in het horloge. Is flexibel en dun, beter dan jumperdraadjes. |
 | Weerstanden 1 kΩ–1 MΩ (assortiment) | GSR-spanningsdeler, eventueel extra I2C-pull-ups, en **2× ~200 kΩ als spanningsdeler voor de accuspanning**. De XIAO ESP32-S3 heeft geen ingebouwde accumeting, en zonder die deler weet je niet hoe vol de accu is. |
-| Condensatoren 100 nF + 10 µF | Ontkoppeling bij de SCD41 (pieken tot ~200 mA) en de XIAO |
+| Condensatoren 100 nF + 10 µF + **1× 100–220 µF** (elco of tantaal, ≥6,3 V) | Ontkoppeling en buffer bij de SCD41. Die trekt pieken tot ~200 mA, en zonder buffer kan de ESP32 resetten. Zie [stroombudget.md](stroombudget.md). |
 | USB-C-**data**kabel | Flashen van de XIAO. Laadkabels zonder datalijnen zijn een klassieke tijdverspiller. |
 | Dubbelzijdig koperplaat FR4 ([Amazon, ~€10](https://www.amazon.nl/Aexit-Koperen-Laminaat-Universele-Printplaat/dp/B079WHYMF7)) | Draagprint frezen. Dunner (0,8 mm) is beter voor een pols, als je dat hebt. |
 | Freesjes/graveerstiften (V-bit 20–30°, 0,8–1 mm boor, 1–2 mm uitfrees) | PCB frezen |
