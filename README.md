@@ -42,7 +42,7 @@ Een samenhangend systeem met twee delen:
 
 - **Vormfactor:** ergonomisch polshorloge met klittenband
 - **PCB:** dubbelzijdig, gefreesd op de desktop-CNC
-- **Behuizing:** 3D-geprint (PETG of PLA) met ventilatieroosters en koperen contactvlakken
+- **Behuizing:** 3D-geprint (PETG of PLA) met ventilatieroosters en koperen GSR-contactvlakken aan de onderzijde
 - **Hoofdcontroller:** ESP32 met ingebouwde BLE
 - **Lokale indicatie:**
   - 0.96" I2C OLED: actuele status en directe instructies, zoals "Neem rust", "Start ademhalingstraining" of "Verhoogde CO2"
@@ -56,7 +56,8 @@ Een samenhangend systeem met twee delen:
 | MAX30102 / MAX86141 | I2C | Onderzijde (tegen huid) | Optische meting van hartslag en zuurstofsaturatie (SpO2) |
 | TMP117 / MCP9808 | I2C | Onderzijde (tegen huid) | Nauwkeurige lichaamstemperatuur (immuunreactie, koorts) |
 | ICM45686 / MPU6050 | I2C of SPI | Intern op PCB | 3-assige IMU: activiteit, training, slaapkwaliteit, spiertremoren |
-| GSR- en AD8232-contacten | Analoog (ADC) | Onderzijde en bovenrand | Gefreesde koperen vlakken voor huidgeleiding (acute stress) en ECG-hartgolf |
+| GSR-contacten | Analoog (ADC) | Onderzijde (tegen huid) | Twee gefreesde koperen vlakken met een spanningsdeler, voor huidgeleiding (acute stress) |
+| AD8232 | Analoog (ADC) | Intern, kabel naar de borst | Continue ECG-hartgolf via 3 plakelektrodes op de borst. Leads-off-detectie meldt een losse elektrode. |
 | TSL2591 / BH1750 | I2C | Bovenzijde | Omgevingslicht en blauw licht voor bewaking van circadiaans ritme en slaap |
 | SCD40 / SGP30 | I2C | Zijkant (met rooster) | CO2 en luchtkwaliteit in de cabine, tegen verstikking en hoofdpijn |
 | 0.96" OLED | I2C | Bovenzijde | Directe actiepunten voor de astronaut |
