@@ -28,15 +28,37 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Amazon is alleen n
 
 **Kernonderdelen totaal: ~€165–175** (was ~€225)
 
-## Overig
+## Overig – bestellen
 
-| Onderdeel | Winkel | Prijs | Opmerking |
-|---|---|---|---|
-| [Mini SMD-schuifschakelaar MK12C02](https://www.tinytronics.nl/en/switches/manual-switches/slide-switches/mini-smd-pcb-switch-mk12c02) | TinyTronics | €0,20 | Aan/uit tussen LiPo en XIAO. Neem er 3. Wil je through-hole: [SWITCHPCB](https://www.tinytronics.nl/en/switches/manual-switches/slide-switches/small-switch-for-pcb-or-breadboard) (30 V / 0,3 A). |
-| [Wegwerp-ECG-elektrodes (50 st)](https://www.tinytronics.nl/en/sensors/body/disposable-ecg-electrode-50-pieces) | TinyTronics | €6,00 | Kleinste verpakking bij TinyTronics. De losse elektrode is uit het assortiment. De 3 uit de kit zijn te weinig voor een weekend testen en opnieuw plakken. |
-| Weerstanden voor GSR (bijv. 100 kΩ–1 MΩ) | eigen voorraad | – | Voor de GSR-spanningsdeler |
-| [Dubbelzijdig koperplaat FR4 1,5 mm, 5× 100×70 mm](https://www.amazon.nl/Aexit-Koperen-Laminaat-Universele-Printplaat/dp/B079WHYMF7) | Amazon | ~€10 | Alleen nodig als je geen voorraad meer hebt voor de CNC |
-| Pinheaders, breadboard, jumperdraadjes | eigen voorraad | – | Voor het breadboardprototype van set 1 |
+| Onderdeel | Winkel | Prijs | Aantal | Opmerking |
+|---|---|---|---|---|
+| [Wegwerp-ECG-elektrodes (50 st)](https://www.tinytronics.nl/en/sensors/body/disposable-ecg-electrode-50-pieces) | TinyTronics | €6,00 | 1 | Kleinste verpakking. De 3 uit de kit zijn te weinig voor een weekend testen en opnieuw plakken. |
+| [Mini SMD-schuifschakelaar MK12C02](https://www.tinytronics.nl/en/switches/manual-switches/slide-switches/mini-smd-pcb-switch-mk12c02) | TinyTronics | €0,20 | 3 | Aan/uit tussen LiPo en XIAO. Wil je through-hole: [SWITCHPCB](https://www.tinytronics.nl/en/switches/manual-switches/slide-switches/small-switch-for-pcb-or-breadboard). |
+
+## Overig – controleer eigen voorraad, anders meebestellen bij TinyTronics
+
+| Onderdeel | Waarvoor |
+|---|---|
+| Female pinheaders 2,54 mm (2× 1×7) | De XIAO in een voetje op de draagprint, zodat hij herbruikbaar blijft en je hem bij een fout snel wisselt. Kost wel ~8 mm extra hoogte. Voor de laagste opbouw soldeer je hem direct. |
+| Male pinheaders 2,54 mm | Bij de meeste breakouts zitten ze los bij. Voor de XIAO niet altijd. |
+| Breadboard (full size) + male-male en male-female jumperdraadjes | Prototype van set 1 op zaterdagochtend |
+| Dun siliconendraad (28–30 AWG), een paar kleuren | Bedrading in het horloge. Is flexibel en dun, beter dan jumperdraadjes. |
+| Weerstanden 1 kΩ–1 MΩ (assortiment) | GSR-spanningsdeler, en eventueel extra I2C-pull-ups |
+| Condensatoren 100 nF + 10 µF | Ontkoppeling bij de SCD41 (pieken tot ~200 mA) en de XIAO |
+| USB-C-**data**kabel | Flashen van de XIAO. Laadkabels zonder datalijnen zijn een klassieke tijdverspiller. |
+| Dubbelzijdig koperplaat FR4 ([Amazon, ~€10](https://www.amazon.nl/Aexit-Koperen-Laminaat-Universele-Printplaat/dp/B079WHYMF7)) | Draagprint frezen. Dunner (0,8 mm) is beter voor een pols, als je dat hebt. |
+| Freesjes/graveerstiften (V-bit 20–30°, 0,8–1 mm boor, 1–2 mm uitfrees) | PCB frezen |
+| Soldeertin, flux, desoldeerlint | Soldeerwerk, en ook het vertinnen van de GSR-vlakken tegen oxidatie |
+| Kaptontape | Isoleren van de onderkant van de breakouts en de LiPo |
+| Krimpkous (dun) | Draadverbindingen |
+| M2-schroefjes / inserts | Print vastzetten in de behuizing |
+| PETG- of PLA-filament | Behuizing. PETG is beter tegen zweet en warmte op de huid. |
+
+## Let op bij de bouw
+
+- **I2C-pull-ups stapelen:** bijna elke breakout heeft eigen pull-ups (meestal 4,7–10 kΩ). Zes modules parallel geeft ~1 kΩ. Meestal werkt dat nog, maar haal bij I2C-fouten op een paar modules de pull-upweerstanden eraf.
+- **Antenne:** de U.FL-antenne van de XIAO niet onder de LiPo of tegen koper leggen
+- **Volgorde op zaterdag:** test elke sensor eerst apart op het breadboard (te beginnen met de MAX30102), en sluit dan pas alles samen op de bus aan.
 
 ## Bewust overwogen en niet gekozen
 
