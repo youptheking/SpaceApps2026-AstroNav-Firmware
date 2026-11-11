@@ -23,7 +23,7 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Je koopt 1 set, me
 | 8 | [GY-SCD41 CO2-module](https://www.tinytronics.nl/en/sensors/air/humidity/gy-scd41-module-co2-humidity-temperature-sensor-i2c) | TinyTronics | €26,50–29,50 | 1 | ~€26,50–29,50 | sensor 10×10 mm | **Gewijzigd van SCD40.** De SCD40 is alleen gespecificeerd tot 2000 ppm, terwijl de CO2 in een ruimtestation daar vaak boven zit. De SCD41 is gespecificeerd tot 5000 ppm en heeft een single-shot-modus, wat veel stroom spaart. Snapshots: 6 st. bij de ene listing en 50+ bij de andere. Fallback, en de grootste besparingsmogelijkheid (~€10): [GY-SCD40](https://www.tinytronics.nl/en/sensors/air/humidity/gy-scd40-module-co2-humidity-temperature-sensor-i2c) (€18,25, 100+). I2C 0x62. |
 | 9 | [0.91" OLED 128×32 I2C (wit)](https://www.tinytronics.nl/en/displays/oled/0.91-inch-oled-display-128*32-pixels-white-i2c) | TinyTronics | €4,00 | 2 | €8,00 | ~38×12 mm | 1 + 1 reserve (dun glas, breekt makkelijk). **Gewijzigd van 0.96".** Smal strookje dat beter op een pols past, en goedkoper. Er passen 2 regels grote tekst op ("Neem rust", "CO2 hoog"). SSD1306, I2C 0x3C. |
 | 10 | [Piezobuzzer 12 mm met draden](https://www.tinytronics.nl/en/arduino/piezo-electronic-buzzer-with-soldered-wires-12mm) | TinyTronics | €0,30 | 2 | €0,60 | Ø12 mm | Aansturen met PWM |
-| 11 | [LiPo 3,7 V 250 mAh](https://www.tinytronics.nl/en/power/batteries/li-po/li-po-accu-3.7v-250mah) | TinyTronics | €5,00 | 1 | €5,00 | 30,5×17,5×6,5 mm | **Gewijzigd van 500 mAh** (38×31 mm, 2–4 weken levertijd). Rekening houdend met ~70–90 mA verbruik (ESP32-S3 met BLE, SCD41 periodiek, OLED) is dat **ongeveer 3 uur**. Genoeg voor een demo, en met de single-shot-modus van de SCD41 meer. Voorraad volgens snapshots tegenstrijdig. De 150 mAh (27×20 mm) heeft 2–4 weken levertijd. De XIAO laadt via soldeerpads op de onderkant, dus de stekker gaat er toch af. |
+| 11 | [LiPo 3,7 V 250 mAh](https://www.tinytronics.nl/en/power/batteries/li-po/li-po-accu-3.7v-250mah) | TinyTronics | €5,00 | 1 | €5,00 | 30,5×17,5×6,5 mm | **Gewijzigd van 500 mAh** (38×31 mm, 2–4 weken levertijd). Rekening houdend met ~70–90 mA verbruik (ESP32-S3 met BLE, SCD41 periodiek, OLED) is dat **ongeveer 3 uur**. Genoeg voor een demo, en met de single-shot-modus van de SCD41 meer. Voorraad volgens snapshots tegenstrijdig. De 150 mAh (27×20 mm) heeft 2–4 weken levertijd. De XIAO laadt via soldeerpads op de onderkant, dus de stekker gaat er toch af. **Controleer of de accu een beveiligingsprint (PCM) heeft.** De lader van de XIAO beschermt de accu waarschijnlijk niet tegen diepontlading. |
 | 12 | [Goobay klittenbandrol 1 m](https://www.tinytronics.nl/en/tools-and-mounting/installation-and-mounting-material/cable-ties-zip-ties-tyraps/goobay-70360-hook-and-loop-fastener-roll-1m) | TinyTronics | €3,00 | 1 | €3,00 | – | **Vervangt de BINLUN-horlogeband (~€37).** Print lussen in de behuizing en knip de band op maat. 10+ op voorraad. |
 
 **Kernonderdelen totaal: ~€99–102**, met elektrodes en schakelaars ~€106–109 (was ~€175–185 voor 2 sets). Met de SCD40 in plaats van de SCD41 ~€8–11 minder.
@@ -43,7 +43,7 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Je koopt 1 set, me
 | Male pinheaders 2,54 mm | Bij de meeste breakouts zitten ze los bij. Voor de XIAO niet altijd. |
 | Breadboard (full size) + male-male en male-female jumperdraadjes | Prototype van set 1 op zaterdagochtend |
 | Dun siliconendraad (28–30 AWG), een paar kleuren | Bedrading in het horloge. Is flexibel en dun, beter dan jumperdraadjes. |
-| Weerstanden 1 kΩ–1 MΩ (assortiment) | GSR-spanningsdeler, en eventueel extra I2C-pull-ups |
+| Weerstanden 1 kΩ–1 MΩ (assortiment) | GSR-spanningsdeler, eventueel extra I2C-pull-ups, en **2× ~200 kΩ als spanningsdeler voor de accuspanning**. De XIAO ESP32-S3 heeft geen ingebouwde accumeting, en zonder die deler weet je niet hoe vol de accu is. |
 | Condensatoren 100 nF + 10 µF | Ontkoppeling bij de SCD41 (pieken tot ~200 mA) en de XIAO |
 | USB-C-**data**kabel | Flashen van de XIAO. Laadkabels zonder datalijnen zijn een klassieke tijdverspiller. |
 | Dubbelzijdig koperplaat FR4 ([Amazon, ~€10](https://www.amazon.nl/Aexit-Koperen-Laminaat-Universele-Printplaat/dp/B079WHYMF7)) | Draagprint frezen. Dunner (0,8 mm) is beter voor een pols, als je dat hebt. |
@@ -84,7 +84,7 @@ Alle adressen zijn uniek, dus alle I2C-sensoren passen samen op één bus:
 | 0x62 | SCD41 |
 | 0x68 | MPU-6050 |
 
-Pinnen op de XIAO ESP32-S3: SDA en SCL, 2× ADC (GSR en ECG-uitgang), 2× digitaal (AD8232 LO+ en LO−) en 1× PWM (buzzer). Dat zijn er 7 van de 11 beschikbare.
+Pinnen op de XIAO ESP32-S3: SDA en SCL, 3× ADC (GSR, ECG-uitgang, accuspanning), 2× digitaal (AD8232 LO+ en LO−) en 1× PWM (buzzer). Dat zijn er 8 van de 11 beschikbare.
 
 ## Afwijkingen van het projectdossier
 
