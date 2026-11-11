@@ -19,14 +19,14 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Je koopt 1 set, me
 | 4 | [MPU-6050 IMU-module](https://www.tinytronics.nl/en/sensors/acceleration-rotation/mpu-6050-accelerometer-and-gyroscope-3-axis-module-3.3v-5v) | TinyTronics | €8,75 | 1 | €8,75 | ~21×16 mm | Geen wezenlijk kleinere IMU op voorraad. De MPU-6500 is even groot en heeft een ander WHO_AM_I, waardoor sommige MPU6050-libraries niet werken. I2C 0x68. |
 | 5 | [AD8232 ECG-kit](https://www.tinytronics.nl/en/sensors/body/ecg-kit-ad8232) | TinyTronics | €9,50 | 1 | €9,50 | **35,5×30,5×10,5 mm** | **Grootste bordje van het ontwerp.** Geen kleinere AD8232-breakout gevonden. **Continue meting** met 3 plakelektrodes op de borst en de kabel van de kit naar de pols, dus de 3,5 mm-jack blijft zitten (met trekontlasting in de behuizing). Leads-off-detectie (LO+/LO−) meldt automatisch een losse elektrode. Droge elektrodes op één pols geven geen bruikbaar ECG. |
 | 6 | GSR: **zelfbouw**, geen module | – | ~€0 | – | – | – | Twee gefreesde koperen vlakken plus een weerstand (spanningsdeler) naar een ADC-pin. Vervangt de Grove GSR (~€15,60 bij Amazon, 20×40 mm plus klittenband-vingerbandjes). |
-| 7 | [BH1750 lichtsensor](https://www.tinytronics.nl/en/sensors/optical/light-and-color/bh1750-16bit-digital-i2c-light-sensor-module) | TinyTronics | €3,50 | 1 | €3,50 | ~19×14 mm | I2C 0x23 |
+| 7 | ~~BH1750~~ **geschrapt** | – | – | – | – | – | Het polsstation wordt onder de kleding gedragen. Een lichtsensor meet daar alleen het donker onder de mouw. |
 | 8 | [GY-SCD41 CO2-module](https://www.tinytronics.nl/en/sensors/air/humidity/gy-scd41-module-co2-humidity-temperature-sensor-i2c) | TinyTronics | €26,50–29,50 | 1 | ~€26,50–29,50 | sensor 10×10 mm | **Gewijzigd van SCD40.** De SCD40 is alleen gespecificeerd tot 2000 ppm, terwijl de CO2 in een ruimtestation daar vaak boven zit. De SCD41 is gespecificeerd tot 5000 ppm en heeft een single-shot-modus, wat veel stroom spaart. Snapshots: 6 st. bij de ene listing en 50+ bij de andere. Fallback, en de grootste besparingsmogelijkheid (~€10): [GY-SCD40](https://www.tinytronics.nl/en/sensors/air/humidity/gy-scd40-module-co2-humidity-temperature-sensor-i2c) (€18,25, 100+). I2C 0x62. |
 | 9 | [0.91" OLED 128×32 I2C (wit)](https://www.tinytronics.nl/en/displays/oled/0.91-inch-oled-display-128*32-pixels-white-i2c) | TinyTronics | €4,00 | 2 | €8,00 | ~38×12 mm | 1 + 1 reserve (dun glas, breekt makkelijk). **Gewijzigd van 0.96".** Smal strookje dat beter op een pols past, en goedkoper. Er passen 2 regels grote tekst op ("Neem rust", "CO2 hoog"). SSD1306, I2C 0x3C. |
 | 10 | [Piezobuzzer 12 mm met draden](https://www.tinytronics.nl/en/arduino/piezo-electronic-buzzer-with-soldered-wires-12mm) | TinyTronics | €0,30 | 2 | €0,60 | Ø12 mm | Aansturen met PWM |
-| 11 | [LiPo 3,7 V 250 mAh](https://www.tinytronics.nl/en/power/batteries/li-po/li-po-accu-3.7v-250mah) | TinyTronics | €5,00 | 1 | €5,00 | 30,5×17,5×6,5 mm | **Gewijzigd van 500 mAh** (38×31 mm, 2–4 weken levertijd). Rekening houdend met ~70–90 mA verbruik (ESP32-S3 met BLE, SCD41 periodiek, OLED) is dat **ongeveer 3 uur**. Genoeg voor een demo, en met de single-shot-modus van de SCD41 meer. Voorraad volgens snapshots tegenstrijdig. De 150 mAh (27×20 mm) heeft 2–4 weken levertijd. De XIAO laadt via soldeerpads op de onderkant, dus de stekker gaat er toch af. **Controleer of de accu een beveiligingsprint (PCM) heeft.** De lader van de XIAO beschermt de accu waarschijnlijk niet tegen diepontlading. |
+| 11 | [LiPo 3,7 V 250 mAh, **al aanwezig**](https://www.tinytronics.nl/en/power/batteries/li-po/li-po-accu-3.7v-250mah) | TinyTronics | €5,00 | 1 | €5,00 | 30,5×17,5×6,5 mm | **Gewijzigd van 500 mAh** (38×31 mm, 2–4 weken levertijd). Rekening houdend met ~70–90 mA verbruik (ESP32-S3 met BLE, SCD41 periodiek, OLED) is dat **ongeveer 3 uur**. Genoeg voor een demo, en met de single-shot-modus van de SCD41 meer. Voorraad volgens snapshots tegenstrijdig. De 150 mAh (27×20 mm) heeft 2–4 weken levertijd. De XIAO laadt via soldeerpads op de onderkant, dus de stekker gaat er toch af. **Controleer of de accu een beveiligingsprint (PCM) heeft.** De lader van de XIAO beschermt de accu waarschijnlijk niet tegen diepontlading. |
 | 12 | [Goobay klittenbandrol 1 m](https://www.tinytronics.nl/en/tools-and-mounting/installation-and-mounting-material/cable-ties-zip-ties-tyraps/goobay-70360-hook-and-loop-fastener-roll-1m) | TinyTronics | €3,00 | 1 | €3,00 | – | **Vervangt de BINLUN-horlogeband (~€37).** Print lussen in de behuizing en knip de band op maat. 10+ op voorraad. |
 
-**Kernonderdelen totaal: ~€93–96**, met elektrodes en schakelaars ~€100–102 (was ~€175–185 voor 2 sets). Met de SCD40 in plaats van de SCD41 ~€8–11 minder.
+**Kernonderdelen totaal: ~€86–89**, met elektrodes, schakelaars en condensatorset ~€97 (zonder LiPo, die is al aanwezig) (was ~€175–185 voor 2 sets). Met de SCD40 in plaats van de SCD41 ~€8–11 minder.
 
 ## Overig – bestellen
 
@@ -77,7 +77,6 @@ Alle adressen zijn uniek, dus alle I2C-sensoren passen samen op één bus:
 
 | Adres | Onderdeel |
 |---|---|
-| 0x23 | BH1750 |
 | 0x3C | OLED |
 | 0x57 | MAX30102 |
 | 0x62 | SCD41 |
@@ -91,7 +90,7 @@ Pinnen op de XIAO ESP32-S3: SDA en SCL, 3× ADC (GSR, ECG-uitgang, accuspanning)
 - **ICM45686 → MPU-6050:** van de ICM45686 zijn breakouts nauwelijks verkrijgbaar.
 - **MAX86141 → MAX30102:** er zijn geen gangbare MAX86141-breakouts.
 - **SGP30 / SCD40 → SCD41:** de SGP30 geeft alleen een geschatte eCO2. De SCD41 meet echte CO2 en dekt het bereik van een ruimtestation (tot 5000 ppm).
-- **TSL2591 → BH1750:** kleiner en goedkoper. Geen van beide meet specifiek blauw licht. Daarvoor zou een AS7341 (spectraal) nodig zijn.
+- **TSL2591 / BH1750 geschrapt:** het polsstation wordt onder de kleding gedragen, dus een lichtsensor kan geen omgevingslicht meten. Zie [ontwerpkeuzes.md](ontwerpkeuzes.md).
 - **Grove GSR → zelfbouw-spanningsdeler:** voor formaat en levertijd.
 - **ECG met plakelektrodes op de borst in plaats van koperen vlakken:** voor continue meting zonder handeling van de astronaut. De MAX30102 blijft de continue bron voor hartslag en HRV. De ECG voegt ritme- en aritmiedetectie toe.
 - **0.96" → 0.91" OLED:** smaller formaat voor de pols.
