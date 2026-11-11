@@ -63,6 +63,8 @@ Een samenhangend systeem met twee delen:
 | 0.96" OLED | I2C | Bovenzijde | Directe actiepunten voor de astronaut |
 | Piezobuzzer | GPIO (PWM) | Intern op PCB | Alarm bij kritieke daling van SpO2 of stijging van CO2 |
 
+Waarom we voor deze sensoren kozen, en welke concessies we bewust deden: zie [docs/ontwerpkeuzes.md](docs/ontwerpkeuzes.md).
+
 ## Firmware (gepland)
 
 - **Taal:** C++ op de ESP32
