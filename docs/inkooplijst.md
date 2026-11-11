@@ -64,7 +64,7 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Je koopt 1 set, me
 
 | Alternatief | Waarom niet |
 |---|---|
-| [MAX30205-module](https://www.amazon.nl/Lichaamstemperatuursensormodule-Nauwkeurigheid-Laagspanningssensorkaart-Lichaamstemperatuur-Temperatuuralarmfuncties/dp/B0D48KVGBC) (Amazon, ~€14,74) | Gemaakt voor lichaamstemperatuur (0,1 °C in het bereik 37–39 °C) en een betere keuze dan de MCP9808. Wel 2× zo duur, levering via Amazon, en I2C 0x48. Upgrade voor een productieversie op een eigen print. |
+| [MAX30205-module](https://www.amazon.nl/Lichaamstemperatuursensormodule-Nauwkeurigheid-Laagspanningssensorkaart-Lichaamstemperatuur-Temperatuuralarmfuncties/dp/B0D48KVGBC) (Amazon, ~€14,74) | Gemaakt voor lichaamstemperatuur (0,1 °C in het bereik 37–39 °C). Levering via Amazon, I2C 0x48. Upgrade voor een productieversie op een eigen print. |
 | XIAO nRF52840 Sense (IMU ingebouwd, veel zuiniger) | Bij TinyTronics 2–4 weken levertijd. De firmware is gepland op de ESP32. |
 | SCD40 | Alleen gespecificeerd tot 2000 ppm, zie #8 |
 | 0.96" OLED | Breder en duurder dan de 0.91" |
