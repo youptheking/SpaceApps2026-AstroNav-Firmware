@@ -54,7 +54,7 @@ Een samenhangend systeem met twee delen:
 |---|---|---|---|
 | ESP32 | Systeemcontroller | Intern op PCB | Leest sensoren uit, stuurt OLED en buzzer aan, verzorgt BLE-streaming |
 | MAX30102 / MAX86141 | I2C | Onderzijde (tegen huid) | Optische meting van hartslag en zuurstofsaturatie (SpO2) |
-| TMP117 / MCP9808 | I2C | Onderzijde (tegen huid) | Nauwkeurige lichaamstemperatuur (immuunreactie, koorts) |
+| MAX30102 (ingebouwde temperatuursensor) | I2C | Onderzijde (tegen huid) | Trend van de huidtemperatuur, als signaal voor een immuunreactie of koorts. **Bewuste keuze voor het prototype:** de sensor zit al in de MAX30102 (±1 °C, resolutie 0,0625 °C). Dat scheelt een bordje en ruimte, en is voldoende voor afwijkingen ten opzichte van de eigen baseline. Op een eigen print zou je een speciale lichaamstemperatuursensor gebruiken, zoals de MAX30205 of TMP117. |
 | ICM45686 / MPU6050 | I2C of SPI | Intern op PCB | 3-assige IMU: activiteit, training, slaapkwaliteit, spiertremoren |
 | GSR-contacten | Analoog (ADC) | Onderzijde (tegen huid) | Twee gefreesde koperen vlakken met een spanningsdeler, voor huidgeleiding (acute stress) |
 | AD8232 | Analoog (ADC) | Intern, kabel naar de borst | Continue ECG-hartgolf via 3 plakelektrodes op de borst. Leads-off-detectie meldt een losse elektrode. |
