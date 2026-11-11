@@ -59,7 +59,7 @@ Een samenhangend systeem met twee delen:
 | GSR-contacten | Analoog (ADC) | Onderzijde (tegen huid) | Twee gefreesde koperen vlakken met een spanningsdeler, voor huidgeleiding (acute stress) |
 | AD8232 | Analoog (ADC) | Intern, kabel naar de borst | Continue ECG-hartgolf via 3 plakelektrodes op de borst. Leads-off-detectie meldt een losse elektrode. |
 | TSL2591 / BH1750 | I2C | Bovenzijde | Omgevingslicht en blauw licht voor bewaking van circadiaans ritme en slaap |
-| SCD40 / SGP30 | I2C | Zijkant (met rooster) | CO2 en luchtkwaliteit in de cabine, tegen verstikking en hoofdpijn |
+| SCD41 | I2C | Zijkant (met rooster) | Echte CO2 (fotoakoestisch), plus temperatuur en luchtvochtigheid in de cabine, tegen verstikking en hoofdpijn. **Bewust gekozen boven de SCD40:** gespecificeerd tot 5000 ppm in plaats van 2000 ppm (ruimtestations zitten structureel boven aardse binnenwaarden), en met een single-shot-modus voor een lager accuverbruik. |
 | 0.96" OLED | I2C | Bovenzijde | Directe actiepunten voor de astronaut |
 | Piezobuzzer | GPIO (PWM) | Intern op PCB | Alarm bij kritieke daling van SpO2 of stijging van CO2 |
 
