@@ -83,7 +83,7 @@ Alle adressen zijn uniek, dus alle I2C-sensoren passen samen op één bus:
 | 0x62 | SCD41 |
 | 0x68 | MPU-6050 |
 
-Pinnen op de XIAO ESP32-S3: SDA en SCL, 3× ADC (GSR, ECG-uitgang, accuspanning), 2× digitaal (AD8232 LO+ en LO−) en 1× PWM (buzzer). Dat zijn er 8 van de 11 beschikbare.
+Pinnen op de XIAO ESP32-S3: SDA en SCL, 3× ADC (GSR, ECG-uitgang, accuspanning), 2× digitaal (AD8232 LO+ en LO−) en 1× PWM (buzzer). Dat zijn er 8 van de 11 beschikbare. Met de optionele pinnen (AD8232 SDN, MPU-6050 INT, MAX30102 INT) zijn alle 11 in gebruik. Zie [pinout.md](pinout.md).
 
 ## Afwijkingen van het projectdossier
 
