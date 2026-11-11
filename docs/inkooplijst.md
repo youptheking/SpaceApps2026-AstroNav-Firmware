@@ -15,7 +15,7 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Je koopt 1 set, me
 |---|---|---|---|---|---|---|---|
 | 1 | [Seeed Studio XIAO ESP32-S3](https://www.tinytronics.nl/en/development-boards/microcontroller-boards/with-wi-fi/seeed-studio-xiao-esp32-s3) | TinyTronics | €9,00 | 2 | €18,00 | 21×17,5 mm | 1 + 1 reserve: als de enige XIAO sneuvelt (ESD, kortsluiting), ligt het hele project stil. 200+ op voorraad (snapshot). Goedkoper dan Amazon (~€14,79). Werkt met een externe U.FL-antenne: houd ruimte vrij in de behuizing. **Niet** de Sense-versie, die heeft 2–4 weken levertijd. |
 | 2 | [MAX30102 hartslag/SpO2 (MAX30102MOD)](https://www.tinytronics.nl/en/sensors/body/heart-rate-sensor-and-pulse-oximeter-max30102-i2c) | TinyTronics | €5,00 | 2 | €10,00 | klein | Op voorraad. 1 + 1 reserve, want goedkope MAX30102-modules hebben soms I2C-pull-ups naar 1,8 V die de bus verstoren. Test hem eerst los. I2C 0x57. |
-| 3 | [MCP9808 temperatuursensor (MCP9808MOD)](https://www.tinytronics.nl/en/sensors/temperature/mcp9808-i2c-temperaturesensor) | TinyTronics | €6,50 | 1 | €6,50 | ~19×13 mm | Bij TinyTronics geen TMP117, MAX30205 of TMP102 gevonden. I2C 0x18. Zie het alternatief hieronder. |
+| 3 | ~~MCP9808~~ **geschrapt** | – | – | – | – | – | De temperatuur komt uit de ingebouwde sensor van de MAX30102 (±1 °C, resolutie 0,0625 °C). Voor een trend ten opzichte van de baseline is dat genoeg, en het scheelt €6,50 en een bordje van ~19×13 mm. |
 | 4 | [MPU-6050 IMU-module](https://www.tinytronics.nl/en/sensors/acceleration-rotation/mpu-6050-accelerometer-and-gyroscope-3-axis-module-3.3v-5v) | TinyTronics | €8,75 | 1 | €8,75 | ~21×16 mm | Geen wezenlijk kleinere IMU op voorraad. De MPU-6500 is even groot en heeft een ander WHO_AM_I, waardoor sommige MPU6050-libraries niet werken. I2C 0x68. |
 | 5 | [AD8232 ECG-kit](https://www.tinytronics.nl/en/sensors/body/ecg-kit-ad8232) | TinyTronics | €9,50 | 1 | €9,50 | **35,5×30,5×10,5 mm** | **Grootste bordje van het ontwerp.** Geen kleinere AD8232-breakout gevonden. **Continue meting** met 3 plakelektrodes op de borst en de kabel van de kit naar de pols, dus de 3,5 mm-jack blijft zitten (met trekontlasting in de behuizing). Leads-off-detectie (LO+/LO−) meldt automatisch een losse elektrode. Droge elektrodes op één pols geven geen bruikbaar ECG. |
 | 6 | GSR: **zelfbouw**, geen module | – | ~€0 | – | – | – | Twee gefreesde koperen vlakken plus een weerstand (spanningsdeler) naar een ADC-pin. Vervangt de Grove GSR (~€15,60 bij Amazon, 20×40 mm plus klittenband-vingerbandjes). |
@@ -26,7 +26,7 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Je koopt 1 set, me
 | 11 | [LiPo 3,7 V 250 mAh](https://www.tinytronics.nl/en/power/batteries/li-po/li-po-accu-3.7v-250mah) | TinyTronics | €5,00 | 1 | €5,00 | 30,5×17,5×6,5 mm | **Gewijzigd van 500 mAh** (38×31 mm, 2–4 weken levertijd). Rekening houdend met ~70–90 mA verbruik (ESP32-S3 met BLE, SCD41 periodiek, OLED) is dat **ongeveer 3 uur**. Genoeg voor een demo, en met de single-shot-modus van de SCD41 meer. Voorraad volgens snapshots tegenstrijdig. De 150 mAh (27×20 mm) heeft 2–4 weken levertijd. De XIAO laadt via soldeerpads op de onderkant, dus de stekker gaat er toch af. **Controleer of de accu een beveiligingsprint (PCM) heeft.** De lader van de XIAO beschermt de accu waarschijnlijk niet tegen diepontlading. |
 | 12 | [Goobay klittenbandrol 1 m](https://www.tinytronics.nl/en/tools-and-mounting/installation-and-mounting-material/cable-ties-zip-ties-tyraps/goobay-70360-hook-and-loop-fastener-roll-1m) | TinyTronics | €3,00 | 1 | €3,00 | – | **Vervangt de BINLUN-horlogeband (~€37).** Print lussen in de behuizing en knip de band op maat. 10+ op voorraad. |
 
-**Kernonderdelen totaal: ~€99–102**, met elektrodes en schakelaars ~€106–109 (was ~€175–185 voor 2 sets). Met de SCD40 in plaats van de SCD41 ~€8–11 minder.
+**Kernonderdelen totaal: ~€93–96**, met elektrodes en schakelaars ~€100–102 (was ~€175–185 voor 2 sets). Met de SCD40 in plaats van de SCD41 ~€8–11 minder.
 
 ## Overig – bestellen
 
@@ -64,7 +64,7 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Je koopt 1 set, me
 
 | Alternatief | Waarom niet |
 |---|---|
-| [MAX30205-module](https://www.amazon.nl/Lichaamstemperatuursensormodule-Nauwkeurigheid-Laagspanningssensorkaart-Lichaamstemperatuur-Temperatuuralarmfuncties/dp/B0D48KVGBC) (Amazon, ~€14,74) | Gemaakt voor lichaamstemperatuur (0,1 °C in het bereik 37–39 °C) en een betere keuze dan de MCP9808. Wel 2× zo duur, levering via Amazon, en I2C 0x48. Een goede upgrade als hij morgen geleverd kan worden. |
+| [MAX30205-module](https://www.amazon.nl/Lichaamstemperatuursensormodule-Nauwkeurigheid-Laagspanningssensorkaart-Lichaamstemperatuur-Temperatuuralarmfuncties/dp/B0D48KVGBC) (Amazon, ~€14,74) | Gemaakt voor lichaamstemperatuur (0,1 °C in het bereik 37–39 °C) en een betere keuze dan de MCP9808. Wel 2× zo duur, levering via Amazon, en I2C 0x48. Upgrade voor een productieversie op een eigen print. |
 | XIAO nRF52840 Sense (IMU ingebouwd, veel zuiniger) | Bij TinyTronics 2–4 weken levertijd. De firmware is gepland op de ESP32. |
 | SCD40 | Alleen gespecificeerd tot 2000 ppm, zie #8 |
 | 0.96" OLED | Breder en duurder dan de 0.91" |
@@ -77,7 +77,6 @@ Alle adressen zijn uniek, dus alle I2C-sensoren passen samen op één bus:
 
 | Adres | Onderdeel |
 |---|---|
-| 0x18 | MCP9808 |
 | 0x23 | BH1750 |
 | 0x3C | OLED |
 | 0x57 | MAX30102 |
@@ -88,7 +87,7 @@ Pinnen op de XIAO ESP32-S3: SDA en SCL, 3× ADC (GSR, ECG-uitgang, accuspanning)
 
 ## Afwijkingen van het projectdossier
 
-- **TMP117 → MCP9808:** de TMP117 is niet als breakout te krijgen bij TinyTronics of Amazon.nl.
+- **TMP117 → ingebouwde sensor van de MAX30102:** een losse temperatuursensor kost ruimte. Voor het prototype meten we alleen de trend. Op een eigen print zou dat een MAX30205 of TMP117 worden.
 - **ICM45686 → MPU-6050:** van de ICM45686 zijn breakouts nauwelijks verkrijgbaar.
 - **MAX86141 → MAX30102:** er zijn geen gangbare MAX86141-breakouts.
 - **SGP30 / SCD40 → SCD41:** de SGP30 geeft alleen een geschatte eCO2. De SCD41 meet echte CO2 en dekt het bereik van een ruimtestation (tot 5000 ppm).
