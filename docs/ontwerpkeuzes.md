@@ -98,6 +98,14 @@ Randvoorwaarden: draagbaar om de pols (dus klein en licht), een beperkt budget, 
 
 ---
 
+## 7. Lichtsensor geschrapt
+
+**Gedachtegang:** het polsstation wordt **onder de kleding** gedragen. Een lichtsensor meet daar alleen het donker onder de mouw, niet het licht in de cabine. Voor het circadiaans ritme heb je dus niets aan zo'n sensor. Je bespaart een bordje, een I2C-apparaat en €3,50.
+
+**Alternatief voor het circadiaans ritme:** slaap en activiteit komen uit de IMU. Lichtgegevens zouden in een echte missie uit het verlichtingssysteem van het station komen, dat de cabineverlichting al per tijdstip regelt. Op het dashboard kun je die als externe bron koppelen.
+
+---
+
 ## Samenvatting voor de pitch
 
 Het polsstation laat met breakout-bordjes zien dat het concept werkt. De keuzes zijn gemaakt op **draagbaarheid, leverbaarheid en wat een proof of concept moet bewijzen.** Bewust méér uitgegeven: de CO2-sensor, omdat die direct samenhangt met de omgeving van de missie. Bewust bezuinigd: temperatuur en GSR, met een helder pad naar een productieversie op een eigen print.

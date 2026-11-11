@@ -12,7 +12,6 @@
 | MAX30102 | ~3 mA (1–10) | ~2 mA | LED-stroom zo laag als nodig is voor een goed signaal, sample rate 100 Hz |
 | MPU-6050 | ~4 mA (accel + gyro, datasheet 3,9 mA) | ~0,5 mA | Gyro uit als hij niet nodig is, alleen de accelerometer voor activiteit en slaap |
 | AD8232 | ~0,2 mA (datasheet 170 µA) | ~0,2 mA | – |
-| BH1750 | ~0,1 mA | ~0,1 mA | Eenmalige meetmodus |
 | Power-LEDjes op de breakouts | ~5 mA (ca. 4× 1–2 mA) | 0 mA | **LED-weerstandjes eraf solderen.** Kost 5 minuten en scheelt 5 mA. |
 | Spanningsdelers (GSR, accu) | <0,02 mA | <0,02 mA | – |
 | Buzzer | alleen bij een alarm | alleen bij een alarm | – |
