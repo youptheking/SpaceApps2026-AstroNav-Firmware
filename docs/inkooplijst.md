@@ -33,7 +33,7 @@ Resultaat: **alles kan in één bestelling bij TinyTronics.** Amazon is alleen n
 | Onderdeel | Winkel | Prijs | Opmerking |
 |---|---|---|---|
 | [Mini SMD-schuifschakelaar MK12C02](https://www.tinytronics.nl/en/switches/manual-switches/slide-switches/mini-smd-pcb-switch-mk12c02) | TinyTronics | €0,20 | Aan/uit tussen LiPo en XIAO. Neem er 3. Wil je through-hole: [SWITCHPCB](https://www.tinytronics.nl/en/switches/manual-switches/slide-switches/small-switch-for-pcb-or-breadboard) (30 V / 0,3 A). |
-| [Wegwerp-ECG-elektrodes (50 st)](https://www.tinytronics.nl/en/sensors/body/disposable-ecg-electrode-50-pieces) | TinyTronics | – | **Nodig.** Plakelektrodes gaan ongeveer een dag mee, en de kit heeft er maar 3. De losse elektrode is uit het assortiment. |
+| [Wegwerp-ECG-elektrodes (50 st)](https://www.tinytronics.nl/en/sensors/body/disposable-ecg-electrode-50-pieces) | TinyTronics | €6,00 | Kleinste verpakking bij TinyTronics. De losse elektrode is uit het assortiment. De 3 uit de kit zijn te weinig voor een weekend testen en opnieuw plakken. |
 | Weerstanden voor GSR (bijv. 100 kΩ–1 MΩ) | eigen voorraad | – | Voor de GSR-spanningsdeler |
 | [Dubbelzijdig koperplaat FR4 1,5 mm, 5× 100×70 mm](https://www.amazon.nl/Aexit-Koperen-Laminaat-Universele-Printplaat/dp/B079WHYMF7) | Amazon | ~€10 | Alleen nodig als je geen voorraad meer hebt voor de CNC |
 | Pinheaders, breadboard, jumperdraadjes | eigen voorraad | – | Voor het breadboardprototype van set 1 |
