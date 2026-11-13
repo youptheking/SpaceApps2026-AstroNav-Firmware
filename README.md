@@ -71,3 +71,11 @@ Waarom we voor deze sensoren kozen, en welke concessies we bewust deden: zie [do
 - **Sensoruitlezing:** alle sensoren met hoge frequentie
 - **Lokale beslislogica:** waarschuwingen en instructies direct op het OLED-scherm, buzzer bij noodsituaties, ook zonder verbinding met de laptop
 - **Draadloze telemetrie:** gestructureerde datapakketten via BLE naar het desktopdashboard
+
+## Gebruik van AI (SI)
+
+Volgens de regels van NASA Space Apps vermelden we waar AI-tools ("Super Intelligence", SI) zijn gebruikt.
+
+- **Idee en concept:** eigen werk. Het concept met polsstation en dashboard, en de keuze voor de challenge, stonden vast vóór er AI werd gebruikt.
+- **Voorbereiding met Claude (Anthropic):** onderzoek naar leverbare onderdelen, de stroom- en pinberekeningen en de eerste versies van de documenten in `docs/` (inkooplijst, ontwerpkeuzes, stroombudget, pinout). De ontwerpbeslissingen zijn door de maker genomen en gecontroleerd.
+- **Code:** waar code met AI-hulp is geschreven, staat dat in de commitbeschrijving en in een opmerking in het betreffende bestand.
