@@ -98,11 +98,13 @@ Randvoorwaarden: draagbaar om de pols (dus klein en licht), een beperkt budget, 
 
 ---
 
-## 7. Lichtsensor geschrapt
+## 7. Lichtsensor: wel, omdat het horloge zichtbaar gedragen wordt
 
-**Gedachtegang:** het polsstation wordt **onder de kleding** gedragen. Een lichtsensor meet daar alleen het donker onder de mouw, niet het licht in de cabine. Voor het circadiaans ritme heb je dus niets aan zo'n sensor. Je bespaart een bordje, een I2C-apparaat en €3,50.
+**Gedachtegang:** eerst geschrapt, omdat een lichtsensor onder de kleding alleen het donker onder de mouw meet. Het horloge wordt echter met **korte mouwen** gedragen, als een gewoon horloge met de bovenkant vrij. Dan meet de BH1750 wel het cabinelicht, en zijn het OLED, de buzzer en het rooster van de SCD41 ook vrij.
 
-**Alternatief voor het circadiaans ritme:** slaap en activiteit komen uit de IMU. Lichtgegevens zouden in een echte missie uit het verlichtingssysteem van het station komen, dat de cabineverlichting al per tijdstip regelt. Op het dashboard kun je die als externe bron koppelen.
+**Waarom de moeite waard:** op het ISS zie je ongeveer 16 zonsopkomsten per dag, dus de biologische klok krijgt van buiten geen houvast. Lichtblootstelling is daarom relevant voor slaap en het circadiaans ritme. De sensor kost €3,50, is klein en gebruikt de I2C-bus die er al is.
+
+**Concessie:** de BH1750 meet totale lichtsterkte, geen blauw licht specifiek. Een productieversie zou een spectrale sensor gebruiken (AS7341), of de instellingen van het verlichtingssysteem van het station als bron koppelen.
 
 ---
 
