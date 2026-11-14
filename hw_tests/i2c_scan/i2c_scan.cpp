@@ -3,6 +3,7 @@
 // Doet i2c zelf (bit-bang) in plaats van met Wire. Houdt een module de bus
 // laag, dan blijft Wire hangen en zie je niks. Zo zie je juist welke lijn.
 #include <Arduino.h>
+#include <BLEDevice.h>
 #include <Wire.h>
 
 #include "pins.h"
@@ -235,7 +236,17 @@ void mpuTest() {
   Wire.end();
 }
 
+// na 3 rondes bluetooth aan: stoort de radio de bus?
+void maybeStartBle() {
+  static int rounds = 0;
+  if (++rounds != 4) return;
+  BLEDevice::init("AstroNav-test");
+  BLEDevice::getAdvertising()->start();
+  Serial.println("\n*** bluetooth staat nu aan ***");
+}
+
 void loop() {
+  maybeStartBle();
   Serial.println("\nscan:");
   printLines();
   Serial.println("register lezen in software:");
