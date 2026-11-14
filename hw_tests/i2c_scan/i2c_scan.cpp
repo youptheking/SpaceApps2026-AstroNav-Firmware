@@ -26,7 +26,18 @@ bool ping(uint8_t addr) {
 void setup() {
   Serial.begin(115200);
   delay(2000);
-  Wire.begin(pins::I2C_SDA, pins::I2C_SCL, pins::I2C_FREQ_HZ);
+  Serial.println("i2c scan");
+
+  // in rust moeten beide lijnen hoog zijn, anders zijn de pull-ups niet goed
+  // of houdt iets de bus laag
+  pinMode(pins::I2C_SDA, INPUT);
+  pinMode(pins::I2C_SCL, INPUT);
+  delay(10);
+  Serial.printf("SDA %s  SCL %s\n", digitalRead(pins::I2C_SDA) ? "hoog" : "LAAG",
+                digitalRead(pins::I2C_SCL) ? "hoog" : "LAAG");
+
+  Wire.begin(pins::I2C_SDA, pins::I2C_SCL, 100000);
+  Wire.setTimeOut(50);
 }
 
 void loop() {
