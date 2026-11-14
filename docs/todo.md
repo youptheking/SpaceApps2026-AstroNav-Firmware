@@ -13,7 +13,7 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk
 
 ## Zaterdag – hardware
 
-- [ ] ⚠️ Label van R3 (accudeler) op **BAT_SW+**, niet op BAT+ (check vóór het frezen)
+- [x] Label van R3 (accudeler) op **BAT_SW+**
 - [ ] ⚠️ Pinvolgorde van elke footprint vergeleken met de echte modules (vooral OLED en de SCD41-connector)
 - [ ] Gecontroleerd in Makera Studio: alleen de onderkant frezen klopt als er geen sporen op de toplaag liggen
 - [ ] PCB frezen en boren
