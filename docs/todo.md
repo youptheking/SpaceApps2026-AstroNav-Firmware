@@ -27,7 +27,7 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk
 - [ ] Buzzer op D7 (stil bij het opstarten)
 - [ ] Accuspanning op D8 klopt met de multimeter (×2)
 - [ ] GSR: 15-minutentest. Werkt het? Houden. Alleen ruis? Laten vallen, stress via HRV.
-- [ ] ⚠️ **Formaat van de BLE-pakketten vastgelegd** (welke waarden, volgorde, frequentie)
+- [ ] ⚠️ **Formaat van de BLE-pakketten vastgelegd:** voorstel staat in `docs/ble-protocol.md`, wacht op akkoord
 - [ ] Firmware: alle sensoren uitlezen, **elke meting op zijn eigen interval** (zie `docs/ble-data.md`), en over BLE versturen
 - [ ] Firmware: ECG- en PPG-samples met een tijdstempel van dezelfde hardwaretimer (nodig voor HRV, en later eventueel PTT)
 - [ ] Firmware: IMU-verwerking op de ESP32 (activiteit, schok, artefact-vlag, tremor)
