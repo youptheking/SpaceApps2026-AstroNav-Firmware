@@ -6,7 +6,9 @@
 // Nepwaarden zodat het dashboard en de alarmen zonder sensoren te testen zijn.
 namespace sim {
 
-void fill(Telemetry &t);
+// vult alleen de sensorgroepen in `which` (bits uit SensorFlag)
+void fill(Telemetry &t, uint8_t which);
+void fillBattery(Telemetry &t);
 
 // ECG-sample in mV, zoals de AD8232 hem zou geven
 int16_t ecg(uint32_t us);

@@ -37,7 +37,7 @@ enum Status : uint8_t {
 };
 
 struct __attribute__((packed)) Telemetry {
-  uint8_t version = 4;
+  uint8_t version = 5;
   uint8_t flags = 0;
   uint16_t alerts = 0;
   uint32_t uptime_ms = 0;
@@ -60,6 +60,7 @@ struct __attribute__((packed)) Telemetry {
 
   uint16_t battery_mv = 0;
   uint8_t status = 0;
+  uint8_t sim_flags = 0;  // welke sensorgroepen gesimuleerd zijn (bits uit SensorFlag)
 };
 
-static_assert(sizeof(Telemetry) == 39, "docs/ble.md bijwerken");
+static_assert(sizeof(Telemetry) == 40, "docs/ble.md bijwerken");

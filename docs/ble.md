@@ -28,15 +28,15 @@ Service UUID: `6e0a0001-5a3c-4c1e-9d2a-41535452304e`
 
 De pakketten zijn groter dan de standaard-MTU van 23 bytes. De laptop moet om een grotere MTU vragen, minstens 64. Windows doet dat automatisch. In nRF Connect op Android: *Request MTU* (of zet dat aan bij de instellingen).
 
-## Telemetry-pakket (versie 4)
+## Telemetry-pakket (versie 5)
 
-Little-endian, 39 bytes. Zie `src/telemetry.h`.
+Little-endian, 40 bytes. Zie `src/telemetry.h`.
 
 Het pakket gaat elke `rate` ms de deur uit, en daarnaast **meteen** zodra er een alarm bij komt of verdwijnt (NASA [V2 6022], zie [alarmen.md](alarmen.md)).
 
 | Offset | Type | Veld | Eenheid |
 |---|---|---|---|
-| 0 | u8 | version | 4 |
+| 0 | u8 | version | 5 |
 | 1 | u8 | flags | zie hieronder |
 | 2 | u16 | alerts | zie hieronder |
 | 4 | u32 | uptime_ms | ms |
@@ -55,6 +55,7 @@ Het pakket gaat elke `rate` ms de deur uit, en daarnaast **meteen** zodra er een
 | 35 | u8 | tremor | 0-100, trilling in de 4–12 Hz band, wordt op het horloge berekend |
 | 36 | u16 | battery_mv | mV |
 | 38 | u8 | status | zie hieronder |
+| 39 | u8 | sim_flags | welke sensorgroepen gesimuleerd zijn, zelfde bits als `flags` |
 
 Flags (bit): 0 hartslag/SpO2, 1 huidtemperatuur, 2 lucht (CO2/temp/vocht), 3 licht, 4 IMU, 5 GSR, 6 ECG-elektrodes zitten goed, 7 klok gezet.
 Een waarde telt alleen als de bijbehorende flag aan staat.
@@ -62,7 +63,7 @@ Een waarde telt alleen als de bijbehorende flag aan staat.
 Alerts (bit): 0 lage SpO2, 1 hoge hartslag, 2 lage hartslag, 3 koorts, 4 CO2 > 3 mmHg, 5 stress, 6 batterij bijna leeg, 7 elektrodes los, 8 CO2 > 2,5 mmHg, 9 cabineklimaat. Grenzen en bronnen: [alarmen.md](alarmen.md).
 
 Status (bit):
-- 0 gesimuleerd: de waarden komen uit `src/sim.cpp` en niet van de sensoren. Laat dat in het dashboard duidelijk zien.
+- 0 gesimuleerd: minstens één sensorgroep komt uit `src/sim.cpp` in plaats van een echte sensor. Welke, staat in `sim_flags`. Laat dat in het dashboard per waarde duidelijk zien.
 - 1 ademhalingsoefening loopt (zie `breathe`)
 - 2 ECG-stream staat aan
 - 3 buzzer staat stil na `ack`
@@ -124,14 +125,14 @@ Met deze opslag dekken we de meetfrequenties uit NASA Tabel 6.1-1 (*Example Samp
 
 ## Simulatie
 
-Zolang de sensoren nog niet zijn ingebouwd, staat de simulatie standaard aan. Dan vult het horloge alle sensorwaarden met nepdata, zodat je het dashboard en de alarmen zonder hardware kunt testen:
+De simulatie werkt **per sensor**. Bij het opstarten kijkt het horloge welke sensoren er op de I2C-bus zitten (`sensors` via USB laat het zien). Gevonden sensoren geven echte data, de rest wordt aangevuld met nepdata zolang de simulatie aan staat (standaard). Zo kun je de breakouts één voor één aansluiten. De nepdata:
 
 - hartslag rond 72, schommelt langzaam
 - elke 3 minuten 20 seconden een zuurstofdip naar ~89 %, met hogere hartslag, huidgeleiding en tremor
 - CO2 loopt in 10 minuten op van 1500 naar 3200 ppm (1,1–2,4 mmHg, onder de NASA-grens) en zakt dan weer terug
 - een ECG-golf die past bij de gesimuleerde hartslag (met `ecg on`)
 
-Met `sim off` zet je hem uit; dan blijven alleen de echte metingen over (nu nog alleen de batterij). Zodra de sensoren erin zitten, gaat de standaard in `src/main.cpp` naar uit.
+Met `sim off` blijven alleen de echte metingen over. Als alle sensoren erin zitten, zet je de standaard in `src/main.cpp` op uit.
 
 ## Commando's
 
@@ -158,3 +159,4 @@ Tekst, één commando per write. Werken ook via de USB-seriële poort (115200).
 | `breathe [minuten]` | ademhalingsoefening op het scherm (4 s in, 4 s vast, 6 s uit), standaard 2 minuten, max 30. Na afloop komt `breathe klaar` op reply. |
 | `breathe off` | oefening stoppen |
 | `show` | alleen via USB: laatste meetwaarden en alarmen |
+| `sensors` | alleen via USB: welke sensoren gevonden zijn |
