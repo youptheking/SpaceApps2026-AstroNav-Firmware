@@ -6,6 +6,7 @@
 #include "display.h"
 #include "history.h"
 #include "pins.h"
+#include "sensors.h"
 #include "sim.h"
 #include "telemetry.h"
 
@@ -184,13 +185,15 @@ void handleCommand(String line) {
     Serial.printf("hr %u  spo2 %u  temp %.2f  co2 %u ppm (1u gem %.2f mmHg)  cabine %.1f C %.0f%%\n",
                   t.heart_rate, t.spo2, t.skin_temp / 100.0, t.co2, t.ppco2_avg / 100.0,
                   t.cabin_temp / 100.0, t.humidity / 100.0);
-    Serial.printf("lux %u  gsr %u  act %u  tremor %u  batt %u%s%s\n",
+    Serial.printf("lux %u  gsr %u  act %u  tremor %u  batt %u%s\n",
                   t.lux, t.gsr, t.activity, t.tremor, t.battery_mv,
-                  (t.status & STATUS_SIMULATED) ? "  (sim)" : "",
                   (t.status & STATUS_BREATHING) ? "  (ademhaling)" : "");
+    Serial.printf("echt 0x%02X  gesimuleerd 0x%02X\n", t.flags & ~t.sim_flags & ~HAS_TIME, t.sim_flags);
     const char *a = alerts::text(t.alerts);
     Serial.printf("alarmen 0x%03X  %s%s\n", t.alerts, a ? a : "-",
                   (t.status & STATUS_MUTED) ? "  (stil)" : "");
+  } else if (cmd == "sensors") {
+    sensors::print();
   } else if (cmd == "history") {
     handleHistory(arg);
   } else if (cmd == "reboot") {
@@ -216,17 +219,18 @@ void updateTelemetry() {
   }
 
   telemetry.battery_mv = analogReadMilliVolts(pins::BATT) * pins::BATT_DIVIDER;
+  if (ecgStream) telemetry.status |= STATUS_ECG_ON;
 
-  if (ecgStream) {
-    telemetry.status |= STATUS_ECG_ON;
-    // LO+ of LO- hoog = elektrode los
-    if (!digitalRead(pins::ECG_LO_PLUS) && !digitalRead(pins::ECG_LO_MINUS))
-      telemetry.flags |= ECG_LEADS_OK;
+  sensors::fill(telemetry);
+
+  // wat er niet is, simuleren (ecg alleen als de stream aan staat)
+  if (simulate) {
+    uint8_t missing = (sensors::ALL | ECG_LEADS_OK) & ~sensors::found();
+    if (!ecgStream) missing &= ~ECG_LEADS_OK;
+    sim::fill(telemetry, missing);
+    // onder 2,5 V hangt er geen accu aan
+    if (telemetry.battery_mv < 2500) sim::fillBattery(telemetry);
   }
-
-  // TODO sensoren uitlezen
-
-  if (simulate) sim::fill(telemetry);
   if (breatheEnd) telemetry.status |= STATUS_BREATHING;
 
   alerts::update(telemetry);
@@ -266,10 +270,12 @@ void updateScreen() {
 
 void sampleEcg() {
   if (!ecgStream) return;
+  bool real = sensors::found() & ECG_LEADS_OK;
+  if (!real && !simulate) return;
 
   // inhalen als loop() even bezig was (bijv. met het scherm)
   while ((int32_t)(micros() - nextEcg) >= 0) {
-    ecgBuf[ecgCount++] = simulate ? sim::ecg(nextEcg) : analogReadMilliVolts(pins::ECG_OUT);
+    ecgBuf[ecgCount++] = real ? analogReadMilliVolts(pins::ECG_OUT) : sim::ecg(nextEcg);
     nextEcg += ECG_PERIOD_US;
 
     if (ecgCount == ECG_BATCH) {
@@ -290,6 +296,7 @@ void setup() {
   pinMode(pins::BUZZER, OUTPUT);
 
   if (!display::begin()) Serial.println("geen oled gevonden");
+  sensors::begin();
   history::begin();
   ble::begin();
 }
@@ -301,6 +308,7 @@ void loop() {
   // zelfde commando's via usb, handig om te testen
   if (Serial.available()) handleCommand(Serial.readStringUntil('\n'));
 
+  sensors::update();
   sampleEcg();
 
   // alarmen elke seconde bijwerken, ook als `rate` langzamer is
