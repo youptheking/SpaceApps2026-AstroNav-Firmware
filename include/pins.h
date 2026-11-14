@@ -16,11 +16,11 @@ constexpr uint32_t I2C_FREQ_HZ = 100000;  // 400k gaf leesfouten op de gefreesde
 
 constexpr uint8_t BUZZER = D7;
 constexpr uint8_t BATT = D8;  // 2x 200k deler op BAT_SW+
-constexpr uint8_t GSR = D9;   // 220k naar GND, zie analog.cpp
+constexpr uint8_t GSR = D9;   // 220k naar GND, zie drivers/gsr.cpp
 
-// GSR en AD8232 zijn analoog en niet automatisch te vinden.
-// Op true zetten als ze aangesloten zijn, anders worden ze gesimuleerd.
-constexpr bool ANALOG_FRONTEND = false;
+// GSR en AD8232 zijn analoog en niet automatisch te vinden. Ze zitten op de
+// pcb, dus aan. Op false zetten om zonder te testen.
+constexpr bool ANALOG_FRONTEND = true;
 constexpr float BATT_DIVIDER = 2.0;
 
 }
