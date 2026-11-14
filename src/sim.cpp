@@ -4,8 +4,21 @@
 
 namespace sim {
 
+// vaste waarden via `sim <veld> <waarde>`, 0 = automatisch
+static float fixedCo2, fixedSpo2, fixedHr, fixedTemp, fixedCabin;
+
 static float noise(float amount) {
   return random(-1000, 1001) / 1000.0f * amount;
+}
+
+bool fix(const String &field, float value) {
+  if (field == "co2") fixedCo2 = value;
+  else if (field == "spo2") fixedSpo2 = value;
+  else if (field == "hr") fixedHr = value;
+  else if (field == "temp") fixedTemp = value;
+  else if (field == "cabin") fixedCabin = value;
+  else return false;
+  return true;
 }
 
 static float heartRate(float s) {
@@ -25,9 +38,10 @@ void fill(Telemetry &t) {
   t.spo2 = dip ? 89 + noise(1.5) : 97.5 + noise(1);
   t.skin_temp = (36.6 + 0.1 * sinf(s / 300) + noise(0.03)) * 100;
 
-  // co2 loopt op tot de scrubber hem elke 5 minuten weer omlaag haalt
-  float cycle = fmodf(s, 300) / 300;
-  t.co2 = 600 + 1300 * cycle + noise(20);
+  // co2 loopt op tot de scrubber hem elke 10 minuten weer omlaag haalt.
+  // 1500-3200 ppm = 1,1-2,4 mmHg, dus netjes onder de NASA-grens
+  float cycle = fmodf(s, 600) / 600;
+  t.co2 = 1500 + 1700 * cycle + noise(20);
   t.cabin_temp = (22.5 + noise(0.1)) * 100;
   t.humidity = (45 + 2 * sinf(s / 120)) * 100;
   t.lux = 300 + noise(15);
@@ -42,6 +56,12 @@ void fill(Telemetry &t) {
   t.tremor = (dip ? 25 : 5) + noise(3);
 
   t.battery_mv = 3950 - (millis() / 60000) % 400;
+
+  if (fixedCo2) t.co2 = fixedCo2 + noise(20);
+  if (fixedSpo2) t.spo2 = fixedSpo2;
+  if (fixedHr) t.heart_rate = fixedHr;
+  if (fixedTemp) t.skin_temp = fixedTemp * 100;
+  if (fixedCabin) t.cabin_temp = fixedCabin * 100;
 }
 
 static float bump(float x, float center, float width, float height) {

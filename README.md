@@ -68,3 +68,13 @@ Een samenhangend systeem met twee delen:
 - **Sensoruitlezing:** alle sensoren met hoge frequentie
 - **Lokale beslislogica:** waarschuwingen en instructies direct op het OLED-scherm, buzzer bij noodsituaties, ook zonder verbinding met de laptop
 - **Draadloze telemetrie:** gestructureerde datapakketten via BLE naar het desktopdashboard
+
+## NASA-bronnen
+
+De lokale alarmen volgen **NASA-STD-3001 Volume 2, Revision F**:
+
+- **[V2 6004]** CO2: het 1-uursgemiddelde van ppCO2 mag niet boven 3 mmHg komen
+- **[V2 6022]** de crew lokaal (OLED en buzzer) én op afstand (Bluetooth naar het dashboard) waarschuwen
+- **[V2 6012]** grenzen voor cabinetemperatuur en luchtvochtigheid
+
+Alle grenswaarden, hoe we de norm toepassen en de links naar de bronnen staan in [docs/alarmen.md](docs/alarmen.md).
