@@ -23,7 +23,9 @@ De alarmen van het polsstation en de referentielijnen in het dashboard komen uit
 
 **Bevestiging van de sensorkeuze:** NASA's grens ligt rond 3950 ppm. De SCD40 is maar gespecificeerd tot 2000 ppm en zou deze grens dus niet betrouwbaar kunnen meten. De SCD41 (tot 5000 ppm) kan dat wel.
 
-**Let op de cabinedruk:** de norm spreekt over **partiële druk** (mmHg), de SCD41 meet een **concentratie** (ppm). Bij een andere cabinedruk dan 760 mmHg verschuift de ppm-grens, bijvoorbeeld bij een lagere druk in een maanlander. Het polsstation heeft geen druksensor, dus we gaan uit van 760 mmHg (zoals op het ISS) en vermelden dat als aanname.
+**Let op de cabinedruk:** de norm spreekt over **partiële druk** (mmHg), de SCD41 meet een **concentratie** (ppm). Bij een andere cabinedruk dan 760 mmHg verschuift de ppm-grens, bijvoorbeeld bij een lagere druk in een maanlander. Daarom meet een **BMP180** de cabinedruk, en rekent de firmware met de gemeten druk. Zonder BMP180, of zolang die nog niet werkt, valt de firmware terug op 760 mmHg (zoals op het ISS). De BMP180 heeft een absolute nauwkeurigheid van ~±1 hPa, dus ~0,1 %. Dat is verwaarloosbaar voor de CO2-grens.
+
+De gemeten druk gaat ook naar de SCD41 (`setAmbientPressure`), zodat die zijn CO2-meting compenseert. Let op de eenheid: afhankelijk van de libraryversie is dat hPa of Pa.
 
 ## 2. Alarmering: precies wat het ontwerp al doet
 
@@ -50,12 +52,12 @@ Dit is een sterk punt voor de pitch: de architectuur volgt een eis uit de NASA-n
 **Firmware (polsstation):**
 ```cpp
 // Grenswaarden volgens NASA-STD-3001 Vol. 2 (zie docs/nasa-std-3001.md)
-// Aanname: cabinedruk 760 mmHg
-constexpr float CABIN_PRESSURE_MMHG   = 760.0f;
+// Cabinedruk gemeten met de BMP180, terugval op 760 mmHg
+float cabinPressureMmHg = 760.0f;          // overschreven door BMP180 (hPa × 0,750062)
 constexpr float CO2_LIMIT_1H_MMHG     = 3.0f;   // V2 6004, 1-uursgemiddelde
 constexpr float CO2_TARGET_MMHG       = 2.5f;   // OCHMO technical brief, lange termijn
 
-inline float ppmToMmHg(float ppm) { return ppm * CABIN_PRESSURE_MMHG / 1e6f; }
+inline float ppmToMmHg(float ppm) { return ppm * cabinPressureMmHg / 1e6f; }
 ```
 - **Alarm** (OLED "CO2 hoog" + buzzer): het **voortschrijdend 1-uursgemiddelde** komt boven 3 mmHg. Dit volgt de norm letterlijk.
 - **Vroege waarschuwing** (alleen OLED): de actuele waarde komt boven 3 mmHg. Zo ziet de astronaut het aankomen voordat het uurgemiddelde de grens bereikt.
@@ -67,7 +69,7 @@ inline float ppmToMmHg(float ppm) { return ppm * CABIN_PRESSURE_MMHG / 1e6f; }
 
 ## 5. Tekst voor het veld "NASA Data" (Engels)
 
-> We used **NASA-STD-3001 Volume 2 (NASA Space Flight Human-System Standard)** as the basis for our alarm logic. The wearable converts the SCD41 CO2 reading to partial pressure and raises a local alarm (display and buzzer) when the one-hour average ppCO2 exceeds the 3 mmHg limit of requirement V2 6004. The dashboard shows this limit and the 2.5 mmHg long-term target from NASA's OCHMO CO2 technical brief as reference lines. Our architecture of local alerts on the wrist plus remote alerts on the dashboard follows the crew alerting requirement in section 6.2.6.1. The standard also drove our sensor choice: we selected the SCD41 over the cheaper SCD40 because the SCD40's specified range (2000 ppm) does not cover NASA's limit of roughly 3950 ppm.
+> We used **NASA-STD-3001 Volume 2 (NASA Space Flight Human-System Standard)** as the basis for our alarm logic. The wearable measures cabin pressure (BMP180), converts the SCD41 CO2 reading to partial pressure and raises a local alarm (display and buzzer) when the one-hour average ppCO2 exceeds the 3 mmHg limit of requirement V2 6004. The dashboard shows this limit and the 2.5 mmHg long-term target from NASA's OCHMO CO2 technical brief as reference lines. Our architecture of local alerts on the wrist plus remote alerts on the dashboard follows the crew alerting requirement in section 6.2.6.1. The standard also drove our sensor choice: we selected the SCD41 over the cheaper SCD40 because the SCD40's specified range (2000 ppm) does not cover NASA's limit of roughly 3950 ppm.
 
 ## Bronnen
 
