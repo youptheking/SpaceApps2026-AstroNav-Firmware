@@ -23,3 +23,11 @@ void scd40Fill(Telemetry &t);
 bool max30102Begin();
 void max30102Update();
 void max30102Fill(Telemetry &t);
+
+bool mcp9808Begin();
+void mcp9808Update();
+void mcp9808Fill(Telemetry &t);
+
+bool bh1750Begin();
+void bh1750Update();
+void bh1750Fill(Telemetry &t);
