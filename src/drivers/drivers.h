@@ -19,3 +19,7 @@ extern const size_t driverCount;
 bool scd40Begin();
 void scd40Update();
 void scd40Fill(Telemetry &t);
+
+bool max30102Begin();
+void max30102Update();
+void max30102Fill(Telemetry &t);
