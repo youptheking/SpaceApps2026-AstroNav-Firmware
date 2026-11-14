@@ -15,21 +15,38 @@ static bool ping(uint8_t addr) {
   return Wire.endTransmission() == 0;
 }
 
-void begin() {
-  for (size_t i = 0; i < driverCount; i++) {
-    const Driver &d = drivers[i];
-    // eerst pingen, dan hangt een begin() niet op een sensor die er niet is
-    ok[i] = (d.addr == 0 || ping(d.addr)) && d.begin();
-    if (ok[i]) {
-      okMask |= d.okBit;
-      groupMask |= d.groups;
-    }
+static void tryStart(size_t i) {
+  const Driver &d = drivers[i];
+  // eerst pingen, dan hangt een begin() niet op een sensor die er niet is
+  ok[i] = (d.addr == 0 || ping(d.addr)) && d.begin();
+  if (ok[i]) {
+    okMask |= d.okBit;
+    groupMask |= d.groups;
   }
+}
+
+void begin() {
+  // sommige modules (SCD41, MAX30102) zijn vlak na het aanzetten nog niet
+  // wakker. Wat dan nog ontbreekt, wordt in update() later nog eens geprobeerd.
+  delay(1000);
+  for (size_t i = 0; i < driverCount; i++) tryStart(i);
 }
 
 void update() {
   for (size_t i = 0; i < driverCount; i++) {
     if (ok[i] && drivers[i].update) drivers[i].update();
+  }
+
+  // ontbrekende sensoren elke 10 s opnieuw zoeken: een los contact of een
+  // sensor die later wakker wordt, komt zo vanzelf terug
+  static uint32_t lastRetry = 0;
+  if (millis() - lastRetry < 10000) return;
+  lastRetry = millis();
+  for (size_t i = 0; i < driverCount; i++) {
+    if (!ok[i] && drivers[i].addr) {
+      tryStart(i);
+      if (ok[i]) Serial.printf("%s alsnog gevonden\n", drivers[i].name);
+    }
   }
 }
 
