@@ -6,6 +6,10 @@
 // Lokale alarmen. Bronnen en grenswaarden: docs/alarmen.md
 namespace alerts {
 
+// De SCD40 meet in ppm, de norm rekent in mmHg. ISS-cabine = 1 atm = 760 mmHg.
+// Bij een andere cabinedruk (bijv. Artemis) dit aanpassen.
+constexpr float CABIN_PRESSURE_MMHG = 760.0;
+
 // zet t.alerts en t.ppco2_avg, één keer per seconde aanroepen
 void update(Telemetry &t);
 

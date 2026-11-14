@@ -7,9 +7,6 @@ const float CO2_LIMIT_MMHG = 3.0;
 // OCHMO Technical Brief CO2: onder 2,5 mmHg blijft het risico op hoofdpijn < 1 %.
 // Wij gebruiken dat als vroege waarschuwing.
 const float CO2_WARN_MMHG = 2.5;
-// De SCD40 meet in ppm, de norm rekent in mmHg. ISS-cabine = 1 atm = 760 mmHg.
-// Bij een andere cabinedruk (bijv. Artemis) dit aanpassen.
-const float CABIN_PRESSURE_MMHG = 760.0;
 
 // [V2 6012] Crew Health Environmental Limits: werkgebied loopt van 18 °C / 75 % RV
 // tot 27 °C / 25 % RV. We gebruiken de omhullende rechthoek, dat is iets ruimer

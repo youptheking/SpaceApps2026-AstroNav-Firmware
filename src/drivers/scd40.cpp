@@ -1,0 +1,52 @@
+// SCD40: CO2, temperatuur en luchtvochtigheid van de cabine
+#include <SensirionI2cScd4x.h>
+#include <Wire.h>
+
+#include "../alerts.h"
+#include "drivers.h"
+
+static SensirionI2cScd4x scd;
+static uint16_t co2 = 0;
+static float temp = 0, humidity = 0;
+static uint32_t lastData = 0;
+static uint32_t lastPoll = 0;
+
+bool scd40Begin() {
+  scd.begin(Wire, SCD40_I2C_ADDR_62);
+
+  // kan nog aan staan van voor een herstart, dan accepteert hij geen instellingen
+  scd.stopPeriodicMeasurement();
+  delay(500);
+
+  // ppm hangt af van de luchtdruk, zelfde cabinedruk als waarmee alerts.cpp rekent
+  scd.setAmbientPressure(alerts::CABIN_PRESSURE_MMHG * 133.322);
+
+  // meet zelf elke 5 s, precies wat NASA Tabel 6.1-1 voor CO2 noemt
+  return scd.startPeriodicMeasurement() == 0;
+}
+
+void scd40Update() {
+  if (millis() - lastPoll < 1000) return;
+  lastPoll = millis();
+
+  bool ready = false;
+  if (scd.getDataReadyStatus(ready) != 0 || !ready) return;
+
+  uint16_t c;
+  float t, h;
+  if (scd.readMeasurement(c, t, h) == 0 && c > 0) {
+    co2 = c;
+    temp = t;
+    humidity = h;
+    lastData = millis();
+  }
+}
+
+void scd40Fill(Telemetry &t) {
+  // eerste meting duurt 5 s, en na 30 s zonder data vertrouwen we hem niet meer
+  if (!lastData || millis() - lastData > 30000) return;
+  t.flags |= HAS_AIR;
+  t.co2 = co2;
+  t.cabin_temp = temp * 100;
+  t.humidity = humidity * 100;
+}
