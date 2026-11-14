@@ -52,7 +52,6 @@ void fill(Telemetry &t, uint8_t which) {
     t.cabin_temp = (fixedCabin ? fixedCabin : 22.5 + noise(0.1)) * 100;
     t.humidity = (45 + 2 * sinf(s / 120)) * 100;
   }
-  if (which & HAS_LIGHT) t.lux = 300 + noise(15);
 
   // huidgeleiding (12 µS) gaat omhoog bij stress, hier tijdens de dip
   if (which & HAS_GSR) t.gsr = 1200 + (dip ? 400 : 0) + noise(30);

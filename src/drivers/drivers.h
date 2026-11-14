@@ -28,9 +28,6 @@ bool mcp9808Begin();
 void mcp9808Update();
 void mcp9808Fill(Telemetry &t);
 
-bool bh1750Begin();
-void bh1750Update();
-void bh1750Fill(Telemetry &t);
 
 bool mpu6050Begin();
 void mpu6050Update();

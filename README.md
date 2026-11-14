@@ -57,7 +57,7 @@ Een samenhangend systeem met twee delen:
 | TMP117 / MCP9808 | I2C | Onderzijde (tegen huid) | Nauwkeurige lichaamstemperatuur (immuunreactie, koorts) |
 | ICM45686 / MPU6050 | I2C of SPI | Intern op PCB | 3-assige IMU: activiteit, training, slaapkwaliteit, spiertremoren |
 | GSR- en AD8232-contacten | Analoog (ADC) | Onderzijde en bovenrand | Gefreesde koperen vlakken voor huidgeleiding (acute stress) en ECG-hartgolf |
-| TSL2591 / BH1750 | I2C | Bovenzijde | Omgevingslicht en blauw licht voor bewaking van circadiaans ritme en slaap |
+| ~~BH1750~~ | – | – | Tijdens de bouw geschrapt: de pinvolgorde van de footprint klopte niet. |
 | SCD40 / SGP30 | I2C | Zijkant (met rooster) | CO2 en luchtkwaliteit in de cabine, tegen verstikking en hoofdpijn |
 | 0.96" OLED | I2C | Bovenzijde | Directe actiepunten voor de astronaut |
 | Piezobuzzer | GPIO (PWM) | Intern op PCB | Alarm bij kritieke daling van SpO2 of stijging van CO2 |

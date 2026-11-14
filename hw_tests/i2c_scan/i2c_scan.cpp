@@ -11,11 +11,11 @@ struct Device {
 
 Device devices[] = {
   {0x18, "MCP9808"},
-  {0x23, "BH1750"},
   {0x3C, "OLED"},
   {0x57, "MAX30102"},
-  {0x62, "SCD40"},
+  {0x62, "SCD41"},
   {0x68, "MPU6050"},
+  {0x77, "BMP180"},
 };
 
 bool ping(uint8_t addr) {
