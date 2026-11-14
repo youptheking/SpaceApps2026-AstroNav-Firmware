@@ -64,7 +64,7 @@ Een samenhangend systeem met twee delen:
 | 0.96" OLED | I2C | Bovenzijde | Directe actiepunten voor de astronaut |
 | Piezobuzzer | GPIO (PWM) | Intern op PCB | Alarm bij kritieke daling van SpO2 of stijging van CO2 |
 
-Waarom we voor deze sensoren kozen, en welke concessies we bewust deden: zie [docs/ontwerpkeuzes.md](docs/ontwerpkeuzes.md). Stroomverbruik, accuduur en opladen: zie [docs/stroombudget.md](docs/stroombudget.md). Pinindeling: zie [docs/pinout.md](docs/pinout.md). Wat er op de draagprint moet: zie [docs/pcb.md](docs/pcb.md). Grenswaarden voor alarmen uit NASA-STD-3001: zie [docs/nasa-std-3001.md](docs/nasa-std-3001.md).
+Waarom we voor deze sensoren kozen, en welke concessies we bewust deden: zie [docs/ontwerpkeuzes.md](docs/ontwerpkeuzes.md). Stroomverbruik, accuduur en opladen: zie [docs/stroombudget.md](docs/stroombudget.md). Pinindeling: zie [docs/pinout.md](docs/pinout.md). Wat er op de draagprint moet: zie [docs/pcb.md](docs/pcb.md). Planning en voortgang: zie [docs/todo.md](docs/todo.md). Grenswaarden voor alarmen uit NASA-STD-3001: zie [docs/nasa-std-3001.md](docs/nasa-std-3001.md).
 
 ## Firmware (gepland)
 
