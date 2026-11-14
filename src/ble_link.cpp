@@ -9,6 +9,7 @@
 #define ECG_UUID "6e0a0003-5a3c-4c1e-9d2a-41535452304e"
 #define COMMAND_UUID "6e0a0004-5a3c-4c1e-9d2a-41535452304e"
 #define REPLY_UUID "6e0a0005-5a3c-4c1e-9d2a-41535452304e"
+#define HISTORY_UUID "6e0a0006-5a3c-4c1e-9d2a-41535452304e"
 
 namespace ble {
 
@@ -20,6 +21,7 @@ static BLEServer *server;
 static BLECharacteristic *telemetryChar;
 static BLECharacteristic *ecgChar;
 static BLECharacteristic *replyChar;
+static BLECharacteristic *historyChar;
 static QueueHandle_t commandQueue;
 
 static volatile bool linked = false;
@@ -94,6 +96,7 @@ void begin() {
   telemetryChar = addNotifyChar(service, TELEMETRY_UUID, BLECharacteristic::PROPERTY_READ);
   ecgChar = addNotifyChar(service, ECG_UUID, 0);
   replyChar = addNotifyChar(service, REPLY_UUID, 0);
+  historyChar = addNotifyChar(service, HISTORY_UUID, 0);
 
   BLECharacteristic *commandChar = service->createCharacteristic(
       COMMAND_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
@@ -142,6 +145,17 @@ void sendEcg(const int16_t *samples, size_t count) {
   memcpy(buf + 1, samples, count * 2);
   ecgChar->setValue(buf, 1 + count * 2);
   ecgChar->notify();
+}
+
+void sendHistory(const uint8_t *data, size_t len) {
+  if (!linked) return;
+  historyChar->setValue((uint8_t *)data, len);
+  historyChar->notify();
+}
+
+size_t maxPayload() {
+  if (!linked) return 20;
+  return server->getPeerMTU(server->getConnId()) - 3;
 }
 
 void reply(const char *text) {

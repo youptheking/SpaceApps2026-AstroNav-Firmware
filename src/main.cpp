@@ -4,6 +4,7 @@
 #include "alerts.h"
 #include "ble_link.h"
 #include "display.h"
+#include "history.h"
 #include "pins.h"
 #include "sim.h"
 #include "telemetry.h"
@@ -32,9 +33,93 @@ int16_t ecgBuf[ECG_BATCH];
 size_t ecgCount = 0;
 uint32_t nextEcg = 0;
 
+// geschiedenis versturen, een paar records per keer
+uint32_t historyNext = 0;  // 0 = niks aan het versturen
+uint32_t historySent = 0;
+uint32_t lastHistorySend = 0;
+
 void reply(const char *text) {
   Serial.println(text);
   ble::reply(text);
+}
+
+void printRecord(const HistoryRecord &r) {
+  Serial.printf("#%u  t=%u  hr %u (%u-%u)  spo2 %u (min %u)  co2 %u..%u ppm  %.2f mmHg  alarmen 0x%03X%s\n",
+                r.seq, r.unix_time, r.hr_avg, r.hr_min, r.hr_max, r.spo2_avg, r.spo2_min,
+                r.co2[0], r.co2[11], r.ppco2_avg / 100.0, r.alerts,
+                (r.status & STATUS_SIMULATED) ? "  (sim)" : "");
+}
+
+void handleHistory(const String &arg) {
+  if (arg.isEmpty() || arg == "info") {
+    char buf[40];
+    snprintf(buf, sizeof(buf), "history %u %u", history::oldest(), history::newest());
+    reply(buf);
+  } else if (arg == "stop") {
+    historyNext = 0;
+    reply("ok");
+  } else if (arg == "wipe") {
+    historyNext = 0;
+    history::wipe();
+    reply("ok");
+  } else if (arg.startsWith("dump")) {
+    // alleen voor usb: laatste n minuten als tekst
+    int n = arg.length() > 5 ? arg.substring(5).toInt() : 5;
+    uint32_t from = history::newest() >= (uint32_t)n ? history::newest() - n + 1 : 1;
+    HistoryRecord r;
+    for (uint32_t seq = max(from, history::oldest()); seq && seq <= history::newest(); seq++) {
+      if (history::read(seq, r)) printRecord(r);
+    }
+  } else {
+    if (!ble::connected()) return reply("err niet verbonden");
+    uint32_t from = strtoul(arg.c_str(), nullptr, 10);
+    historyNext = max(from, history::oldest());
+    historySent = 0;
+    if (!historyNext || historyNext > history::newest()) {
+      historyNext = 0;
+      reply("history klaar 0");
+    }
+  }
+}
+
+void sendHistoryChunk() {
+  if (!historyNext || millis() - lastHistorySend < 20) return;
+  lastHistorySend = millis();
+
+  if (!ble::connected()) {
+    historyNext = 0;
+    return;
+  }
+
+  size_t perPacket = min((size_t)6, (ble::maxPayload() - 1) / sizeof(HistoryRecord));
+  if (perPacket == 0) {
+    historyNext = 0;
+    return reply("err mtu te klein");
+  }
+
+  uint8_t buf[1 + 6 * sizeof(HistoryRecord)];
+  uint8_t count = 0;
+  while (count < perPacket && historyNext <= history::newest()) {
+    HistoryRecord r;
+    if (history::read(historyNext, r)) {
+      memcpy(buf + 1 + count * sizeof(r), &r, sizeof(r));
+      count++;
+    }
+    historyNext++;
+  }
+
+  if (count) {
+    buf[0] = count;
+    ble::sendHistory(buf, 1 + count * sizeof(HistoryRecord));
+    historySent += count;
+  }
+
+  if (historyNext > history::newest()) {
+    historyNext = 0;
+    char done[32];
+    snprintf(done, sizeof(done), "history klaar %u", historySent);
+    reply(done);
+  }
 }
 
 void handleCommand(String line) {
@@ -106,6 +191,12 @@ void handleCommand(String line) {
     const char *a = alerts::text(t.alerts);
     Serial.printf("alarmen 0x%03X  %s%s\n", t.alerts, a ? a : "-",
                   (t.status & STATUS_MUTED) ? "  (stil)" : "");
+  } else if (cmd == "history") {
+    handleHistory(arg);
+  } else if (cmd == "reboot") {
+    reply("ok");
+    delay(100);
+    ESP.restart();
   } else if (cmd == "buzz") {
     tone(pins::BUZZER, 2000, 300);
     reply("ok");
@@ -199,6 +290,7 @@ void setup() {
   pinMode(pins::BUZZER, OUTPUT);
 
   if (!display::begin()) Serial.println("geen oled gevonden");
+  history::begin();
   ble::begin();
 }
 
@@ -216,6 +308,7 @@ void loop() {
     lastTick = millis();
     uint16_t before = telemetry.alerts;
     updateTelemetry();
+    history::add(telemetry);
 
     // [V2 6022] op afstand waarschuwen: bij een nieuw of opgelost alarm meteen versturen
     bool changed = telemetry.alerts != before;
@@ -230,6 +323,7 @@ void loop() {
   }
 
   updateBuzzer();
+  sendHistoryChunk();
 
   // tijdens de ademhaling vaker, anders loopt de cirkel schokkerig
   uint32_t screenInterval = breatheEnd ? 50 : 250;
