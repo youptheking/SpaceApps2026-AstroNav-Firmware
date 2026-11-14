@@ -39,6 +39,7 @@ void fill(Telemetry &t) {
   t.accel[1] = noise(20);
   t.accel[2] = 1000 + noise(20);
   t.activity = 10 + noise(5);
+  t.tremor = (dip ? 25 : 5) + noise(3);
 
   t.battery_mv = 3950 - (millis() / 60000) % 400;
 }

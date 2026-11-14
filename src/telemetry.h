@@ -28,10 +28,11 @@ enum Alert : uint16_t {
 
 enum Status : uint8_t {
   STATUS_SIMULATED = 1 << 0,  // waarden komen uit sim.cpp, niet van sensoren
+  STATUS_BREATHING = 1 << 1,  // ademhalingsoefening loopt
 };
 
 struct __attribute__((packed)) Telemetry {
-  uint8_t version = 2;
+  uint8_t version = 3;
   uint8_t flags = 0;
   uint16_t alerts = 0;
   uint32_t uptime_ms = 0;
@@ -49,9 +50,10 @@ struct __attribute__((packed)) Telemetry {
   uint16_t gsr = 0;       // mV op de adc
   int16_t accel[3] = {};  // mg
   uint8_t activity = 0;   // 0-100
+  uint8_t tremor = 0;     // 0-100, trilling in de 4-12 Hz band
 
   uint16_t battery_mv = 0;
   uint8_t status = 0;
 };
 
-static_assert(sizeof(Telemetry) == 36, "docs/ble.md bijwerken");
+static_assert(sizeof(Telemetry) == 37, "docs/ble.md bijwerken");

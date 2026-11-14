@@ -62,4 +62,19 @@ void showStatus(const Telemetry &t, const String &message) {
   oled.display();
 }
 
+void showBreathing(const char *text, float level) {
+  if (!found) return;
+  oled.clearDisplay();
+  oled.setTextSize(2);
+
+  int16_t x, y;
+  uint16_t w, h;
+  oled.getTextBounds(text, 0, 0, &x, &y, &w, &h);
+  oled.setCursor((128 - w) / 2, 0);
+  oled.print(text);
+
+  oled.fillCircle(64, 46, 3 + level * 14, SSD1306_WHITE);
+  oled.display();
+}
+
 }

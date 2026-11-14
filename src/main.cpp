@@ -18,8 +18,11 @@ uint32_t lastSend = 0;
 uint32_t lastScreen = 0;
 uint32_t unixAtBoot = 0;
 bool ecgStream = false;
-bool simulate = false;
+bool simulate = true;  // uitzetten zodra de sensoren erin zitten
 bool alarmMuted = false;
+
+uint32_t breatheStart = 0;
+uint32_t breatheEnd = 0;  // 0 = geen oefening
 
 int16_t ecgBuf[ECG_BATCH];
 size_t ecgCount = 0;
@@ -69,11 +72,23 @@ void handleCommand(String line) {
   } else if (cmd == "sim") {
     simulate = arg == "on";
     reply("ok");
+  } else if (cmd == "breathe") {
+    if (arg == "off") {
+      breatheEnd = 0;
+    } else {
+      long minutes = arg.isEmpty() ? 2 : arg.toInt();
+      if (minutes < 1 || minutes > 30) return reply("err breathe");
+      breatheStart = millis();
+      breatheEnd = breatheStart + minutes * 60000;
+    }
+    reply("ok");
   } else if (cmd == "show") {
     const Telemetry &t = telemetry;
-    Serial.printf("hr %u  spo2 %u  temp %.2f  co2 %u  lux %u  gsr %u  batt %u%s\n",
+    Serial.printf("hr %u  spo2 %u  temp %.2f  co2 %u  lux %u  gsr %u  act %u  tremor %u  batt %u%s%s\n",
                   t.heart_rate, t.spo2, t.skin_temp / 100.0, t.co2, t.lux, t.gsr,
-                  t.battery_mv, (t.status & STATUS_SIMULATED) ? "  (sim)" : "");
+                  t.activity, t.tremor, t.battery_mv,
+                  (t.status & STATUS_SIMULATED) ? "  (sim)" : "",
+                  (t.status & STATUS_BREATHING) ? "  (ademhaling)" : "");
   } else if (cmd == "buzz") {
     tone(pins::BUZZER, 2000, 300);
     reply("ok");
@@ -97,6 +112,26 @@ void updateTelemetry() {
   // TODO sensoren uitlezen
 
   if (simulate) sim::fill(telemetry);
+  if (breatheEnd) telemetry.status |= STATUS_BREATHING;
+}
+
+// 4 s in, 4 s vast, 6 s uit
+void showBreathing() {
+  uint32_t t = (millis() - breatheStart) % 14000;
+  if (t < 4000) display::showBreathing("Adem in", t / 4000.0);
+  else if (t < 8000) display::showBreathing("Vasthouden", 1.0);
+  else display::showBreathing("Adem uit", 1.0 - (t - 8000) / 6000.0);
+}
+
+void updateScreen() {
+  if (breatheEnd && (int32_t)(millis() - breatheEnd) >= 0) {
+    breatheEnd = 0;
+    reply("breathe klaar");
+  }
+
+  if (breatheEnd) showBreathing();
+  else if (ble::connected()) display::showStatus(telemetry, message);
+  else display::showPairing(ble::name(), ble::passkey());
 }
 
 void sampleEcg() {
@@ -143,9 +178,10 @@ void loop() {
     ble::send(telemetry);
   }
 
-  if (millis() - lastScreen >= 250) {
+  // tijdens de ademhaling vaker, anders loopt de cirkel schokkerig
+  uint32_t screenInterval = breatheEnd ? 50 : 250;
+  if (millis() - lastScreen >= screenInterval) {
     lastScreen = millis();
-    if (ble::connected()) display::showStatus(telemetry, message);
-    else display::showPairing(ble::name(), ble::passkey());
+    updateScreen();
   }
 }
