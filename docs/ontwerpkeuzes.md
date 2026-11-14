@@ -108,6 +108,18 @@ Randvoorwaarden: draagbaar om de pols (dus klein en licht), een beperkt budget, 
 
 ---
 
+## 8. Beweging meten in gewichtloosheid (punt voor de video)
+
+**Gedachtegang:** op aarde meet een accelerometer altijd de zwaartekracht (1 g naar beneden). Daaruit leid je de stand van de pols af, en wearables tellen er stappen mee. In gewichtloosheid valt die referentie weg: houding bepalen en stappen tellen werken dan niet meer.
+
+**Wat wél werkt:** de IMU meet nog steeds alle **bewegingen** (versnelling en rotatie). Activiteit, training, tremoren, schokken en rust zijn dus nog steeds te meten. Het systeem is daarom gebaseerd op beweging, niet op houding.
+
+**Waarom benoemen:** het laat zien dat het ontwerp is nagedacht vanuit de ruimtevaartomgeving en niet is gekopieerd van een aardse fitnesstracker. Dat telt voor Validity en Relevance.
+
+**Pitch-zin:** *"On Earth, wearables use gravity to know how your wrist is oriented. In microgravity that reference disappears, so we track motion itself: activity, tremors and rest, not steps."*
+
+---
+
 ## Samenvatting voor de pitch
 
 Het polsstation laat met breakout-bordjes zien dat het concept werkt. De keuzes zijn gemaakt op **draagbaarheid, leverbaarheid en wat een proof of concept moet bewijzen.** Bewust méér uitgegeven: de CO2-sensor, omdat die direct samenhangt met de omgeving van de missie. Bewust bezuinigd: temperatuur en GSR, met een helder pad naar een productieversie op een eigen print.

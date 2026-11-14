@@ -28,7 +28,9 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk
 - [ ] Accuspanning op D8 klopt met de multimeter (×2)
 - [ ] GSR: 15-minutentest. Werkt het? Houden. Alleen ruis? Laten vallen, stress via HRV.
 - [ ] ⚠️ **Formaat van de BLE-pakketten vastgelegd** (welke waarden, volgorde, frequentie)
-- [ ] Firmware: alle sensoren uitlezen en over BLE versturen
+- [ ] Firmware: alle sensoren uitlezen, **elke meting op zijn eigen interval** (zie `docs/ble-data.md`), en over BLE versturen
+- [ ] Firmware: ECG- en PPG-samples met een tijdstempel van dezelfde hardwaretimer (nodig voor HRV, en later eventueel PTT)
+- [ ] Firmware: IMU-verwerking op de ESP32 (activiteit, schok, artefact-vlag, tremor)
 - [ ] Firmware: CO2-alarm op het 1-uursgemiddelde > 3 mmHg (NASA-STD-3001), met de BMP180 of met 760 mmHg als terugval
 - [ ] Firmware: OLED-meldingen en buzzer bij alarm, werkt zonder laptop
 - [ ] Stroomverbruik gemeten via de schakelaarpinnen
@@ -51,8 +53,13 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk
 - [ ] Demomodus: dashboard speelt opgenomen data af zonder hardware
 - [ ] ⚠️ **18:00: geen nieuwe functies meer**
 
+## Extra – alleen als alles af is
+
+- [ ] **Pulse Transit Time (PTT):** bloeddruktrend uit de tijd tussen de R-piek (ECG) en de aankomst van de polsgolf (PPG). Puur software in het dashboard. **Voorwaarde, die nu al in de firmware moet:** ECG- en PPG-samples krijgen een tijdstempel van dezelfde klok (een hardwaretimer van de ESP32).
+
 ## Zondag – inleveren
 
+- [ ] Video: **noem het zwaartekrachtpunt**. Op aarde gebruikt de IMU de zwaartekracht voor de stand van de pols, in gewichtloosheid valt die weg. Beweging meten werkt wel. Zie `docs/ontwerpkeuzes.md`, punt 8.
 - [ ] Video van **max 30 s**, **Engelse ondertitels**, geen personen onder de 18, op YouTube (openbaar of niet-vermeld)
 - [ ] Projectpagina in het Engels:
   - [ ] Project Name
