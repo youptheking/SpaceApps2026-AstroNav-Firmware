@@ -7,7 +7,7 @@
 // zodat je de breakouts één voor één kunt aansluiten.
 namespace sensors {
 
-const uint8_t ALL = HAS_HEART | HAS_SKIN_TEMP | HAS_AIR | HAS_LIGHT | HAS_IMU | HAS_GSR;
+const uint8_t ALL = HAS_HEART | HAS_SKIN_TEMP | HAS_AIR | HAS_IMU | HAS_GSR;
 
 void begin();
 void update();            // zo vaak mogelijk, voor de snelle sensoren

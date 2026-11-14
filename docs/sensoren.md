@@ -29,7 +29,7 @@ De meeste breakouts hebben zelf pull-ups. Zonder één breakout met pull-ups wer
 | SCD40 | 0x62 | `src/drivers/scd40.cpp` | CO2, cabinetemperatuur, luchtvochtigheid. Eerste meting na 5 s. |
 | MAX30102 | 0x57 | `src/drivers/max30102.cpp` | Hartslag en SpO2. Eerste waarde na ~5 s pols tegen de sensor. |
 | MCP9808 | 0x18 | `src/drivers/mcp9808.cpp` | Huidtemperatuur |
-| BH1750 | 0x23 | `src/drivers/bh1750.cpp` | Omgevingslicht |
+| ~~BH1750~~ | | | Geschrapt: de footprint op de PCB klopte niet. `lux` blijft 0. |
 | MPU-6050 | 0x68 | `src/drivers/mpu6050.cpp` | Beweging, activiteit, tremor. Eerste waarde na 2 s. |
 | OLED | 0x3C | `src/display.cpp` | Scherm |
 

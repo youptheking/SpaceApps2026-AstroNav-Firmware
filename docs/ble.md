@@ -48,7 +48,7 @@ Het pakket gaat elke `rate` ms de deur uit, en daarnaast **meteen** zodra er een
 | 18 | u16 | ppco2_avg | 0.01 mmHg, gemiddelde over het laatste uur (de waarde waar NASA [V2 6004] om vraagt) |
 | 20 | i16 | cabin_temp | 0.01 °C |
 | 22 | u16 | humidity | 0.01 % |
-| 24 | u16 | lux | lux (totaal licht, geen blauw licht: de BH1750 kan dat niet) |
+| 24 | u16 | lux | altijd 0, de BH1750 is tijdens de bouw geschrapt (veld blijft voor het formaat) |
 | 26 | u16 | gsr | huidgeleiding in 0.01 µS (stijgt bij stress) |
 | 28 | i16[3] | accel x/y/z | mg |
 | 34 | u8 | activity | 0-100 |

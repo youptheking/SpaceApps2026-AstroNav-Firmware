@@ -8,7 +8,7 @@ enum SensorFlag : uint8_t {
   HAS_HEART = 1 << 0,  // hartslag + spo2
   HAS_SKIN_TEMP = 1 << 1,
   HAS_AIR = 1 << 2,  // co2, cabinetemp, luchtvochtigheid
-  HAS_LIGHT = 1 << 3,
+  HAS_LIGHT = 1 << 3,  // BH1750 is geschrapt, blijft 0
   HAS_IMU = 1 << 4,
   HAS_GSR = 1 << 5,
   ECG_LEADS_OK = 1 << 6,
