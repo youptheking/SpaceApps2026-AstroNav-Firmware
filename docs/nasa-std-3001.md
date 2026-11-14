@@ -29,7 +29,7 @@ De gemeten druk gaat ook naar de SCD41 (`setAmbientPressure`), zodat die zijn CO
 
 ## 2. Alarmering: precies wat het ontwerp al doet
 
-Requirement in **sectie 6.2.6.1**: het systeem moet de bemanning **lokaal én op afstand** waarschuwen als atmosferische parameters, zoals ppCO2, buiten de veilige grenzen komen.
+Requirement **V2 6022** (sectie 6.2.6.1): het systeem moet de bemanning **lokaal én op afstand** waarschuwen als atmosferische parameters buiten de veilige grenzen komen: **cabinedruk, luchtvochtigheid, temperatuur, ppO2 en ppCO2**. Het polsstation meet daarvan cabinedruk (BMP180, lekalarm), luchtvochtigheid en ppCO2.
 
 | Eis | Ons ontwerp |
 |---|---|
@@ -78,4 +78,6 @@ inline float ppmToMmHg(float ppm) { return ppm * cabinPressureMmHg / 1e6f; }
 - [NASA-STD-3001 Vol. 2, Revision C](https://standards.nasa.gov/sites/default/files/standards/NASA/C/2022-04-08-NASA-STD-3001-Vol-2-Rev-C-Final.pdf)
 - [NASA-STD-3001 Vol. 2, Rev F – Appendix D (compliance matrix)](https://www.nasa.gov/wp-content/uploads/2025/07/nasa-std-3001-vol-2-app-d-requirements-compliance-matrix.pdf)
 - [NASA OCHMO Technical Brief – Habitable Atmosphere](https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-003-habitable-atmosphere.pdf)
+- [NASA OCHMO Technical Brief – Behavioral Health](https://www.nasa.gov/wp-content/uploads/2023/03/behavioral-health-technical-brief-ochmo-1.pdf) (waarom stress bewaken)
+- [NASA OCHMO Technical Brief – ECLSS](https://www.nasa.gov/wp-content/uploads/2023/07/eclss-technical-brief-ochmo.pdf) (V2 6022, alarmering)
 - [NASA-STD-3001 Vol. 2, Revision A](https://standards.nasa.gov/sites/default/files/standards/NASA/B/0/Historical/nasa-std-3001_vol_2_rev_a.pdf)
