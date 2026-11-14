@@ -41,6 +41,9 @@ constexpr uint8_t FLAG_MOTION_ARTIFACT = 1 << 1;
 constexpr uint8_t FLAG_ECG_LEADS_OFF   = 1 << 2;
 constexpr uint8_t FLAG_SHOCK           = 1 << 3;
 
+// Wachttijd bij het opstarten (voeding en buffercondensatoren laten stabiliseren)
+constexpr uint32_t STARTUP_DELAY_MS = 2000;
+
 // NASA-STD-3001 Vol. 2, V2 6004: ppCO2 1-uursgemiddelde <= 3 mmHg (zie docs/nasa-std-3001.md)
 constexpr float CO2_LIMIT_1H_MMHG = 3.0f;
 constexpr float CO2_TARGET_MMHG   = 2.5f;   // OCHMO Technical Brief CO2, lange termijn

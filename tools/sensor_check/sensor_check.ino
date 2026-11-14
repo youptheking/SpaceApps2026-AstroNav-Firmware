@@ -48,7 +48,17 @@ void checkId(uint8_t addr, uint8_t reg, uint8_t expected, const char* name) {
   }
 }
 
+// Wachttijd bij het opstarten voordat de sensoren worden aangesproken.
+// Geeft de voeding en de buffercondensatoren (100 µF bij de SCD41) tijd om te
+// stabiliseren, en de sensoren tijd om zelf op te starten.
+constexpr uint32_t STARTUP_DELAY_MS = 2000;
+
 void setup() {
+  // Buzzer-pin direct laag zetten, zodat hij niet zweeft tijdens het wachten
+  pinMode(D7, OUTPUT);
+  digitalWrite(D7, LOW);
+  delay(STARTUP_DELAY_MS);
+
   Serial.begin(115200);
   uint32_t t0 = millis();
   while (!Serial && millis() - t0 < 3000) {}
