@@ -92,7 +92,7 @@ void printLines() {
   release(BUS_SCL);
   delay(1);
   // ~3300 mV is goed, ~1800 mV = pull-ups van de MAX30102 op 1,8 V
-  Serial.printf("BUS_SDA %lu mV  BUS_SCL %lu mV\n", analogReadMilliVolts(BUS_SDA), analogReadMilliVolts(BUS_SCL));
+  Serial.printf("SDA %lu mV  SCL %lu mV\n", analogReadMilliVolts(BUS_SDA), analogReadMilliVolts(BUS_SCL));
 }
 
 void setup() {
