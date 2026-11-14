@@ -7,7 +7,7 @@
 struct Driver {
   const char *name;
   uint8_t addr;   // i2c-adres, 0 = analoog
-  uint8_t group;  // bit uit SensorFlag
+  uint8_t group;  // bits uit SensorFlag
   bool (*begin)();
   void (*update)();  // mag nullptr zijn
   void (*fill)(Telemetry &t);
@@ -15,3 +15,7 @@ struct Driver {
 
 extern const Driver drivers[];
 extern const size_t driverCount;
+
+bool scd40Begin();
+void scd40Update();
+void scd40Fill(Telemetry &t);
