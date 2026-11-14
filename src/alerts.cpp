@@ -1,51 +1,59 @@
 #include "alerts.h"
 
+#include "astronav_protocol.h"
+
+using namespace astronav;
+
 namespace alerts {
 
 // NASA-STD-3001 Vol. 2 Rev F, [V2 6004]: gemiddelde ppCO2 over 1 uur max 3 mmHg.
-const float CO2_LIMIT_MMHG = 3.0;
-// OCHMO Technical Brief CO2: onder 2,5 mmHg blijft het risico op hoofdpijn < 1 %.
-// Wij gebruiken dat als vroege waarschuwing.
-const float CO2_WARN_MMHG = 2.5;
+// Doel 2,5 mmHg komt uit de OCHMO Technical Brief CO2 (zie AIR.nasa_status).
+const float MMHG_PER_PA = 1 / 133.322;
+const float ISS_PRESSURE_PA = 101325;  // als er geen BMP180 is
 
 // [V2 6012] Crew Health Environmental Limits: werkgebied loopt van 18 °C / 75 % RV
-// tot 27 °C / 25 % RV. We gebruiken de omhullende rechthoek, dat is iets ruimer
-// dan de figuur in de norm.
+// tot 27 °C / 25 % RV. We gebruiken de omhullende rechthoek.
 const float CABIN_TEMP_MIN = 18.0, CABIN_TEMP_MAX = 27.0;
 const float CABIN_RH_MIN = 25.0, CABIN_RH_MAX = 75.0;
 
-// Lichaamswaarden: niet uit NASA-STD-3001, gangbare klinische grenzen.
-const uint8_t SPO2_MIN = 92;
-const uint8_t HR_MAX_AT_REST = 120;
-const uint8_t HR_MIN = 40;
-const float SKIN_TEMP_MAX = 37.5;  // pols, dus alleen een indicatie voor koorts
-const float GSR_RISE = 1.25;       // 25 % boven de eigen basislijn
-const float BATT_MIN_V = 3.5;
+// [V2 6022] lek: de druk daalt. Eigen keuze: 50 Pa/min (3 kPa per uur) een
+// minuut lang. Het weer verandert de druk hooguit een paar Pa per minuut.
+const float PRESSURE_DROP_PA_MIN = -50;
+
+// Lichaamswaarden: geen NASA-grenzen, zie de tabel in docs/ble-protocol.md
+const uint8_t SPO2_WARN = 94, SPO2_ALARM = 90;  // WHO Pulse Oximetry Training Manual
+const uint8_t HR_HIGH_AT_REST = 120, HR_LOW = 40;
+const float GSR_RISE = 1.25;    // 25 % boven de eigen basislijn
+const float RMSSD_DROP = 0.7;   // 30 % onder de eigen basislijn
+const uint8_t BATTERY_LOW_PCT = 15;
 
 struct Rule {
-  uint16_t bit;
+  uint8_t code;
   uint16_t holdSec;  // zo lang moet het kloppen voor het alarm afgaat
   const char *text;
 };
 
-// op volgorde van belangrijkheid, de eerste die actief is komt op het scherm
+// op volgorde van belangrijkheid voor het scherm
 static const Rule rules[] = {
-  {ALERT_LOW_SPO2, 10, "SpO2 laag: rustig aan"},
-  {ALERT_HIGH_CO2, 5, "CO2 > 3 mmHg (1 uur)"},
-  {ALERT_HIGH_HR, 30, "Hartslag hoog: rust"},
-  {ALERT_LOW_HR, 30, "Hartslag laag"},
-  {ALERT_FEVER, 300, "Temp hoog: meld arts"},
-  {ALERT_CO2_RISING, 5, "CO2 > 2.5 mmHg"},
-  {ALERT_CABIN, 60, "Cabine temp/vocht!"},
-  {ALERT_STRESS, 15, "Stress: adem rustig"},
-  {ALERT_LEADS_OFF, 5, "ECG elektrodes los"},
-  {ALERT_LOW_BATT, 10, "Batterij bijna leeg"},
+  {EV_SPO2_LOW, 30, "Zuurstof laag"},
+  {EV_CO2_NASA_LIMIT, 0, "CO2 > 3 mmHg (1 uur)"},
+  {EV_PRESSURE_DROP, 60, "Druk daalt! Cabine"},
+  {EV_CO2_EARLY, 60, "CO2 nu > 3 mmHg"},
+  {EV_HR_HIGH, 300, "Hartslag hoog: rust"},
+  {EV_HR_LOW, 60, "Hartslag laag"},
+  {EV_SHOCK, 0, "Schok gemeten"},
+  {EV_CABIN_CLIMATE, 60, "Cabine temp/vocht"},
+  {EV_STRESS_HIGH, 600, "Stress: neem rust"},
+  {EV_BATTERY_LOW, 10, "Accu laag: opladen"},
+  {EV_ECG_LEADS_OFF, 5, "Elektrode los"},
+  {EV_NO_SKIN_CONTACT, 10, "Geen huidcontact"},
 };
 const size_t RULE_COUNT = sizeof(rules) / sizeof(rules[0]);
 const uint32_t CLEAR_AFTER_MS = 5000;
 
 static uint32_t trueSince[RULE_COUNT];
 static uint32_t falseSince[RULE_COUNT];
+static uint8_t sev[16];
 static uint16_t active = 0;
 
 // 1-uursgemiddelde in blokjes van een minuut
@@ -54,7 +62,7 @@ static uint16_t minuteCount[60];
 static uint8_t slot = 0;
 static uint32_t slotStart = 0;
 
-static float gsrBaseline = 0;
+static float gsrBaseline = 0, rmssdBaseline = 0;
 
 static void addCo2(float mmHg) {
   if (millis() - slotStart >= 60000) {
@@ -83,73 +91,120 @@ void resetCo2() {
   slotStart = millis();
 }
 
-static void check(size_t i, bool condition) {
+static const Rule *find(uint8_t code, size_t &index) {
+  for (size_t i = 0; i < RULE_COUNT; i++) {
+    if (rules[i].code == code) {
+      index = i;
+      return &rules[i];
+    }
+  }
+  return nullptr;
+}
+
+static void rule(uint8_t code, bool condition, uint8_t severity, int16_t value, Changed changed) {
+  size_t i;
+  const Rule *r = find(code, i);
+  if (!r) return;
+
   uint32_t now = millis();
-  uint16_t bit = rules[i].bit;
+  uint16_t bit = 1 << code;
 
   if (condition) {
     falseSince[i] = 0;
     if (!trueSince[i]) trueSince[i] = now;
-    if (now - trueSince[i] >= rules[i].holdSec * 1000UL) active |= bit;
+    if (now - trueSince[i] < r->holdSec * 1000UL) return;
+
+    if (!(active & bit) || severity > sev[code]) {
+      active |= bit;
+      sev[code] = severity;
+      changed(code, true, severity, value);
+    }
   } else {
     trueSince[i] = 0;
+    if (!(active & bit)) return;
     if (!falseSince[i]) falseSince[i] = now;
-    if (now - falseSince[i] >= CLEAR_AFTER_MS) active &= ~bit;
+    if (now - falseSince[i] >= CLEAR_AFTER_MS) {
+      active &= ~bit;
+      changed(code, false, sev[code], value);
+    }
   }
 }
 
-static void rule(uint16_t bit, bool condition) {
-  for (size_t i = 0; i < RULE_COUNT; i++) {
-    if (rules[i].bit == bit) check(i, condition);
-  }
-}
-
-void update(Telemetry &t) {
+void update(Telemetry &t, Changed changed) {
   bool heart = t.flags & HAS_HEART;
   bool air = t.flags & HAS_AIR;
 
-  float co2Avg = 0;
+  float pa = (t.flags & HAS_PRESSURE) ? t.pressure_pa : ISS_PRESSURE_PA;
+  float co2Now = 0, co2Avg = 0;
   if (air) {
-    addCo2(t.co2 * CABIN_PRESSURE_MMHG / 1e6);
+    co2Now = t.co2 * 1e-6 * pa * MMHG_PER_PA;
+    addCo2(co2Now);
     co2Avg = co2Average();
+    t.ppco2 = co2Now * 100;
     t.ppco2_avg = co2Avg * 100;
+  }
+
+  // basislijnen volgen langzaam (~10 min), zodat alleen een verandering opvalt
+  if (t.flags & HAS_GSR) {
+    if (gsrBaseline == 0) gsrBaseline = t.gsr;
+    else gsrBaseline += (t.gsr - gsrBaseline) / 600.0;
+  }
+  if (t.rmssd) {
+    if (rmssdBaseline == 0) rmssdBaseline = t.rmssd;
+    else rmssdBaseline += (t.rmssd - rmssdBaseline) / 600.0;
   }
 
   float cabinTemp = t.cabin_temp / 100.0;
   float humidity = t.humidity / 100.0;
 
-  if (t.flags & HAS_GSR) {
-    // basislijn volgt langzaam (~10 min), zodat alleen een stijging opvalt
-    if (gsrBaseline == 0) gsrBaseline = t.gsr;
-    else gsrBaseline += (t.gsr - gsrBaseline) / 600.0;
-  }
+  rule(EV_CO2_NASA_LIMIT, air && co2Avg > CO2_LIMIT_1H_MMHG, SEV_ALARM, t.ppco2_avg, changed);
+  rule(EV_CO2_EARLY, air && co2Now > CO2_LIMIT_1H_MMHG, SEV_WARNING, t.ppco2, changed);
 
-  rule(ALERT_LOW_SPO2, heart && t.spo2 < SPO2_MIN);
-  rule(ALERT_HIGH_HR, heart && t.heart_rate > HR_MAX_AT_REST && t.activity < 30);
-  rule(ALERT_LOW_HR, heart && t.heart_rate < HR_MIN);
-  rule(ALERT_FEVER, (t.flags & HAS_SKIN_TEMP) && t.skin_temp / 100.0 > SKIN_TEMP_MAX);
-  rule(ALERT_HIGH_CO2, air && co2Avg > CO2_LIMIT_MMHG);
-  rule(ALERT_CO2_RISING, air && co2Avg > CO2_WARN_MMHG && co2Avg <= CO2_LIMIT_MMHG);
-  rule(ALERT_CABIN, air && (cabinTemp < CABIN_TEMP_MIN || cabinTemp > CABIN_TEMP_MAX ||
-                            humidity < CABIN_RH_MIN || humidity > CABIN_RH_MAX));
-  rule(ALERT_STRESS, (t.flags & HAS_GSR) && t.gsr > gsrBaseline * GSR_RISE);
-  // onder 2,5 V hangt er geen accu aan (alleen usb)
-  rule(ALERT_LOW_BATT, t.battery_mv > 2500 && t.battery_mv < BATT_MIN_V * 1000);
-  // alleen als de ECG aan staat, anders is "los" logisch
-  rule(ALERT_LEADS_OFF, (t.status & STATUS_ECG_ON) && !(t.flags & ECG_LEADS_OK));
+  uint8_t spo2Sev = t.spo2 < SPO2_ALARM ? SEV_ALARM : SEV_WARNING;
+  rule(EV_SPO2_LOW, heart && t.spo2 < SPO2_WARN, spo2Sev, t.spo2, changed);
+
+  // hoge hartslag tijdens sporten is normaal, dus alleen in rust
+  rule(EV_HR_HIGH, heart && t.heart_rate > HR_HIGH_AT_REST && (t.flags & HAS_IMU) && t.activity == 0,
+       SEV_WARNING, t.heart_rate, changed);
+  rule(EV_HR_LOW, heart && t.heart_rate < HR_LOW, SEV_WARNING, t.heart_rate, changed);
+
+  rule(EV_ECG_LEADS_OFF, t.vitals_flags & FLAG_ECG_LEADS_OFF, SEV_INFO, 0, changed);
+  rule(EV_NO_SKIN_CONTACT, (t.flags & HAS_SKIN_TEMP) && !(t.vitals_flags & FLAG_SKIN_CONTACT), SEV_INFO, 0,
+       changed);
+  rule(EV_SHOCK, t.shock_mg > 0, SEV_WARNING, min((int)t.shock_mg, 32767), changed);
+
+  rule(EV_PRESSURE_DROP, (t.flags & HAS_PRESSURE) && t.pressure_trend < PRESSURE_DROP_PA_MIN, SEV_ALARM,
+       t.pressure_trend, changed);
+  rule(EV_CABIN_CLIMATE, air && (cabinTemp < CABIN_TEMP_MIN || cabinTemp > CABIN_TEMP_MAX ||
+                                 humidity < CABIN_RH_MIN || humidity > CABIN_RH_MAX),
+       SEV_WARNING, t.cabin_temp, changed);
+
+  // stress: huidgeleiding omhoog, en als de ECG er is ook de HRV omlaag
+  bool gsrHigh = (t.flags & HAS_GSR) && t.gsr > gsrBaseline * GSR_RISE;
+  bool hrvLow = !t.rmssd || !rmssdBaseline || t.rmssd < rmssdBaseline * RMSSD_DROP;
+  rule(EV_STRESS_HIGH, gsrHigh && hrvLow, SEV_WARNING, t.gsr, changed);
+
+  rule(EV_BATTERY_LOW, t.battery_mv && t.battery_pct < BATTERY_LOW_PCT, SEV_WARNING, t.battery_pct, changed);
 
   t.alerts = active;
 }
 
-const char *text(uint16_t a) {
+uint8_t severity(uint8_t code) { return code < 16 ? sev[code] : 0; }
+
+int worst(uint16_t a) {
+  int best = -1;
   for (auto &r : rules) {
-    if (a & r.bit) return r.text;
+    if (!(a & (1 << r.code))) continue;
+    if (best < 0 || sev[r.code] > sev[best]) best = r.code;
   }
-  return nullptr;
+  return best;
 }
 
-bool critical(uint16_t a) {
-  return a & (ALERT_LOW_SPO2 | ALERT_HIGH_CO2);
+const char *text(uint16_t a) {
+  int code = worst(a);
+  if (code < 0) return nullptr;
+  size_t i;
+  return find(code, i)->text;
 }
 
 }
