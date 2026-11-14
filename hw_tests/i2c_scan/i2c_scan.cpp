@@ -3,6 +3,7 @@
 // Doet i2c zelf (bit-bang) in plaats van met Wire. Houdt een module de bus
 // laag, dan blijft Wire hangen en zie je niks. Zo zie je juist welke lijn.
 #include <Arduino.h>
+#include <Wire.h>
 
 #include "pins.h"
 
@@ -123,6 +124,19 @@ void loop() {
       if (d.addr == addr) known = true;
     }
     if (!known && ping(addr) > 0) Serial.printf("0x%02X ??\n", addr);
+  }
+
+  // dezelfde adressen via de hardware-i2c (Wire), op een paar snelheden
+  for (uint32_t hz : {100000, 50000, 20000}) {
+    Wire.begin(BUS_SDA, BUS_SCL, hz);
+    Wire.setTimeOut(50);
+    Serial.printf("Wire %3lu kHz:", hz / 1000);
+    for (auto &d : devices) {
+      Wire.beginTransmission(d.addr);
+      if (Wire.endTransmission() == 0) Serial.printf(" %s", d.name);
+    }
+    Serial.println();
+    Wire.end();
   }
 
   delay(3000);
