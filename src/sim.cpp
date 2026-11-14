@@ -54,7 +54,7 @@ void fill(Telemetry &t, uint8_t which) {
   }
   if (which & HAS_LIGHT) t.lux = 300 + noise(15);
 
-  // huidgeleiding gaat omhoog bij stress, hier tijdens de dip
+  // huidgeleiding (12 µS) gaat omhoog bij stress, hier tijdens de dip
   if (which & HAS_GSR) t.gsr = 1200 + (dip ? 400 : 0) + noise(30);
 
   if (which & HAS_IMU) {
