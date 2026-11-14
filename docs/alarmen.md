@@ -6,7 +6,7 @@ Het polsstation controleert elke seconde alle metingen en geeft zelf een waarsch
 
 | Bron | Wat we eruit gebruiken |
 |---|---|
-| [NASA-STD-3001 Volume 2, Revision F](https://standards.nasa.gov/standard/NASA/NASA-STD-3001_VOL_2) (goedgekeurd 2026-07-14, actief) | **[V2 6004]** §6.2.1.3 – CO2-grens<br>**[V2 6022]** §6.2.6.1 – lokaal en op afstand waarschuwen<br>**[V2 6012]** §6.2.3.1 – grenzen voor cabinetemperatuur en luchtvochtigheid |
+| [NASA-STD-3001 Volume 2, Revision F](https://standards.nasa.gov/standard/NASA/NASA-STD-3001_VOL_2) (goedgekeurd 2026-07-14, actief) | **[V2 6004]** §6.2.1.3 – CO2-grens<br>**[V2 6022]** §6.2.6.1 – lokaal en op afstand waarschuwen<br>**[V2 6012]** §6.2.3.1 – grenzen voor cabinetemperatuur en luchtvochtigheid<br>**[V2 6001]** §6.1 en Tabel 6.1-1 – data voor trendanalyse (zie [ble.md](ble.md#geschiedenis)) |
 | [NASA OCHMO Technical Brief – Carbon Dioxide](https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf) | Waarom de grens op 3 mmHg ligt, en het doel van 2,5 mmHg |
 | [NASA OCHMO Technical Brief – ECLSS](https://www.nasa.gov/wp-content/uploads/2023/07/eclss-technical-brief-ochmo.pdf) | Overzicht van V2 6004, V2 6012 en V2 6022 |
 | [NASA OCHMO Technical Brief – Behavioral Health](https://www.nasa.gov/wp-content/uploads/2023/03/behavioral-health-technical-brief-ochmo-1.pdf) | Waarom stress bewaken belangrijk is |

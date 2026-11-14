@@ -76,5 +76,6 @@ De lokale alarmen volgen **NASA-STD-3001 Volume 2, Revision F**:
 - **[V2 6004]** CO2: het 1-uursgemiddelde van ppCO2 mag niet boven 3 mmHg komen
 - **[V2 6022]** de crew lokaal (OLED en buzzer) én op afstand (Bluetooth naar het dashboard) waarschuwen
 - **[V2 6012]** grenzen voor cabinetemperatuur en luchtvochtigheid
+- **[V2 6001]** data bewaren voor trendanalyse: het horloge slaat 7 dagen aan minuutsamenvattingen op, met CO2 per 5 seconden volgens Tabel 6.1-1 (zie [docs/ble.md](docs/ble.md#geschiedenis))
 
 Alle grenswaarden, hoe we de norm toepassen en de links naar de bronnen staan in [docs/alarmen.md](docs/alarmen.md).
