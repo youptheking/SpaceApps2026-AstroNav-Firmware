@@ -192,8 +192,12 @@ void handleCommand(String line) {
     const char *a = alerts::text(t.alerts);
     Serial.printf("alarmen 0x%03X  %s%s\n", t.alerts, a ? a : "-",
                   (t.status & STATUS_MUTED) ? "  (stil)" : "");
+  } else if (cmd == "oled") {
+    // scherm opnieuw zoeken, handig als het bij het opstarten niet reageerde
+    reply(display::begin() ? "oled ok" : "oled niet gevonden");
   } else if (cmd == "sensors") {
     sensors::print();
+    Serial.printf("%-9s 0x3C  %s\n", "OLED", display::found() ? "ok" : "niet gevonden");
   } else if (cmd == "history") {
     handleHistory(arg);
   } else if (cmd == "reboot") {

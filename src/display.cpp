@@ -8,22 +8,30 @@ namespace display {
 // 0.91" oled op de pcb: 128x32, dus 4 regels tekst van 8 pixels
 static const int W = 128, H = 32;
 static Adafruit_SSD1306 oled(W, H, &Wire, -1);
-static bool found = false;
+static bool found_ = false;
 
 bool begin() {
-  // begin() geeft ook true zonder scherm, dus eerst zelf kijken
-  Wire.beginTransmission(0x3C);
-  if (Wire.endTransmission() != 0) return false;
+  // begin() geeft ook true zonder scherm, dus eerst zelf kijken. Het scherm
+  // is vlak na het aanzetten soms nog niet wakker, dus een paar keer proberen
+  bool ack = false;
+  for (int i = 0; i < 5 && !ack; i++) {
+    if (i) delay(50);
+    Wire.beginTransmission(0x3C);
+    ack = Wire.endTransmission() == 0;
+  }
+  if (!ack) return false;
 
   // false: Wire is al gestart in main, niet opnieuw laten doen
-  found = oled.begin(SSD1306_SWITCHCAPVCC, 0x3C, true, false);
-  if (found) {
+  found_ = oled.begin(SSD1306_SWITCHCAPVCC, 0x3C, true, false);
+  if (found_) {
     oled.setTextColor(SSD1306_WHITE);
     oled.clearDisplay();
     oled.display();
   }
-  return found;
+  return found_;
 }
+
+bool found() { return found_; }
 
 // onderste regel, omgedraaid zodat hij opvalt
 static void drawAlert(const char *alert) {
@@ -37,7 +45,7 @@ static void drawAlert(const char *alert) {
 }
 
 void showPairing(const char *name, uint32_t code, const char *alert) {
-  if (!found) return;
+  if (!found_) return;
   oled.clearDisplay();
   oled.setTextSize(1);
   oled.setCursor(0, 0);
@@ -58,7 +66,7 @@ void showPairing(const char *name, uint32_t code, const char *alert) {
 }
 
 void showStatus(const Telemetry &t, const String &message, const char *alert) {
-  if (!found) return;
+  if (!found_) return;
   oled.clearDisplay();
   oled.setTextSize(1);
   oled.setCursor(0, 0);
@@ -89,7 +97,7 @@ void showStatus(const Telemetry &t, const String &message, const char *alert) {
 }
 
 void showBreathing(const char *text, float level) {
-  if (!found) return;
+  if (!found_) return;
   oled.clearDisplay();
 
   // cirkel rechts, tekst links ernaast. "Vasthouden" past niet groot
