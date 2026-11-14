@@ -33,8 +33,9 @@ void setup() {
   pinMode(pins::I2C_SDA, INPUT);
   pinMode(pins::I2C_SCL, INPUT);
   delay(10);
-  Serial.printf("SDA %s  SCL %s\n", digitalRead(pins::I2C_SDA) ? "hoog" : "LAAG",
-                digitalRead(pins::I2C_SCL) ? "hoog" : "LAAG");
+  // ~3300 mV is goed, ~1800 mV = pull-ups van de MAX30102 op 1,8 V
+  Serial.printf("SDA %lu mV  SCL %lu mV\n", analogReadMilliVolts(pins::I2C_SDA),
+                analogReadMilliVolts(pins::I2C_SCL));
 
   Wire.begin(pins::I2C_SDA, pins::I2C_SCL, 100000);
   Wire.setTimeOut(50);
