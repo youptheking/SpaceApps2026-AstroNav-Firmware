@@ -354,9 +354,19 @@ void updateScreen() {
     if (remote.active && remote.message == 1) remote.active = false;
   }
 
+  // bij het opstarten en als er een sensor bijkomt of wegvalt: 5 s laten
+  // zien wat er werkt, dan hoef je daar geen laptop voor te pakken
+  static uint8_t shownSensors = 0xFF;
+  static uint32_t sensorsUntil = 0;
+  if (sensors::okBits() != shownSensors) {
+    shownSensors = sensors::okBits();
+    sensorsUntil = millis() + 5000;
+  }
+
   const char *alert = alerts::text(telemetry.alerts);
   String message = remote.active ? MESSAGES[remote.message] : "";
-  if (breatheEnd) showBreathing();
+  if ((int32_t)(millis() - sensorsUntil) < 0) display::showSensors(shownSensors);
+  else if (breatheEnd) showBreathing();
   else if (ble::connected()) display::showStatus(telemetry, message, alert);
   else display::showPairing(ble::name(), ble::passkey(), alert);
 }

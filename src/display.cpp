@@ -3,6 +3,7 @@
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>
 
+#include "astronav_protocol.h"
 #include "pins.h"
 
 namespace display {
@@ -185,6 +186,38 @@ void showStatus(const Telemetry &t, const String &message, const char *alert) {
   if (alert) strip(alert, true);
   else if (message.length()) strip("2x tikken = gezien", false);
   else strip("verbonden", false);
+  flush();
+}
+
+void showSensors(uint8_t okBits) {
+  if (!found_) return;
+  oled.clearDisplay();
+
+  // korte namen, er passen 8 tekens op een regel
+  struct { uint8_t bit; const char *name; } list[] = {
+    {astronav::OK_MAX30102, "Puls"}, {astronav::OK_AD8232, "ECG"}, {astronav::OK_MPU6050, "Beweging"},
+    {astronav::OK_SCD41, "CO2"},     {astronav::OK_BMP180, "Druk"},  {astronav::OK_GSR, "GSR"},
+  };
+
+  int good = 0;
+  centered("Sensoren", 0, 1);
+  oled.drawFastHLine(x0, 10, W, SSD1306_WHITE);
+  for (int i = 0; i < 6; i++) {
+    bool ok = okBits & list[i].bit;
+    good += ok;
+    int y = 16 + i * 18;
+    oled.setTextSize(1);
+    oled.setCursor(x0, y);
+    oled.print(list[i].name);
+    // vinkje of kruisje, groot genoeg om van een afstand te zien
+    oled.setCursor(x0 + W - 12, y + 9);
+    oled.print(ok ? "ok" : "--");
+    if (!ok) oled.drawFastHLine(x0, y + 16, W, SSD1306_WHITE);
+  }
+
+  char line[22];
+  snprintf(line, sizeof(line), "%d van 6 sensoren ok", good);
+  strip(line, good < 6);
   flush();
 }
 
