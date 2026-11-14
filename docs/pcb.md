@@ -21,7 +21,7 @@ De sensoren zijn allemaal kant-en-klare modules. De PCB verbindt ze en bevat een
 |---|---|---|
 | **I2C-bus** | – | SDA (D4) en SCL (D5) naar alle I2C-modules, plus 3,3 V en GND |
 | **Voeding** | Schuifschakelaar (THT-footprint tussen BAT+ en BAT_SW+) | LiPo+ (BAT+) → schakelaar → BAT_SW+ van de XIAO. LiPo− → BAT− / GND. Stroom meten: zet de schakelaar uit en de multimeter (mA) over de twee pinnen. |
-| **Accuspanning** | 2× ~200 kΩ + 0,22 µF | **BAT_SW+** (ná de schakelaar) → 200 kΩ → **D8** → 200 kΩ → GND. Condensator van D2 naar GND (min-kant naar GND), dan leest de ADC rustiger. |
+| **Accuspanning** | 2× ~200 kΩ + 0,22 µF | **BAT_SW+** (ná de schakelaar) → 200 kΩ → **D8** → 200 kΩ → GND. Condensator van D8 naar GND (min-kant naar GND), dan leest de ADC rustiger. |
 | **GSR** | 220 kΩ + 0,22 µF + 2 koperen vlakken | 3,3 V → vlak GSR1 · huid · vlak GSR2 → **D9**. Vanaf D9: 220 kΩ naar GND en de condensator naar GND. |
 | **Buzzer** | 100 Ω + piezo | **D7** → 100 Ω → piezo → GND (niet D6: die piept bij het opstarten) |
 | **Buffer voor de SCD41** | 100–220 µF elco + 10 µF | Tussen 3,3 V en GND, **zo dicht mogelijk bij de SCD41**. Let op de polariteit. |
