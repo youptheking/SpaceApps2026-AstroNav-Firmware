@@ -28,7 +28,7 @@ struct Sums {
   int32_t cabinTemp = 0;
   uint32_t humidity = 0, airN = 0;
 
-  uint32_t lux = 0, luxN = 0;
+  uint32_t pressure = 0, pressureN = 0;
   uint32_t gsr = 0, gsrN = 0;
   uint32_t activity = 0, imuN = 0;
   uint8_t tremor = 0;
@@ -57,7 +57,7 @@ bool begin() {
   file.seek(0);
   for (size_t i = 0; i < count; i++) {
     if (file.read((uint8_t *)&r, sizeof(r)) != sizeof(r)) break;
-    if (r.version == 1 && r.seq > last) last = r.seq;
+    if (r.version == 2 && r.seq > last) last = r.seq;
   }
   first = last ? last - min((uint32_t)count, last) + 1 : 0;
 
@@ -92,9 +92,9 @@ static void write() {
     r.cabin_temp = sums.cabinTemp / (int32_t)sums.airN;
     r.humidity = sums.humidity / sums.airN;
   }
-  if (sums.luxN) r.lux = sums.lux / sums.luxN;
+  if (sums.pressureN) r.pressure = sums.pressure / sums.pressureN;
   if (sums.gsrN) r.gsr = sums.gsr / sums.gsrN;
-  if (sums.imuN) r.activity = sums.activity / sums.imuN;
+  if (sums.imuN) r.activity = sums.activity * 100 / sums.imuN;
   r.tremor = sums.tremor;
   r.battery_mv = sums.battery;
 
@@ -150,9 +150,9 @@ void add(const Telemetry &t) {
     s.cabinTemp += t.cabin_temp;
     s.humidity += t.humidity;
   }
-  if (t.flags & HAS_LIGHT) {
-    s.luxN++;
-    s.lux += t.lux;
+  if (t.flags & HAS_PRESSURE) {
+    s.pressureN++;
+    s.pressure += t.pressure_pa / 10;
   }
   if (t.flags & HAS_GSR) {
     s.gsrN++;
@@ -160,7 +160,7 @@ void add(const Telemetry &t) {
   }
   if (t.flags & HAS_IMU) {
     s.imuN++;
-    s.activity += t.activity;
+    s.activity += t.activity > 0;
     s.tremor = max(s.tremor, t.tremor);
   }
 }

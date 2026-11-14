@@ -8,7 +8,7 @@
 // Zie docs/ble.md voor het formaat.
 
 struct __attribute__((packed)) HistoryRecord {
-  uint8_t version = 1;
+  uint8_t version = 2;
   uint32_t seq = 0;        // loopt altijd op, ook na een herstart
   uint32_t unix_time = 0;  // begin van de minuut, 0 = klok was niet gezet
   uint8_t flags = 0;       // welke sensoren deze minuut iets gemeten hebben
@@ -25,9 +25,9 @@ struct __attribute__((packed)) HistoryRecord {
 
   int16_t cabin_temp = 0;  // 0.01 °C
   uint16_t humidity = 0;   // 0.01 %
-  uint16_t lux = 0;
+  uint16_t pressure = 0;  // 0.1 hPa, cabinedruk
   uint16_t gsr = 0;  // 0.01 µS
-  uint8_t activity = 0;  // gemiddelde
+  uint8_t activity = 0;  // % van de minuut niet in rust
   uint8_t tremor = 0;    // hoogste waarde
   uint16_t battery_mv = 0;
 };

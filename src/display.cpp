@@ -3,6 +3,8 @@
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>
 
+#include "pins.h"
+
 namespace display {
 
 // 0.96" oled (128x64), 90 graden gedraaid in de behuizing. Het is een
@@ -15,7 +17,9 @@ static const uint8_t ROTATION = 1;
 static const int STRIP = 16;  // breedte van de gele strook
 static const int W = 64 - STRIP, H = 128;  // blauwe deel, staand
 
-static Adafruit_SSD1306 oled(128, 64, &Wire, -1);
+// tijdens het versturen 400 kHz (dat kan het scherm prima), daarna terug
+// naar de snelheid van de rest van de bus
+static Adafruit_SSD1306 oled(128, 64, &Wire, -1, 400000, pins::I2C_FREQ_HZ);
 static bool found_ = false;
 static int x0 = 0;  // linkerkant van het blauwe deel
 
@@ -50,6 +54,18 @@ bool begin() {
 }
 
 bool found() { return found_; }
+
+// alleen versturen als het beeld anders is: 1 KB over i2c houdt de bus
+// ~25 ms bezet, en die is ook nodig voor de sensoren
+static void flush() {
+  static uint32_t last = 0;
+  const uint8_t *buf = oled.getBuffer();
+  uint32_t h = 2166136261u;  // FNV-1a
+  for (int i = 0; i < 128 * 64 / 8; i++) h = (h ^ buf[i]) * 16777619u;
+  if (h == last) return;
+  last = h;
+  oled.display();
+}
 
 // tekst in de gele strook, langs de strook geschreven. Even terug naar de
 // liggende stand van het paneel, daar is de strook gewoon rij 0-15.
@@ -129,7 +145,7 @@ void showPairing(const char *name, uint32_t code, const char *alert) {
   // ook zonder laptop waarschuwen
   if (alert) strip(alert, true);
   else strip("niet verbonden", false);
-  oled.display();
+  flush();
 }
 
 void showStatus(const Telemetry &t, const String &message, const char *alert) {
@@ -137,7 +153,9 @@ void showStatus(const Telemetry &t, const String &message, const char *alert) {
   oled.clearDisplay();
   char v[12];
 
+  // hartslag uit de PPG, anders uit de ECG
   if (t.flags & HAS_HEART) snprintf(v, sizeof(v), "%u", t.heart_rate);
+  else if (t.hr_ecg) snprintf(v, sizeof(v), "%u", t.hr_ecg);
   else strcpy(v, "--");
   value(0, "HR", v);
 
@@ -145,25 +163,29 @@ void showStatus(const Telemetry &t, const String &message, const char *alert) {
   else strcpy(v, "--");
   value(28, "SpO2 %", v);
 
-  // mmHg want daar rekent NASA-STD-3001 mee
-  if (t.flags & HAS_AIR) snprintf(v, sizeof(v), "%.2f", t.ppco2_avg / 100.0);
-  else strcpy(v, "--");
-  value(56, "CO2 mmHg", v);
-
-  // instructie van het dashboard gaat voor temperatuur en accu
+  // een melding van het dashboard krijgt de onderste helft, CO2 en de rest
+  // komen terug zodra hij bevestigd is (een CO2-alarm staat in de gele strook)
   if (message.length()) {
-    wrap(message.c_str(), 86, 4);
+    oled.drawFastHLine(x0, 54, W, SSD1306_WHITE);
+    wrap(message.c_str(), 60, 7);
   } else {
+    // mmHg want daar rekent NASA-STD-3001 mee
+    if (t.flags & HAS_AIR) snprintf(v, sizeof(v), "%.2f", t.ppco2_avg / 100.0);
+    else strcpy(v, "--");
+    value(56, "CO2 mmHg", v);
+
     oled.setTextSize(1);
     oled.setCursor(x0, 86);
-    if (t.flags & HAS_SKIN_TEMP) oled.printf("T %.1f C", t.skin_temp / 100.0);
+    if (t.flags & HAS_PRESSURE) oled.printf("%u hPa", (unsigned)((t.pressure_pa + 50) / 100));
     oled.setCursor(x0, 96);
-    oled.printf("B %.2f V", t.battery_mv / 1000.0);
+    if (t.battery_mv) oled.printf("Accu %u%%", t.battery_pct);
+    else oled.print("USB");
   }
 
   if (alert) strip(alert, true);
+  else if (message.length()) strip("2x tikken = gezien", false);
   else strip("verbonden", false);
-  oled.display();
+  flush();
 }
 
 void showBreathing(const char *text, float level) {
@@ -172,7 +194,7 @@ void showBreathing(const char *text, float level) {
 
   strip(text, false);
   oled.fillCircle(x0 + W / 2, H / 2, 3 + level * 20, SSD1306_WHITE);
-  oled.display();
+  flush();
 }
 
 }

@@ -102,9 +102,38 @@ void setup() {
   Serial.println("i2c scan");
 }
 
+int readReg(uint8_t addr, uint8_t reg) {
+  Wire.beginTransmission(addr);
+  Wire.write(reg);
+  if (Wire.endTransmission(false) != 0) return -1;
+  if (Wire.requestFrom(addr, (uint8_t)1) != 1) return -1;
+  return Wire.read();
+}
+
+// MPU-6050 lezen, wakker maken en nog eens lezen. Valt hij weg als hij
+// wakker is, dan krijgt hij te weinig stroom (slecht soldeerpunt?)
+void mpuTest() {
+  Wire.begin(BUS_SDA, BUS_SCL, 100000);
+  Serial.printf("MPU slapend:  WHO_AM_I %d  PWR 0x%02X\n", readReg(0x68, 0x75), readReg(0x68, 0x6B));
+  Wire.beginTransmission(0x68);
+  Wire.write(0x6B);
+  Wire.write(0x01);
+  Serial.printf("MPU wakker maken: fout %u\n", Wire.endTransmission());
+  for (int ms : {10, 100, 1000}) {
+    delay(ms);
+    Serial.printf("MPU wakker na %4d ms: WHO_AM_I %d  PWR 0x%02X\n", ms, readReg(0x68, 0x75), readReg(0x68, 0x6B));
+  }
+  Wire.beginTransmission(0x68);
+  Wire.write(0x6B);
+  Wire.write(0x40);  // weer slapen
+  Wire.endTransmission();
+  Wire.end();
+}
+
 void loop() {
   Serial.println("\nscan:");
   printLines();
+  mpuTest();
   release(BUS_SDA);
   release(BUS_SCL);
   if (!digitalRead(BUS_SDA)) {
