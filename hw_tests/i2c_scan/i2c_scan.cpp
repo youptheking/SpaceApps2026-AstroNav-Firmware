@@ -88,6 +88,111 @@ int ping(uint8_t addr) {
   return ack;
 }
 
+// SCL loslaten en meten hoe lang iemand hem nog laag houdt (clock stretching).
+// Langste tijd wordt bijgehouden, -1 = na 50 ms nog steeds laag.
+static int32_t longestHold = 0;
+bool sclWait() {
+  release(BUS_SCL);
+  uint32_t start = micros();
+  while (!digitalRead(BUS_SCL)) {
+    if (micros() - start > 50000) {
+      longestHold = -1;
+      return false;
+    }
+  }
+  int32_t held = micros() - start;
+  if (longestHold >= 0 && held > longestHold) longestHold = held;
+  return true;
+}
+
+// 1 = ack, 0 = nack, -1 = SCL zit vast
+int sendByte(uint8_t b) {
+  for (int bit = 7; bit >= 0; bit--) {
+    if (b & (1 << bit)) release(BUS_SDA);
+    else low(BUS_SDA);
+    delayMicroseconds(HALF);
+    if (!sclWait()) return -1;
+    delayMicroseconds(HALF);
+    low(BUS_SCL);
+  }
+  release(BUS_SDA);
+  delayMicroseconds(HALF);
+  if (!sclWait()) return -1;
+  bool ack = !digitalRead(BUS_SDA);
+  delayMicroseconds(HALF);
+  low(BUS_SCL);
+  return ack;
+}
+
+// register lezen in software, en zeggen in welke fase het misgaat
+const char *readRegBB(uint8_t addr, uint8_t reg, int &value) {
+  value = -1;
+  longestHold = 0;
+  release(BUS_SDA);
+  if (!sclWait()) return "SCL laag voor de start";
+  low(BUS_SDA);
+  delayMicroseconds(HALF);
+  low(BUS_SCL);
+
+  const char *fail = nullptr;
+  int r = sendByte(addr << 1);
+  if (r < 0) fail = "SCL vast na het adres";
+  else if (r == 0) fail = "geen ack op het adres";
+  if (!fail) {
+    r = sendByte(reg);
+    if (r < 0) fail = "SCL vast na het registernummer";
+    else if (r == 0) fail = "geen ack op het registernummer";
+  }
+  if (!fail) {
+    // herhaalde start, dan lezen
+    release(BUS_SDA);
+    delayMicroseconds(HALF);
+    if (!sclWait()) fail = "SCL vast bij herhaalde start";
+    else {
+      low(BUS_SDA);
+      delayMicroseconds(HALF);
+      low(BUS_SCL);
+      r = sendByte(addr << 1 | 1);
+      if (r < 0) fail = "SCL vast na het leesadres";
+      else if (r == 0) fail = "geen ack op het leesadres";
+    }
+  }
+  if (!fail) {
+    release(BUS_SDA);
+    int v = 0;
+    for (int bit = 0; bit < 8 && !fail; bit++) {
+      delayMicroseconds(HALF);
+      if (!sclWait()) fail = "SCL vast tijdens de data";
+      v = v << 1 | digitalRead(BUS_SDA);
+      delayMicroseconds(HALF);
+      low(BUS_SCL);
+    }
+    // nack: we willen maar één byte
+    release(BUS_SDA);
+    delayMicroseconds(HALF);
+    sclWait();
+    delayMicroseconds(HALF);
+    low(BUS_SCL);
+    if (!fail) value = v;
+  }
+  stop();
+  return fail ? fail : "ok";
+}
+
+void readTest() {
+  struct { const char *name; uint8_t addr, reg; } regs[] = {
+    {"MPU6050 WHO_AM_I", 0x68, 0x75},
+    {"BMP180 ID", 0x77, 0xD0},
+    {"MAX30102 ID", 0x57, 0xFF},
+    {"OLED status", 0x3C, 0x00},
+  };
+  for (auto &r : regs) {
+    int v;
+    const char *result = readRegBB(r.addr, r.reg, v);
+    Serial.printf("  %-17s %-32s waarde %3d  SCL max %ld us laag gehouden\n", r.name, result, v, longestHold);
+  }
+}
+
 void printLines() {
   release(BUS_SDA);
   release(BUS_SCL);
@@ -133,7 +238,8 @@ void mpuTest() {
 void loop() {
   Serial.println("\nscan:");
   printLines();
-  mpuTest();
+  Serial.println("register lezen in software:");
+  readTest();
   release(BUS_SDA);
   release(BUS_SCL);
   if (!digitalRead(BUS_SDA)) {
