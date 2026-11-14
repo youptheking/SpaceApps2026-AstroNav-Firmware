@@ -30,7 +30,7 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 
 - [ ] Sensorcheck uploaden en draaien
 - [ ] SDA in rust ~3,3 V (niet ~1,8 V)
-- [ ] Alle 6 I2C-adressen gevonden (0x23 0x3C 0x57 0x62 0x68 0x77)
+- [ ] Alle 5 I2C-adressen gevonden (0x3C 0x57 0x62 0x68 0x77)
 - [ ] I2C-pull-up totaal 2–5 kΩ, zo nodig pull-ups van modules halen
 - [ ] Buzzer piept, accuspanning klopt met de multimeter
 - [ ] AD8232: pieken in de Serial Plotter, LO+/LO− reageren
@@ -48,7 +48,8 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 - [ ] ➕ AD8232: `ECG` + R-pieken → `RR`
 - [ ] ➕ MPU-6050: `IMU`, activiteit, schok, artefact-vlag, dubbeltik om te bevestigen
 - [ ] ➕ BMP180: cabinedruk + lekalarm → `CABIN`
-- [ ] ➕ BH1750 + GSR → `CABIN` / `GSR`
+- [x] ~~BH1750~~ geschrapt (footprint klopte niet, te veel tijd)
+- [ ] ➕ GSR → `GSR`
 - [ ] Stroomverbruik meten via de schakelaarpinnen
 
 ## 4. Dashboard (pc-software) – hoofdfocus
@@ -62,7 +63,7 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 - [ ] ⚠️🎯 **Een uur echte data opnemen** → demomodus (werkt zonder hardware)
 - [ ] ➕ ECG-golf + HRV (RMSSD) + stressmelding naar de pols
 - [ ] ➕ Trends over tijd: slaap, stress, temperatuur, activiteit
-- [ ] ➕ Beweging, cabinedruk, licht, GSR
+- [ ] ➕ Beweging, cabinedruk, GSR
 - [ ] ➕ PTT (bloeddruktrend), alleen als echt alles af is
 - [ ] AI-vermelding bovenaan elk bestand met AI-code
 

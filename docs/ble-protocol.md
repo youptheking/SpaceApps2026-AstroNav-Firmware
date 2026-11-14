@@ -123,7 +123,7 @@ HRV (RMSSD, SDNN) en onregelmatig ritme berekent het dashboard hieruit.
 | kop | 8 bytes | | |
 | `pressure_pa` | u32 | Pa | Cabinedruk (`0xFFFFFFFF` = geen BMP180) |
 | `pressure_trend` | i16 | Pa/min | Verandering van de druk, voor lekdetectie |
-| `lux_c10` | u32 | ×10 lux | Lichtsterkte |
+| `lux_c10` | u32 | ×10 lux | Lichtsterkte. **BH1750 geschrapt: altijd `0xFFFFFFFF`** (veld blijft staan, zodat het protocol niet verandert). |
 | `reserved` | u16 | | Reserve (0) |
 
 ### 0x09 `STATUS` – 10 s en bij verandering

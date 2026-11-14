@@ -104,7 +104,9 @@ Randvoorwaarden: draagbaar om de pols (dus klein en licht), een beperkt budget, 
 
 **Waarom de moeite waard:** op het ISS zie je ongeveer 16 zonsopkomsten per dag, dus de biologische klok krijgt van buiten geen houvast. Lichtblootstelling is daarom relevant voor slaap en het circadiaans ritme. De sensor kost €3,50, is klein en gebruikt de I2C-bus die er al is.
 
-**Concessie:** de BH1750 meet totale lichtsterkte, geen blauw licht specifiek. Een productieversie zou een spectrale sensor gebruiken (AS7341), of de instellingen van het verlichtingssysteem van het station als bron koppelen.
+**Update tijdens de bouw (14 november):** de BH1750 is alsnog geschrapt. De pinvolgorde van de footprint op de PCB klopte niet met de module, en dat herstellen kostte te veel tijd ten opzichte van wat de sensor oplevert. Het was de sensor met de laagste prioriteit. Lichtblootstelling blijft een goed punt voor de volgende versie.
+
+**Concessie (oorspronkelijk):** de BH1750 meet totale lichtsterkte, geen blauw licht specifiek. Een productieversie zou een spectrale sensor gebruiken (AS7341), of de instellingen van het verlichtingssysteem van het station als bron koppelen.
 
 ---
 
