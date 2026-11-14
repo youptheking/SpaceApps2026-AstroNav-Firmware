@@ -18,7 +18,7 @@
 
 struct Device { uint8_t addr; const char* name; };
 const Device EXPECTED[] = {
-  {0x23, "BH1750"}, {0x3C, "OLED"}, {0x57, "MAX30102"},
+  {0x3C, "OLED"}, {0x57, "MAX30102"},
   {0x62, "SCD41"},  {0x68, "MPU-6050"}, {0x77, "BMP180"},
 };
 const size_t N_EXPECTED = sizeof(EXPECTED) / sizeof(EXPECTED[0]);
@@ -94,7 +94,7 @@ void setup() {
   checkId(0x57, 0xFF, 0x15, "MAX30102");  // PART_ID
   checkId(0x68, 0x75, 0x68, "MPU-6050");  // WHO_AM_I (MPU-6500 geeft 0x70)
   checkId(0x77, 0xD0, 0x55, "BMP180");    // chip-ID
-  Serial.println("  (SCD41, BH1750 en OLED hebben geen simpel ID-register; aanwezig = OK)");
+  Serial.println("  (SCD41 en OLED hebben geen simpel ID-register; aanwezig = OK)");
 
   // 4. Buzzer
   Serial.println("\n[4] Buzzer op D7: je hoort nu een piep");
