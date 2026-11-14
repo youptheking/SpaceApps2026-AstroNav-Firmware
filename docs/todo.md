@@ -38,6 +38,7 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 
 ## 3. Firmware (met AI)
 
+- [ ] 🎯 Opstarten: 2 s wachten (`STARTUP_DELAY_MS`) voordat de sensoren worden geïnitialiseerd
 - [ ] 🎯 MAX30102: hartslag + SpO2 → `PPG` + `VITALS`
 - [ ] 🎯 SCD41: CO2 → ppCO2, 1-uursgemiddelde, NASA-status → `AIR`
 - [ ] 🎯 OLED + buzzer: lokale alarmen, werken **zonder laptop**
