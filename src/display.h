@@ -6,6 +6,7 @@
 namespace display {
 
 bool begin();
+bool found();
 // alert = korte alarmtekst onderin, of nullptr
 void showPairing(const char *name, uint32_t code, const char *alert);
 void showStatus(const Telemetry &t, const String &message, const char *alert);
