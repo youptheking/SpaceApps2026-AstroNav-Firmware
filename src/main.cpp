@@ -215,6 +215,8 @@ void handleCommand(String line) {
   } else if (cmd == "sensors") {
     sensors::print();
     Serial.printf("%-9s 0x3C  %s\n", "OLED", display::found() ? "ok" : "niet gevonden");
+  } else if (cmd == "bmp") {
+    Serial.printf("bmp180: %.1f C  %u Pa\n", bmp180Temperature(), telemetry.pressure_pa);
   } else if (cmd == "show") {
     printShow();
   } else if (cmd == "ack") {

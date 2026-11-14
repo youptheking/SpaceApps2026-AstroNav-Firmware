@@ -37,6 +37,18 @@ void scd41Update() {
   if (millis() - lastPoll < 1000) return;
   lastPoll = millis();
 
+  // 30 s niks gemeten (los contact, of het starten mislukte): opnieuw starten
+  static uint32_t lastRestart = 0;
+  uint32_t since = lastData ? lastData : lastRestart;
+  if (millis() - since > 30000 && millis() - lastRestart > 30000) {
+    lastRestart = millis();
+    scd.stopPeriodicMeasurement();
+    delay(500);
+    scd.startPeriodicMeasurement();
+    Serial.println("scd41: opnieuw gestart");
+    return;
+  }
+
   if (pendingPressure) {
     scd.setAmbientPressure(pendingPressure);
     pendingPressure = 0;

@@ -12,6 +12,7 @@ static int32_t history[TREND_SAMPLES];
 static int count = 0, head = 0;
 static int32_t pressure = 0;
 static float trend = 0;  // Pa/min
+static float temperature = 0;  // alleen om de meting na te kijken
 static uint32_t lastRead = 0, lastPush = 0;
 
 bool bmp180Begin() {
@@ -39,8 +40,23 @@ void bmp180Update() {
   if (millis() - lastRead < 1000) return;
   lastRead = millis();
 
+  // onzin = bus even verstoord. Blijft het onzin, dan de kalibratie opnieuw
+  // inlezen: als die bij het opstarten verkeerd binnenkwam, klopt niks meer
+  static int bad = 0;
+  temperature = bmp.readTemperature();
   int32_t p = bmp.readPressure();
-  if (p < 30000 || p > 120000) return;  // onzin, bus even verstoord
+  // een temperatuur buiten wat in een cabine kan, betekent dat de meting niet
+  // klopt. Dan ook de druk niet gebruiken, anders gaat het lekalarm af.
+  bool plausible = temperature > -20 && temperature < 60 && p > 30000 && p < 120000;
+  if (!plausible) {
+    if (++bad >= 5) {
+      bad = 0;
+      bmp.begin(BMP085_ULTRAHIGHRES, &Wire);
+      Serial.println("bmp180: kalibratie opnieuw ingelezen");
+    }
+    return;
+  }
+  bad = 0;
   pressure = p;
 
   history[head] = p;
@@ -61,3 +77,5 @@ void bmp180Fill(Telemetry &t) {
   t.pressure_pa = pressure;
   t.pressure_trend = constrain(trend, -32000, 32000);
 }
+
+float bmp180Temperature() { return temperature; }

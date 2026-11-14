@@ -30,6 +30,7 @@ void scd41SetPressure(uint32_t pa);
 bool bmp180Begin();
 void bmp180Update();
 void bmp180Fill(Telemetry &t);
+float bmp180Temperature();  // °C, om de meting na te kijken
 
 // MAX30102: PPG, hartslag, SpO2, chiptemperatuur
 bool max30102Begin();
