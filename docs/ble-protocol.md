@@ -162,7 +162,27 @@ HRV (RMSSD, SDNN) en onregelmatig ritme berekent het dashboard hieruit.
 | 9 | Accu bijna leeg | % | waarschuwing |
 | 10 | Hoge stress (HRV/GSR) | – | waarschuwing |
 
-De grenswaarden van codes 2, 3, 4 en 10 moeten nog worden bepaald, met een bron erbij.
+## Grenswaarden en bronnen
+
+**NASA-bronnen in dit protocol:**
+
+| Waar | Bron | Wat |
+|---|---|---|
+| `AIR`: `ppco2_c100`, `ppco2_1h_c100`, `nasa_status` · `EVENT` code 0 en 1 | **NASA-STD-3001 Vol. 2, V2 6004** + NASA OCHMO Technical Brief CO2 | CO2 als partiële druk, grens 3 mmHg (1-uursgemiddelde), doel 2,5 mmHg |
+| `CABIN`: `pressure_pa`, `pressure_trend` · `EVENT` code 8 | **NASA-STD-3001 Vol. 2, V2 6022** | De bemanning **lokaal én op afstand** waarschuwen als cabinedruk, luchtvochtigheid, temperatuur, ppO2 of ppCO2 buiten veilige grenzen komen. Daarom zijn er een druktrend en een lekalarm. |
+| `events` + buzzer/OLED | **NASA-STD-3001 Vol. 2, V2 6022** | De architectuur: lokaal alarm op de pols plus een alarm op afstand in het dashboard |
+| Stressmeting (HRV, GSR) | NASA OCHMO Technical Brief Behavioral Health | Onderbouwt **waarom** stress bewaakt moet worden (isolatie). Geeft geen grenswaarden. |
+
+**Fysiologische grenzen (geen NASA-bron):** in de NASA-documenten die zijn doorzocht staan **geen alarmwaarden** voor SpO2, hartslag of stress. Die komen daarom uit algemene medische conventies en worden **als zodanig vermeld**. Alle waarden zijn instelbaar, en het systeem geeft **adviezen, geen diagnoses**.
+
+| Code | Gebeurtenis | Voorstel | Bron | Zekerheid |
+|---|---|---|---|---|
+| 2 | SpO2 laag | **< 94 %** gedurende 30 s = waarschuwing · **< 90 %** gedurende 30 s = alarm | WHO Pulse Oximetry Training Manual (94 % en 90 % als drempels) | Gemiddeld. **Nalezen in het WHO-document.** |
+| 3 | Hartslag hoog | **> 120 bpm in rust** (IMU: activiteit = 0) gedurende 5 min | Eigen ontwerpkeuze, op basis van een normale rusthartslag van 60–100 bpm (bijv. American Heart Association) | Ontwerpkeuze. Tijdens training is een hoge hartslag normaal, daarom gekoppeld aan de IMU. |
+| 4 | Hartslag laag | **< 40 bpm** gedurende 1 min | Eigen ontwerpkeuze. Onder 60 heet bradycardie, maar bij getrainde mensen (astronauten) is 40–60 normaal. | Ontwerpkeuze |
+| 10 | Hoge stress | HRV (RMSSD) **> 30 % onder de eigen baseline** gedurende 10 min, plus verhoogde GSR | Eigen ontwerpkeuze. Er bestaat geen universele grens voor HRV, alleen een persoonlijke vergelijking is zinvol. | Ontwerpkeuze. Advies ("Neem rust", "Start ademhalingstraining"), geen alarm. |
+
+**Principe: vergelijken met de eigen baseline.** Voor HRV, temperatuur en GSR geldt geen vaste grens voor iedereen. Het systeem leert in de eerste periode de normale waarden van de astronaut, en signaleert daarna afwijkingen daarvan. Zo werken commerciële wearables ook.
 
 ## `control` – commando's van het dashboard (optioneel)
 
