@@ -31,7 +31,7 @@ De meeste breakouts hebben zelf pull-ups. Zonder één breakout met pull-ups wer
 | MCP9808 | 0x18 | `src/drivers/mcp9808.cpp` | Huidtemperatuur |
 | ~~BH1750~~ | | | Geschrapt: de footprint op de PCB klopte niet. `lux` blijft 0. |
 | MPU-6050 | 0x68 | `src/drivers/mpu6050.cpp` | Beweging, activiteit, tremor. Eerste waarde na 2 s. |
-| OLED | 0x3C | `src/display.cpp` | Scherm |
+| OLED 0.91" | 0x3C | `src/display.cpp` | Scherm, 128×32 (4 regels tekst) |
 
 Analoog:
 
@@ -40,10 +40,10 @@ Analoog:
 | D0 | AD8232 OUTPUT |
 | D1 | AD8232 LO− |
 | D2 | AD8232 LO+ |
-| D3 | AD8232 SDN |
-| D8 | Grove GSR SIG |
+| D3 | AD8232 SDN (ingang, pull-up op het bordje houdt hem aan) |
+| D8 | Accuspanning via 2× 200 kΩ (BAT_SW+) |
 | D7 | Piezobuzzer (+) |
-| D9 | Batterijspanning via deler |
+| D9 | GSR: koperen vlakken, 220 kΩ naar GND |
 
 GSR en AD8232 zijn niet automatisch te vinden. Zet `ANALOG_FRONTEND` in `include/pins.h` op `true` als ze aangesloten zijn.
 
@@ -53,7 +53,7 @@ GSR en AD8232 zijn niet automatisch te vinden. Zet `ANALOG_FRONTEND` in `include
 - **MPU-6050:** de Adafruit-bibliotheek controleert het chip-ID. Sommige goedkope klonen (eigenlijk een MPU-6500) worden daardoor niet herkend en blijven dan gesimuleerd. Tremor en activiteit worden berekend in `src/motion.cpp`; het algoritme is zonder IMU te testen met `pio run -e test_motion -t upload`.
 - **Tremor:** rms van de versnelling in de 4–12 Hz band, per as, in mg. Score 0–100 is 1 punt per mg. Lopen (1–2 Hz) telt niet mee.
 - **Activiteit:** rms van de versnelling boven 0,5 Hz. Score 0–100 is 1 punt per 5 mg.
-- **Grove GSR:** eerst afstellen met de potmeter op de module (zonder huidcontact ongeveer halve voedingsspanning). De omrekening naar µS komt uit de Grove-wiki en moet nog nagekeken worden met de echte module.
+- **GSR:** 3,3 V → koperen vlak → huid → vlak → D9, met 220 kΩ naar GND. De firmware rekent de spanning om naar geleiding in µS (`src/drivers/analog.cpp`). Onder 30 mV is er geen huidcontact.
 - **MCP9808 aan de pols:** meet huidtemperatuur, die is lager dan de kerntemperatuur. Het koortsalarm is dus alleen een indicatie (zie [alarmen.md](alarmen.md)).
 - **SCD40:** krijgt de cabinedruk mee (`CABIN_PRESSURE_MMHG` in `src/alerts.h`), zodat ppm en de mmHg-berekening voor [V2 6004] bij elkaar passen.
 
