@@ -4,29 +4,23 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 
-#define SERVICE_UUID "6e0a0001-5a3c-4c1e-9d2a-41535452304e"
-#define TELEMETRY_UUID "6e0a0002-5a3c-4c1e-9d2a-41535452304e"
-#define ECG_UUID "6e0a0003-5a3c-4c1e-9d2a-41535452304e"
-#define COMMAND_UUID "6e0a0004-5a3c-4c1e-9d2a-41535452304e"
-#define REPLY_UUID "6e0a0005-5a3c-4c1e-9d2a-41535452304e"
-#define HISTORY_UUID "6e0a0006-5a3c-4c1e-9d2a-41535452304e"
+using namespace astronav;
 
 namespace ble {
 
-struct Command {
-  char text[128];
+struct Control {
+  uint8_t len;
+  uint8_t data[20];
 };
 
 static BLEServer *server;
-static BLECharacteristic *telemetryChar;
-static BLECharacteristic *ecgChar;
-static BLECharacteristic *replyChar;
+static BLECharacteristic *dataChar;
+static BLECharacteristic *eventsChar;
 static BLECharacteristic *historyChar;
-static QueueHandle_t commandQueue;
+static QueueHandle_t controlQueue;
 
 static volatile bool linked = false;
 static uint32_t code;
-static char deviceName[16];
 
 class ServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer *s, esp_ble_gatts_cb_param_t *param) override {
@@ -56,18 +50,19 @@ class SecurityCallbacks : public BLESecurityCallbacks {
   }
 };
 
-class CommandCallbacks : public BLECharacteristicCallbacks {
+class ControlCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *c) override {
     std::string value = c->getValue();
-    Command cmd = {};
-    strncpy(cmd.text, value.c_str(), sizeof(cmd.text) - 1);
+    Control cmd = {};
+    cmd.len = min(value.size(), sizeof(cmd.data));
+    memcpy(cmd.data, value.data(), cmd.len);
     // draait in de bluetooth-task, dus alleen doorgeven aan loop()
-    xQueueSend(commandQueue, &cmd, 0);
+    xQueueSend(controlQueue, &cmd, 0);
   }
 };
 
-static BLECharacteristic *addNotifyChar(BLEService *service, const char *uuid, uint32_t props) {
-  BLECharacteristic *c = service->createCharacteristic(uuid, props | BLECharacteristic::PROPERTY_NOTIFY);
+static BLECharacteristic *addChar(BLEService *service, const char *uuid, uint32_t props) {
+  BLECharacteristic *c = service->createCharacteristic(uuid, props);
   c->setAccessPermissions(ESP_GATT_PERM_READ_ENC_MITM);
 
   BLE2902 *cccd = new BLE2902();
@@ -77,14 +72,13 @@ static BLECharacteristic *addNotifyChar(BLEService *service, const char *uuid, u
 }
 
 void begin() {
-  // code en naam uit het mac-adres halen: per horloge anders, maar blijft altijd hetzelfde
+  // code uit het mac-adres: per horloge anders, maar blijft altijd hetzelfde
   uint64_t mac = ESP.getEfuseMac();
   code = 100000 + (uint32_t)(mac % 900000);
-  snprintf(deviceName, sizeof(deviceName), "AstroNav-%04X", (uint16_t)(mac >> 32));
 
-  commandQueue = xQueueCreate(8, sizeof(Command));
+  controlQueue = xQueueCreate(8, sizeof(Control));
 
-  BLEDevice::init(deviceName);
+  BLEDevice::init(DEVICE_NAME);
   BLEDevice::setMTU(247);
   BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT_MITM);
   BLEDevice::setSecurityCallbacks(new SecurityCallbacks());
@@ -92,16 +86,14 @@ void begin() {
   server = BLEDevice::createServer();
   server->setCallbacks(new ServerCallbacks());
 
-  BLEService *service = server->createService(BLEUUID(SERVICE_UUID), 20);
-  telemetryChar = addNotifyChar(service, TELEMETRY_UUID, BLECharacteristic::PROPERTY_READ);
-  ecgChar = addNotifyChar(service, ECG_UUID, 0);
-  replyChar = addNotifyChar(service, REPLY_UUID, 0);
-  historyChar = addNotifyChar(service, HISTORY_UUID, 0);
+  BLEService *service = server->createService(BLEUUID(SERVICE_UUID), 16);
+  dataChar = addChar(service, CHAR_DATA_UUID, BLECharacteristic::PROPERTY_NOTIFY);
+  eventsChar = addChar(service, CHAR_EVENTS_UUID, BLECharacteristic::PROPERTY_INDICATE);
+  historyChar = addChar(service, CHAR_HISTORY_UUID, BLECharacteristic::PROPERTY_NOTIFY);
 
-  BLECharacteristic *commandChar = service->createCharacteristic(
-      COMMAND_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
-  commandChar->setAccessPermissions(ESP_GATT_PERM_WRITE_ENC_MITM);
-  commandChar->setCallbacks(new CommandCallbacks());
+  BLECharacteristic *control = service->createCharacteristic(CHAR_CONTROL_UUID, BLECharacteristic::PROPERTY_WRITE);
+  control->setAccessPermissions(ESP_GATT_PERM_WRITE_ENC_MITM);
+  control->setCallbacks(new ControlCallbacks());
 
   service->start();
 
@@ -117,34 +109,30 @@ void begin() {
   advData.setCompleteServices(BLEUUID(SERVICE_UUID));
 
   BLEAdvertisementData scanData;
-  scanData.setName(deviceName);
+  scanData.setName(DEVICE_NAME);
 
   BLEAdvertising *adv = BLEDevice::getAdvertising();
   adv->setAdvertisementData(advData);
   adv->setScanResponseData(scanData);
   BLEDevice::startAdvertising();
 
-  Serial.printf("bluetooth: %s, code %06lu\n", deviceName, code);
+  Serial.printf("bluetooth: %s, code %06lu\n", DEVICE_NAME, code);
 }
 
 bool connected() { return linked; }
 uint32_t passkey() { return code; }
-const char *name() { return deviceName; }
+const char *name() { return DEVICE_NAME; }
 
-void send(const Telemetry &t) {
-  telemetryChar->setValue((uint8_t *)&t, sizeof(t));
-  if (linked) telemetryChar->notify();
+void sendData(const void *packet, size_t len) {
+  if (!linked) return;
+  dataChar->setValue((uint8_t *)packet, len);
+  dataChar->notify();
 }
 
-void sendEcg(const int16_t *samples, size_t count) {
+void sendEvent(const EventPacket &e) {
   if (!linked) return;
-  static uint8_t counter = 0;
-  uint8_t buf[1 + 2 * 100];
-  count = min(count, (size_t)100);
-  buf[0] = counter++;
-  memcpy(buf + 1, samples, count * 2);
-  ecgChar->setValue(buf, 1 + count * 2);
-  ecgChar->notify();
+  eventsChar->setValue((uint8_t *)&e, sizeof(e));
+  eventsChar->indicate();
 }
 
 void sendHistory(const uint8_t *data, size_t len) {
@@ -158,16 +146,11 @@ size_t maxPayload() {
   return server->getPeerMTU(server->getConnId()) - 3;
 }
 
-void reply(const char *text) {
-  if (!linked) return;
-  replyChar->setValue((uint8_t *)text, strlen(text));
-  replyChar->notify();
-}
-
-bool readCommand(String &out) {
-  Command cmd;
-  if (xQueueReceive(commandQueue, &cmd, 0) != pdTRUE) return false;
-  out = cmd.text;
+bool readControl(uint8_t *buf, size_t &len) {
+  Control cmd;
+  if (xQueueReceive(controlQueue, &cmd, 0) != pdTRUE) return false;
+  memcpy(buf, cmd.data, cmd.len);
+  len = cmd.len;
   return true;
 }
 

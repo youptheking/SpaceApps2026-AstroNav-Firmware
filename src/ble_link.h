@@ -1,8 +1,10 @@
 #pragma once
 #include <Arduino.h>
 
-#include "telemetry.h"
+#include "astronav_protocol.h"
 
+// Bluetooth volgens docs/ble-protocol.md: data (notify), events (indicate),
+// control (write) en history (notify, uitbreiding).
 namespace ble {
 
 void begin();
@@ -13,15 +15,14 @@ bool connected();
 uint32_t passkey();
 const char *name();
 
-void send(const Telemetry &t);
-void sendEcg(const int16_t *samples, size_t count);
+void sendData(const void *packet, size_t len);
+void sendEvent(const astronav::EventPacket &e);
 void sendHistory(const uint8_t *data, size_t len);
-void reply(const char *text);
 
 // hoeveel bytes er in één notify passen (MTU - 3)
 size_t maxPayload();
 
-// haalt een binnengekomen commando op, false als er niks is
-bool readCommand(String &out);
+// haalt een binnengekomen control-commando op, false als er niks is
+bool readControl(uint8_t *buf, size_t &len);
 
 }
