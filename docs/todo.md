@@ -19,6 +19,7 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk
 - [ ] PCB frezen en boren
 - [ ] Doorgemeten op kortsluiting (3V3–GND, BAT–GND) vóór er iets op gaat
 - [ ] Headers en losse onderdelen solderen (R1, R3, R4, R7, C1–C4, schakelaar)
+- [ ] Sensorcheck gedraaid (`tools/sensor_check/sensor_check.ino`): busspanning, I2C-scan, chip-ID's, buzzer, analoge pinnen
 - [ ] I2C-scan: alle 6 adressen zichtbaar (0x23, 0x3C, 0x57, 0x62, 0x68, 0x77)
 - [ ] SDA in rust ~3,3 V (niet 1,8 V door de MAX30102)
 - [ ] Totale I2C-pull-up gemeten (doel 2–5 kΩ), zo nodig pull-ups van modules verwijderd
@@ -27,7 +28,7 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk
 - [ ] Buzzer op D7 (stil bij het opstarten)
 - [ ] Accuspanning op D8 klopt met de multimeter (×2)
 - [ ] GSR: 15-minutentest. Werkt het? Houden. Alleen ruis? Laten vallen, stress via HRV.
-- [ ] ⚠️ **Formaat van de BLE-pakketten vastgelegd:** voorstel staat in `docs/ble-protocol.md`, wacht op akkoord
+- [x] **Formaat van de BLE-pakketten vastgelegd:** `docs/ble-protocol.md`, in code: `include/astronav_protocol.h`
 - [ ] SpO2-drempels (94 % / 90 %) nalezen in de WHO Pulse Oximetry Training Manual
 - [ ] Firmware: alle sensoren uitlezen, **elke meting op zijn eigen interval** (zie `docs/ble-data.md`), en over BLE versturen
 - [ ] Firmware: ECG- en PPG-samples met een tijdstempel van dezelfde hardwaretimer (nodig voor HRV, en later eventueel PTT)
