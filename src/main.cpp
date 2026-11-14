@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#include "alerts.h"
 #include "ble_link.h"
 #include "display.h"
 #include "pins.h"
@@ -9,17 +10,20 @@
 
 const uint32_t ECG_PERIOD_US = 4000;  // 250 Hz
 const size_t ECG_BATCH = 25;          // 10 pakketjes per seconde
+const uint32_t BEEP_EVERY_MS = 3000;
 
 Telemetry telemetry;
 String message;  // instructie van het dashboard op het scherm
 
 uint32_t sendInterval = 1000;
+uint32_t lastTick = 0;
 uint32_t lastSend = 0;
 uint32_t lastScreen = 0;
+uint32_t lastBeep = 0;
 uint32_t unixAtBoot = 0;
 bool ecgStream = false;
 bool simulate = true;  // uitzetten zodra de sensoren erin zitten
-bool alarmMuted = false;
+uint16_t mutedAlerts = 0;  // alarmen die met `ack` bevestigd zijn
 
 uint32_t breatheStart = 0;
 uint32_t breatheEnd = 0;  // 0 = geen oefening
@@ -51,7 +55,7 @@ void handleCommand(String line) {
     message = arg;
     reply("ok");
   } else if (cmd == "ack") {
-    alarmMuted = true;
+    mutedAlerts = telemetry.alerts;
     noTone(pins::BUZZER);
     reply("ok");
   } else if (cmd == "time") {
@@ -70,7 +74,15 @@ void handleCommand(String line) {
     nextEcg = micros();
     reply("ok");
   } else if (cmd == "sim") {
-    simulate = arg == "on";
+    if (arg == "on" || arg == "off") {
+      simulate = arg == "on";
+      return reply("ok");
+    }
+    // sim co2 4500, sim spo2 88, ... (0 = automatisch)
+    int sp = arg.indexOf(' ');
+    String field = arg.substring(0, sp);
+    if (sp < 0 || !sim::fix(field, arg.substring(sp + 1).toFloat())) return reply("err sim");
+    if (field == "co2") alerts::resetCo2();
     reply("ok");
   } else if (cmd == "breathe") {
     if (arg == "off") {
@@ -84,11 +96,16 @@ void handleCommand(String line) {
     reply("ok");
   } else if (cmd == "show") {
     const Telemetry &t = telemetry;
-    Serial.printf("hr %u  spo2 %u  temp %.2f  co2 %u  lux %u  gsr %u  act %u  tremor %u  batt %u%s%s\n",
-                  t.heart_rate, t.spo2, t.skin_temp / 100.0, t.co2, t.lux, t.gsr,
-                  t.activity, t.tremor, t.battery_mv,
+    Serial.printf("hr %u  spo2 %u  temp %.2f  co2 %u ppm (1u gem %.2f mmHg)  cabine %.1f C %.0f%%\n",
+                  t.heart_rate, t.spo2, t.skin_temp / 100.0, t.co2, t.ppco2_avg / 100.0,
+                  t.cabin_temp / 100.0, t.humidity / 100.0);
+    Serial.printf("lux %u  gsr %u  act %u  tremor %u  batt %u%s%s\n",
+                  t.lux, t.gsr, t.activity, t.tremor, t.battery_mv,
                   (t.status & STATUS_SIMULATED) ? "  (sim)" : "",
                   (t.status & STATUS_BREATHING) ? "  (ademhaling)" : "");
+    const char *a = alerts::text(t.alerts);
+    Serial.printf("alarmen 0x%03X  %s%s\n", t.alerts, a ? a : "-",
+                  (t.status & STATUS_MUTED) ? "  (stil)" : "");
   } else if (cmd == "buzz") {
     tone(pins::BUZZER, 2000, 300);
     reply("ok");
@@ -109,10 +126,31 @@ void updateTelemetry() {
 
   telemetry.battery_mv = analogReadMilliVolts(pins::BATT) * pins::BATT_DIVIDER;
 
+  if (ecgStream) {
+    telemetry.status |= STATUS_ECG_ON;
+    // LO+ of LO- hoog = elektrode los
+    if (!digitalRead(pins::ECG_LO_PLUS) && !digitalRead(pins::ECG_LO_MINUS))
+      telemetry.flags |= ECG_LEADS_OK;
+  }
+
   // TODO sensoren uitlezen
 
   if (simulate) sim::fill(telemetry);
   if (breatheEnd) telemetry.status |= STATUS_BREATHING;
+
+  alerts::update(telemetry);
+
+  mutedAlerts &= telemetry.alerts;  // opgeloste alarmen vergeten
+  if (mutedAlerts) telemetry.status |= STATUS_MUTED;
+}
+
+// [V2 6022] lokaal waarschuwen: piepen bij kritieke alarmen tot `ack`
+void updateBuzzer() {
+  uint16_t loud = telemetry.alerts & ~mutedAlerts;
+  if (!alerts::critical(loud)) return;
+  if (millis() - lastBeep < BEEP_EVERY_MS) return;
+  lastBeep = millis();
+  tone(pins::BUZZER, 2500, 400);
 }
 
 // 4 s in, 4 s vast, 6 s uit
@@ -129,9 +167,10 @@ void updateScreen() {
     reply("breathe klaar");
   }
 
+  const char *alert = alerts::text(telemetry.alerts);
   if (breatheEnd) showBreathing();
-  else if (ble::connected()) display::showStatus(telemetry, message);
-  else display::showPairing(ble::name(), ble::passkey());
+  else if (ble::connected()) display::showStatus(telemetry, message, alert);
+  else display::showPairing(ble::name(), ble::passkey(), alert);
 }
 
 void sampleEcg() {
@@ -172,11 +211,25 @@ void loop() {
 
   sampleEcg();
 
-  if (millis() - lastSend >= sendInterval) {
-    lastSend = millis();
+  // alarmen elke seconde bijwerken, ook als `rate` langzamer is
+  if (millis() - lastTick >= min(sendInterval, 1000u)) {
+    lastTick = millis();
+    uint16_t before = telemetry.alerts;
     updateTelemetry();
-    ble::send(telemetry);
+
+    // [V2 6022] op afstand waarschuwen: bij een nieuw of opgelost alarm meteen versturen
+    bool changed = telemetry.alerts != before;
+    if (changed) {
+      const char *a = alerts::text(telemetry.alerts);
+      Serial.printf("alarm: 0x%03X %s\n", telemetry.alerts, a ? a : "opgelost");
+    }
+    if (changed || millis() - lastSend >= sendInterval) {
+      lastSend = millis();
+      ble::send(telemetry);
+    }
   }
+
+  updateBuzzer();
 
   // tijdens de ademhaling vaker, anders loopt de cirkel schokkerig
   uint32_t screenInterval = breatheEnd ? 50 : 250;

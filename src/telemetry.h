@@ -15,24 +15,29 @@ enum SensorFlag : uint8_t {
   HAS_TIME = 1 << 7,  // klok gezet via `time`
 };
 
+// zie docs/alarmen.md voor grenzen en bronnen
 enum Alert : uint16_t {
   ALERT_LOW_SPO2 = 1 << 0,
   ALERT_HIGH_HR = 1 << 1,
   ALERT_LOW_HR = 1 << 2,
   ALERT_FEVER = 1 << 3,
-  ALERT_HIGH_CO2 = 1 << 4,
+  ALERT_HIGH_CO2 = 1 << 4,  // [V2 6004] 1-uursgemiddelde > 3 mmHg
   ALERT_STRESS = 1 << 5,
   ALERT_LOW_BATT = 1 << 6,
   ALERT_LEADS_OFF = 1 << 7,
+  ALERT_CO2_RISING = 1 << 8,  // 1-uursgemiddelde > 2,5 mmHg
+  ALERT_CABIN = 1 << 9,       // [V2 6012] temp/vochtigheid buiten werkgebied
 };
 
 enum Status : uint8_t {
   STATUS_SIMULATED = 1 << 0,  // waarden komen uit sim.cpp, niet van sensoren
   STATUS_BREATHING = 1 << 1,  // ademhalingsoefening loopt
+  STATUS_ECG_ON = 1 << 2,
+  STATUS_MUTED = 1 << 3,  // buzzer stil na `ack`
 };
 
 struct __attribute__((packed)) Telemetry {
-  uint8_t version = 3;
+  uint8_t version = 4;
   uint8_t flags = 0;
   uint16_t alerts = 0;
   uint32_t uptime_ms = 0;
@@ -43,6 +48,7 @@ struct __attribute__((packed)) Telemetry {
   int16_t skin_temp = 0;   // 0.01 °C
 
   uint16_t co2 = 0;         // ppm
+  uint16_t ppco2_avg = 0;   // 0.01 mmHg, gemiddelde over het laatste uur
   int16_t cabin_temp = 0;   // 0.01 °C
   uint16_t humidity = 0;    // 0.01 %
   uint16_t lux = 0;
@@ -56,4 +62,4 @@ struct __attribute__((packed)) Telemetry {
   uint8_t status = 0;
 };
 
-static_assert(sizeof(Telemetry) == 37, "docs/ble.md bijwerken");
+static_assert(sizeof(Telemetry) == 39, "docs/ble.md bijwerken");
