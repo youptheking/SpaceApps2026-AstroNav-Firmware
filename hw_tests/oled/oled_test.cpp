@@ -99,6 +99,10 @@ void setup() {
 void loop() {
   static int frame = 0;
   draw(frame++);
-  if (frame % 20 == 0) Serial.printf("frame %d\n", frame);
+  // elke 2 s opnieuw opstarten, dan mag je het scherm tussendoor aansluiten
+  if (frame % 20 == 0) {
+    bool ok = send(0x00, init_cmds, sizeof(init_cmds));
+    Serial.printf("frame %d, oled %s\n", frame, ok ? "ok" : "geen ack");
+  }
   delay(100);
 }
