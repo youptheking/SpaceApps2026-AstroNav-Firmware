@@ -45,14 +45,15 @@ static void task(void *) {
   TickType_t wake = xTaskGetTickCount();
   uint32_t tick = 0;
 
-  bool ecg = sensors::has(OK_AD8232);
-  bool gsr = sensors::has(OK_GSR);
-  bool imu = sensors::has(OK_MPU6050);
-  bool ppg = sensors::has(OK_MAX30102);
-
   for (;;) {
     vTaskDelayUntil(&wake, pdMS_TO_TICKS(TICK_MS));
     uint32_t now = millis();
+
+    // elke tik opnieuw, een sensor kan later nog gevonden worden
+    bool ecg = sensors::has(OK_AD8232);
+    bool gsr = sensors::has(OK_GSR);
+    bool imu = sensors::has(OK_MPU6050);
+    bool ppg = sensors::has(OK_MAX30102);
 
     if (ecg) ecgSample(now);          // 250 Hz
     if (imu && tick % 5 == 0) mpu6050Sample(now);  // 50 Hz
