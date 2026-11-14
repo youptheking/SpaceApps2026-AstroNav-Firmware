@@ -79,3 +79,9 @@ De lokale alarmen volgen **NASA-STD-3001 Volume 2, Revision F**:
 - **[V2 6001]** data bewaren voor trendanalyse: het horloge slaat 7 dagen aan minuutsamenvattingen op, met CO2 per 5 seconden volgens Tabel 6.1-1 (zie [docs/ble.md](docs/ble.md#geschiedenis))
 
 Alle grenswaarden, hoe we de norm toepassen en de links naar de bronnen staan in [docs/alarmen.md](docs/alarmen.md).
+
+## Documentatie
+
+- [docs/sensoren.md](docs/sensoren.md): sensoren aansluiten, wat er echt is en wat gesimuleerd wordt
+- [docs/ble.md](docs/ble.md): Bluetooth-protocol, pakketten, commando's en geschiedenis
+- [docs/alarmen.md](docs/alarmen.md): alarmen, grenswaarden en NASA-bronnen
