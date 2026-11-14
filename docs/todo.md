@@ -34,6 +34,8 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk
 - [ ] Firmware: IMU-verwerking op de ESP32 (activiteit, schok, artefact-vlag, tremor)
 - [ ] Firmware: CO2-alarm op het 1-uursgemiddelde > 3 mmHg (NASA-STD-3001), met de BMP180 of met 760 mmHg als terugval
 - [ ] Firmware: OLED-meldingen en buzzer bij alarm, werkt zonder laptop
+- [ ] Firmware: meldingen van het dashboard ontvangen (`control` 0x04), buzzerpatronen per ernst, bevestigen met dubbeltik
+- [ ] Dashboard: stressmelding (HRV-trend) naar de pols sturen
 - [ ] Stroomverbruik gemeten via de schakelaarpinnen
 - [ ] Behuizing ontworpen, **3D-print 's nachts laten lopen**
 

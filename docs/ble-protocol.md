@@ -146,7 +146,7 @@ HRV (RMSSD, SDNN) en onregelmatig ritme berekent het dashboard hieruit.
 | `state` | u8 | | 1 = gestart, 0 = opgeheven |
 | `severity` | u8 | | 0 = info · 1 = waarschuwing · 2 = alarm |
 | `value` | i16 | afhankelijk van de code | De waarde die de gebeurtenis veroorzaakte |
-| `reserved` | u8 | | Reserve (0) |
+| `source` | u8 | | 0 = gedetecteerd op de pols · 1 = verstuurd door het dashboard (`control` 0x04) · 2 = bevestigd door de astronaut |
 
 | Code | Gebeurtenis | `value` | Ernst |
 |---|---|---|---|
@@ -161,6 +161,7 @@ HRV (RMSSD, SDNN) en onregelmatig ritme berekent het dashboard hieruit.
 | 8 | Drukdaling (mogelijk lek) | Pa/min | alarm |
 | 9 | Accu bijna leeg | % | waarschuwing |
 | 10 | Hoge stress (HRV/GSR) | – | waarschuwing |
+| 11 | Melding bevestigd door de astronaut (dubbeltik) | code van de bevestigde melding | info |
 
 ## Grenswaarden en bronnen
 
@@ -184,15 +185,45 @@ HRV (RMSSD, SDNN) en onregelmatig ritme berekent het dashboard hieruit.
 
 **Principe: vergelijken met de eigen baseline.** Voor HRV, temperatuur en GSR geldt geen vaste grens voor iedereen. Het systeem leert in de eerste periode de normale waarden van de astronaut, en signaleert daarna afwijkingen daarvan. Zo werken commerciële wearables ook.
 
-## `control` – commando's van het dashboard (optioneel)
+## `control` – commando's van het dashboard
 
-Eén byte commando plus parameters.
+Eén byte commando plus parameters. Schrijven met **write-with-response**: dan bevestigt de BLE-laag dat de pols het commando heeft ontvangen.
 
-| Commando | Bytes | Betekenis |
+| Commando | Parameters | Betekenis |
 |---|---|---|
 | 0x01 | – | Buzzer testen |
 | 0x02 | u8 0/1 | Ruwe streams (ECG/PPG/IMU/GSR) uit of aan, om stroom te sparen |
-| 0x03 | u8 code | Alarm bevestigd door de astronaut (zet de buzzer stil) |
+| 0x03 | u8 code | Melding afgehandeld in het dashboard: pols stopt met piepen voor deze code |
+| **0x04** | u8 code · u8 severity · u8 message_id | **Melding van het dashboard naar de pols.** Voor alles wat alleen het dashboard kan zien, zoals trends over langere tijd (stress via HRV, slaap, licht). De pols toont de tekst op het OLED en speelt het buzzerpatroon bij de ernst. Daarna stuurt hij een `EVENT` terug met dezelfde code, `state` = 1 en `source` = 1, als bevestiging dat de melding is getoond. |
+
+### Melding van het dashboard naar de pols (0x04)
+
+**Waarom:** sommige signalen ziet alleen het dashboard, omdat het trends over langere tijd analyseert. De astronaut moet die ook voelen of horen, niet alleen op de laptop lezen. Dit volgt ook **NASA-STD-3001 V2 6022**: lokaal én op afstand waarschuwen.
+
+**Buzzerpatronen per ernst** (zo hoor je het verschil zonder te kijken):
+
+| `severity` | Patroon | Gebruik |
+|---|---|---|
+| 0 = info | Eén korte piep | Advies zonder haast |
+| 1 = waarschuwing | 3× kort, elke 30 s herhaald tot bevestiging | Stress, hartslag, CO2-vroegwaarschuwing |
+| 2 = alarm | Continu afwisselend hoog/laag tot bevestiging | CO2 boven de NASA-grens, SpO2 laag, drukdaling |
+
+**OLED-teksten** (`message_id`, vast in de firmware, 2 regels op 128×32):
+
+| id | Tekst |
+|---|---|
+| 0 | `Neem rust` |
+| 1 | `Start ademhaling` / `training 2 min` |
+| 2 | `CO2 hoog` / `ventilatie check` |
+| 3 | `Zuurstof laag` / `stop activiteit` |
+| 4 | `Druk daalt` / `check cabine` |
+| 5 | `Slaap tekort` / `plan rustmoment` |
+| 6 | `Elektrode los` / `check borst` |
+| 7 | `Accu laag` / `opladen` |
+
+**Bevestigen door de astronaut:** het horloge heeft geen knop. Een **dubbeltik** op het horloge (gedetecteerd door de MPU-6050) bevestigt de melding. De pols stopt dan met piepen en stuurt `EVENT` code 11 met `source` = 2. Het dashboard ziet zo dat de astronaut de melding heeft gezien.
+
+**Geen verbinding?** Dan komen meldingen van het dashboard niet aan. De lokale alarmen op de pols (CO2, SpO2, hartslag, elektrode los, druk) werken altijd, ook zonder laptop.
 
 ## Voorbeeld in C++ (firmware)
 
@@ -216,7 +247,7 @@ struct CabinPacket  { Header h; uint32_t pressure_pa; int16_t pressure_trend;
 struct StatusPacket { Header h; uint16_t vbat_mv; uint8_t battery_pct, sensors_ok;
                       uint16_t alarms; uint8_t fw_major, fw_minor; }; // 16 bytes
 struct EventPacket  { Header h; uint8_t code, state, severity; int16_t value;
-                      uint8_t reserved; };                           // 14 bytes
+                      uint8_t source; };                           // 14 bytes
 #pragma pack(pop)
 
 static_assert(sizeof(PpgPacket) == 88, "PPG-pakket heeft de verkeerde grootte");
