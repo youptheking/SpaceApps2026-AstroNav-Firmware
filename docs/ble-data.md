@@ -116,6 +116,14 @@ Dat past ruim binnen BLE, mits de **MTU wordt vergroot** (bijv. 247 bytes) en pa
 
 **Kosten:** continu ruwe data versturen houdt de radio vaker actief. Reken op een paar mA extra ten opzichte van alleen samenvattingen (zie [stroombudget.md](stroombudget.md)).
 
+## Besluiten (14 november)
+
+- **Elke meting heeft zijn eigen interval,** afgestemd op hoe snel de waarde verandert (zie de kolom "Frequentie"). Geen vaste string waarin alles telkens opnieuw wordt verstuurd.
+- **Binair** voor de snelle data. Geen tekst- of JSON-strings.
+- **Verwerking op de ESP32 waar zinvol:** alles voor de lokale alarmen, plus de **IMU**: activiteitsniveau, schok, artefact-vlag en tremor. Voor tremor kan de FFT van de esp-dsp-library worden gebruikt.
+- **ECG en PPG krijgen een tijdstempel van dezelfde hardwaretimer.** Dat is nodig voor nauwkeurige RR-intervallen, en houdt PTT later mogelijk.
+- **PTT is een extra:** puur software in het dashboard, alleen als al het andere af is.
+
 ## Voorstel voor de structuur (nog te beslissen)
 
 Aparte BLE-characteristics per soort data:
