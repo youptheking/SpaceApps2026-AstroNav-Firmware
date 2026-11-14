@@ -1,8 +1,7 @@
-// SCD40: CO2, temperatuur en luchtvochtigheid van de cabine
+// SCD41: CO2, temperatuur en luchtvochtigheid van de cabine
 #include <SensirionI2cScd4x.h>
 #include <Wire.h>
 
-#include "../alerts.h"
 #include "drivers.h"
 
 static SensirionI2cScd4x scd;
@@ -10,24 +9,38 @@ static uint16_t co2 = 0;
 static float temp = 0, humidity = 0;
 static uint32_t lastData = 0;
 static uint32_t lastPoll = 0;
+static bool fresh = false;
 
-bool scd40Begin() {
-  scd.begin(Wire, SCD40_I2C_ADDR_62);
+static uint32_t pendingPressure = 0;
+
+bool scd41Begin() {
+  scd.begin(Wire, SCD41_I2C_ADDR_62);
 
   // kan nog aan staan van voor een herstart, dan accepteert hij geen instellingen
   scd.stopPeriodicMeasurement();
   delay(500);
 
-  // ppm hangt af van de luchtdruk, zelfde cabinedruk als waarmee alerts.cpp rekent
-  scd.setAmbientPressure(alerts::CABIN_PRESSURE_MMHG * 133.322);
+  // tot de BMP180 iets meet: 1 atm, de druk van het ISS
+  scd.setAmbientPressure(101325);
 
   // meet zelf elke 5 s, precies wat NASA Tabel 6.1-1 voor CO2 noemt
   return scd.startPeriodicMeasurement() == 0;
 }
 
-void scd40Update() {
+// ppm hangt af van de luchtdruk, dus de echte cabinedruk doorgeven.
+// Mag tijdens het meten, hij neemt hem mee vanaf de volgende meting.
+void scd41SetPressure(uint32_t pa) {
+  pendingPressure = pa;
+}
+
+void scd41Update() {
   if (millis() - lastPoll < 1000) return;
   lastPoll = millis();
+
+  if (pendingPressure) {
+    scd.setAmbientPressure(pendingPressure);
+    pendingPressure = 0;
+  }
 
   bool ready = false;
   if (scd.getDataReadyStatus(ready) != 0 || !ready) return;
@@ -39,10 +52,17 @@ void scd40Update() {
     temp = t;
     humidity = h;
     lastData = millis();
+    fresh = true;
   }
 }
 
-void scd40Fill(Telemetry &t) {
+bool scd41TakeNew() {
+  bool was = fresh;
+  fresh = false;
+  return was;
+}
+
+void scd41Fill(Telemetry &t) {
   // eerste meting duurt 5 s, en na 30 s zonder data vertrouwen we hem niet meer
   if (!lastData || millis() - lastData > 30000) return;
   t.flags |= HAS_AIR;
