@@ -28,7 +28,7 @@ Service UUID: `6e0a0001-5a3c-4c1e-9d2a-41535452304e`
 
 De pakketten zijn groter dan de standaard-MTU van 23 bytes. De laptop moet om een grotere MTU vragen, minstens 64. Windows doet dat automatisch. In nRF Connect op Android: *Request MTU* (of zet dat aan bij de instellingen).
 
-## Telemetry-pakket (versie 5)
+## Telemetry-pakket (versie 6)
 
 Little-endian, 40 bytes. Zie `src/telemetry.h`.
 
@@ -36,7 +36,7 @@ Het pakket gaat elke `rate` ms de deur uit, en daarnaast **meteen** zodra er een
 
 | Offset | Type | Veld | Eenheid |
 |---|---|---|---|
-| 0 | u8 | version | 5 |
+| 0 | u8 | version | 6 |
 | 1 | u8 | flags | zie hieronder |
 | 2 | u16 | alerts | zie hieronder |
 | 4 | u32 | uptime_ms | ms |
@@ -49,7 +49,7 @@ Het pakket gaat elke `rate` ms de deur uit, en daarnaast **meteen** zodra er een
 | 20 | i16 | cabin_temp | 0.01 °C |
 | 22 | u16 | humidity | 0.01 % |
 | 24 | u16 | lux | lux (totaal licht, geen blauw licht: de BH1750 kan dat niet) |
-| 26 | u16 | gsr | mV |
+| 26 | u16 | gsr | huidgeleiding in 0.01 µS (stijgt bij stress) |
 | 28 | i16[3] | accel x/y/z | mg |
 | 34 | u8 | activity | 0-100 |
 | 35 | u8 | tremor | 0-100, trilling in de 4–12 Hz band, wordt op het horloge berekend |
@@ -112,7 +112,7 @@ Little-endian, 58 bytes. Zie `HistoryRecord` in `src/history.h`.
 | 46 | i16 | cabin_temp | 0.01 °C, gemiddelde |
 | 48 | u16 | humidity | 0.01 %, gemiddelde |
 | 50 | u16 | lux | gemiddelde |
-| 52 | u16 | gsr | mV, gemiddelde |
+| 52 | u16 | gsr | huidgeleiding in 0.01 µS, gemiddelde |
 | 54 | u8 | activity | 0-100, gemiddelde |
 | 55 | u8 | tremor | 0-100, hoogste waarde |
 | 56 | u16 | battery_mv | mV, laatste meting |

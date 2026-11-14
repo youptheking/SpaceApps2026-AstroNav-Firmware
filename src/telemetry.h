@@ -37,7 +37,7 @@ enum Status : uint8_t {
 };
 
 struct __attribute__((packed)) Telemetry {
-  uint8_t version = 5;
+  uint8_t version = 6;
   uint8_t flags = 0;
   uint16_t alerts = 0;
   uint32_t uptime_ms = 0;
@@ -53,7 +53,7 @@ struct __attribute__((packed)) Telemetry {
   uint16_t humidity = 0;    // 0.01 %
   uint16_t lux = 0;
 
-  uint16_t gsr = 0;       // mV op de adc
+  uint16_t gsr = 0;       // huidgeleiding in 0.01 µS
   int16_t accel[3] = {};  // mg
   uint8_t activity = 0;   // 0-100
   uint8_t tremor = 0;     // 0-100, trilling in de 4-12 Hz band

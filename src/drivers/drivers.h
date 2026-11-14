@@ -35,3 +35,7 @@ void bh1750Fill(Telemetry &t);
 bool mpu6050Begin();
 void mpu6050Update();
 void mpu6050Fill(Telemetry &t);
+
+bool analogBegin();
+void analogUpdate();
+void analogFill(Telemetry &t);

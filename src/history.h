@@ -26,7 +26,7 @@ struct __attribute__((packed)) HistoryRecord {
   int16_t cabin_temp = 0;  // 0.01 °C
   uint16_t humidity = 0;   // 0.01 %
   uint16_t lux = 0;
-  uint16_t gsr = 0;
+  uint16_t gsr = 0;  // 0.01 µS
   uint8_t activity = 0;  // gemiddelde
   uint8_t tremor = 0;    // hoogste waarde
   uint16_t battery_mv = 0;
