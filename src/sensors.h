@@ -3,18 +3,19 @@
 
 #include "telemetry.h"
 
-// Echte sensoren. Wat bij het opstarten niet gevonden wordt, vult sim.cpp aan,
-// zodat je de breakouts één voor één kunt aansluiten.
+// Alle sensoren. Bij het opstarten wordt gekeken welke er zijn; wat ontbreekt
+// levert niks (of nepwaarden met `sim on`, zie sim.cpp).
 namespace sensors {
 
-const uint8_t ALL = HAS_HEART | HAS_SKIN_TEMP | HAS_AIR | HAS_IMU | HAS_GSR;
+const uint8_t ALL = HAS_HEART | HAS_SKIN_TEMP | HAS_AIR | HAS_PRESSURE | HAS_IMU | HAS_GSR | ECG_LEADS_OK;
 
 void begin();
-void update();            // zo vaak mogelijk, voor de snelle sensoren
-void fill(Telemetry &t);  // laatste echte meetwaarden in het pakket
+void update();            // in loop(), voor de langzame sensoren
+void fill(Telemetry &t);  // laatste meetwaarden in de stand zetten
 
-// sensorgroepen (bits uit SensorFlag) waarvan de hardware er is
-uint8_t found();
+bool has(uint8_t okBit);  // OK_* uit astronav_protocol.h
+uint8_t okBits();         // voor STATUS.sensors_ok, zonder het OLED
+uint8_t groups();         // SensorFlag-bits van de sensoren die er zijn
 
 void print();  // usb: overzicht
 
