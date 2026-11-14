@@ -21,6 +21,8 @@ static Motion motion(SAMPLE_RATE);
 static ImuPacket packet;
 static int inPacket = 0;
 static volatile uint32_t samples = 0;
+static volatile uint32_t lastGood = 0;
+static volatile uint32_t failures = 0;  // keer dat hij even stilgezet is
 
 static void write8(uint8_t reg, uint8_t value) {
   Wire.beginTransmission(ADDR);
@@ -47,9 +49,25 @@ bool mpu6050Begin() {
 }
 
 void mpu6050Sample(uint32_t now) {
+  // na 10 mislukte keren een seconde wachten, anders houdt een los contact
+  // de hele bus bezet en hebben de andere sensoren er last van
+  static int fails = 0;
+  static uint32_t pausedUntil = 0;
+  if (pausedUntil && (int32_t)(now - pausedUntil) < 0) return;
+  pausedUntil = 0;
+
   Wire.beginTransmission(ADDR);
   Wire.write(0x3B);
-  if (Wire.endTransmission(false) != 0 || Wire.requestFrom(ADDR, (uint8_t)14) != 14) return;
+  if (Wire.endTransmission(false) != 0 || Wire.requestFrom(ADDR, (uint8_t)14) != 14) {
+    if (++fails >= 10) {
+      fails = 0;
+      pausedUntil = now + 1000;
+      failures++;
+    }
+    return;
+  }
+  fails = 0;
+  lastGood = now;
 
   int16_t v[7];  // ax ay az temp gx gy gz, big-endian
   for (auto &x : v) x = Wire.read() << 8 | Wire.read();
@@ -72,6 +90,7 @@ bool mpu6050TakeDoubleTap() {
 
 void mpu6050Fill(Telemetry &t) {
   if (samples < SAMPLE_RATE * 2) return;  // filters eerst even laten inlopen
+  if (millis() - lastGood > 2000) return;  // oude waarden niet doorgeven
   t.flags |= HAS_IMU;
 
   float act = motion.activityMg();
