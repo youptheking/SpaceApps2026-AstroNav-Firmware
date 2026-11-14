@@ -33,7 +33,7 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 - [ ] Alle 5 I2C-adressen gevonden (0x3C 0x57 0x62 0x68 0x77)
 - [ ] I2C-pull-up totaal 2–5 kΩ, zo nodig pull-ups van modules halen
 - [ ] Buzzer piept, accuspanning klopt met de multimeter
-- [ ] AD8232: pieken in de Serial Plotter, LO+/LO− reageren
+- [ ] AD8232: pieken in de Serial Plotter, LO+/LO− reageren (plaatsing: `docs/ecg-elektrodes.md`)
 - [ ] GSR: 15-minutentest. Reageert hij? Houden. Alleen ruis? Laten vallen.
 
 ## 3. Firmware (met AI)
@@ -90,6 +90,7 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
   - [ ] Use of SI
   - [ ] NASA Data (tekst in `docs/nasa-std-3001.md`, nieuwste revisie checken)
   - [ ] References: libraries, datasheets, NASA- en WHO-documenten
+- [ ] ⚠️ Bron van `docs/img/ecg-elektrodes.png` invullen (of de afbeelding vervangen door een eigen tekening)
 - [ ] Engelse samenvatting in de READMEs
 - [ ] ⚠️ **Beide repo's openbaar**, links getest in een privévenster
 - [ ] Vinkjes "Terms and Conditions" + "Confirm All Work is Original"
