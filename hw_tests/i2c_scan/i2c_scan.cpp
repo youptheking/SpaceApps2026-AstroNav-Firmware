@@ -131,9 +131,9 @@ void loop() {
     Wire.begin(BUS_SDA, BUS_SCL, hz);
     Wire.setTimeOut(50);
     Serial.printf("Wire %3lu kHz:", hz / 1000);
-    for (auto &d : devices) {
-      Wire.beginTransmission(d.addr);
-      if (Wire.endTransmission() == 0) Serial.printf(" %s", d.name);
+    for (uint8_t addr = 1; addr < 127; addr++) {
+      Wire.beginTransmission(addr);
+      if (Wire.endTransmission() == 0) Serial.printf(" 0x%02X", addr);
     }
     Serial.println();
     Wire.end();
