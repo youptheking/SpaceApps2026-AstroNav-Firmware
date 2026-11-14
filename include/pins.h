@@ -12,7 +12,7 @@ constexpr uint8_t ECG_SDN = D3;
 
 constexpr uint8_t I2C_SDA = D4;
 constexpr uint8_t I2C_SCL = D5;
-constexpr uint32_t I2C_FREQ_HZ = 400000;
+constexpr uint32_t I2C_FREQ_HZ = 100000;  // 400k gaf leesfouten op de gefreesde pcb
 
 constexpr uint8_t BUZZER = D7;
 constexpr uint8_t BATT = D8;  // 2x 200k deler op BAT_SW+
