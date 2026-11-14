@@ -9,6 +9,10 @@ static Adafruit_SSD1306 oled(128, 64, &Wire, -1);
 static bool found = false;
 
 bool begin() {
+  // begin() geeft ook true zonder scherm, dus eerst zelf kijken
+  Wire.beginTransmission(0x3C);
+  if (Wire.endTransmission() != 0) return false;
+
   found = oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   if (found) {
     oled.setTextColor(SSD1306_WHITE);
