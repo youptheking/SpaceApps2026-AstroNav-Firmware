@@ -4,7 +4,11 @@
 #include "ble_link.h"
 #include "display.h"
 #include "pins.h"
+#include "sim.h"
 #include "telemetry.h"
+
+const uint32_t ECG_PERIOD_US = 4000;  // 250 Hz
+const size_t ECG_BATCH = 25;          // 10 pakketjes per seconde
 
 Telemetry telemetry;
 String message;  // instructie van het dashboard op het scherm
@@ -14,7 +18,12 @@ uint32_t lastSend = 0;
 uint32_t lastScreen = 0;
 uint32_t unixAtBoot = 0;
 bool ecgStream = false;
+bool simulate = false;
 bool alarmMuted = false;
+
+int16_t ecgBuf[ECG_BATCH];
+size_t ecgCount = 0;
+uint32_t nextEcg = 0;
 
 void reply(const char *text) {
   Serial.println(text);
@@ -54,7 +63,17 @@ void handleCommand(String line) {
     reply("ok");
   } else if (cmd == "ecg") {
     ecgStream = arg == "on";
+    ecgCount = 0;
+    nextEcg = micros();
     reply("ok");
+  } else if (cmd == "sim") {
+    simulate = arg == "on";
+    reply("ok");
+  } else if (cmd == "show") {
+    const Telemetry &t = telemetry;
+    Serial.printf("hr %u  spo2 %u  temp %.2f  co2 %u  lux %u  gsr %u  batt %u%s\n",
+                  t.heart_rate, t.spo2, t.skin_temp / 100.0, t.co2, t.lux, t.gsr,
+                  t.battery_mv, (t.status & STATUS_SIMULATED) ? "  (sim)" : "");
   } else if (cmd == "buzz") {
     tone(pins::BUZZER, 2000, 300);
     reply("ok");
@@ -65,8 +84,8 @@ void handleCommand(String line) {
 
 void updateTelemetry() {
   uint32_t now = millis();
+  telemetry = Telemetry();
   telemetry.uptime_ms = now;
-  telemetry.flags = 0;
 
   if (unixAtBoot) {
     telemetry.unix_time = unixAtBoot + now / 1000;
@@ -76,6 +95,23 @@ void updateTelemetry() {
   telemetry.battery_mv = analogReadMilliVolts(pins::BATT) * pins::BATT_DIVIDER;
 
   // TODO sensoren uitlezen
+
+  if (simulate) sim::fill(telemetry);
+}
+
+void sampleEcg() {
+  if (!ecgStream) return;
+
+  // inhalen als loop() even bezig was (bijv. met het scherm)
+  while ((int32_t)(micros() - nextEcg) >= 0) {
+    ecgBuf[ecgCount++] = simulate ? sim::ecg(nextEcg) : analogReadMilliVolts(pins::ECG_OUT);
+    nextEcg += ECG_PERIOD_US;
+
+    if (ecgCount == ECG_BATCH) {
+      ble::sendEcg(ecgBuf, ecgCount);
+      ecgCount = 0;
+    }
+  }
 }
 
 void setup() {
@@ -98,6 +134,8 @@ void loop() {
 
   // zelfde commando's via usb, handig om te testen
   if (Serial.available()) handleCommand(Serial.readStringUntil('\n'));
+
+  sampleEcg();
 
   if (millis() - lastSend >= sendInterval) {
     lastSend = millis();

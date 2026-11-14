@@ -23,9 +23,13 @@ Service UUID: `6e0a0001-5a3c-4c1e-9d2a-41535452304e`
 
 (alle UUID's eindigen op `-5a3c-4c1e-9d2a-41535452304e`)
 
-## Telemetry-pakket (versie 1)
+## MTU
 
-Little-endian, 35 bytes. Zie `src/telemetry.h`.
+De pakketten zijn groter dan de standaard-MTU van 23 bytes. De laptop moet om een grotere MTU vragen, minstens 64. Windows doet dat automatisch. In nRF Connect op Android: *Request MTU* (of zet dat aan bij de instellingen).
+
+## Telemetry-pakket (versie 2)
+
+Little-endian, 36 bytes. Zie `src/telemetry.h`.
 
 | Offset | Type | Veld | Eenheid |
 |---|---|---|---|
@@ -45,15 +49,29 @@ Little-endian, 35 bytes. Zie `src/telemetry.h`.
 | 26 | i16[3] | accel x/y/z | mg |
 | 32 | u8 | activity | 0-100 |
 | 33 | u16 | battery_mv | mV |
+| 35 | u8 | status | zie hieronder |
 
 Flags (bit): 0 hartslag/SpO2, 1 huidtemperatuur, 2 lucht (CO2/temp/vocht), 3 licht, 4 IMU, 5 GSR, 6 ECG-elektrodes zitten goed, 7 klok gezet.
 Een waarde telt alleen als de bijbehorende flag aan staat.
 
 Alerts (bit): 0 lage SpO2, 1 hoge hartslag, 2 lage hartslag, 3 koorts, 4 hoge CO2, 5 stress, 6 batterij bijna leeg, 7 elektrodes los.
 
+Status (bit): 0 gesimuleerd. Als die aan staat, komen de waarden uit `src/sim.cpp` en niet van de sensoren. Laat dat in het dashboard duidelijk zien.
+
 ## ECG-pakket
 
-`[teller u8][sample i16] × n`, met maximaal 100 samples per pakket. De teller loopt op per pakket, zodat de laptop gemiste pakketten kan zien.
+`[teller u8][sample i16] × 25`. Er wordt gesampled op 250 Hz, dus er komen 10 pakketten per seconde. Een sample is de spanning op de AD8232-uitgang in mV, rond 1650 in rust. De teller loopt op per pakket, zodat de laptop gemiste pakketten kan zien.
+
+## Simulatie
+
+Met `sim on` vult het horloge alle sensorwaarden met nepdata, zodat je het dashboard en de alarmen zonder hardware kunt testen:
+
+- hartslag rond 72, schommelt langzaam
+- elke 3 minuten 20 seconden een zuurstofdip naar ~89 %, met hogere hartslag en huidgeleiding
+- CO2 loopt in 5 minuten op van 600 naar 1900 ppm en zakt dan weer terug
+- een ECG-golf die past bij de gesimuleerde hartslag (met `ecg on`)
+
+Simulatie staat na een herstart weer uit.
 
 ## Commando's
 
@@ -69,3 +87,5 @@ Tekst, één commando per write. Werken ook via de USB-seriële poort (115200).
 | `rate <ms>` | telemetry-interval, 100 – 60000 |
 | `ecg on` / `ecg off` | ECG-stream aan/uit |
 | `buzz` | korte piep, om de buzzer te testen |
+| `sim on` / `sim off` | simulatie aan/uit |
+| `show` | alleen via USB: laatste meetwaarden |
