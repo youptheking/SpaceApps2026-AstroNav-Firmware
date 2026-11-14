@@ -31,7 +31,7 @@ De meeste breakouts hebben zelf pull-ups. Zonder één breakout met pull-ups wer
 | MCP9808 | 0x18 | `src/drivers/mcp9808.cpp` | Huidtemperatuur |
 | ~~BH1750~~ | | | Geschrapt: de footprint op de PCB klopte niet. `lux` blijft 0. |
 | MPU-6050 | 0x68 | `src/drivers/mpu6050.cpp` | Beweging, activiteit, tremor. Eerste waarde na 2 s. |
-| OLED 0.91" | 0x3C | `src/display.cpp` | Scherm, 128×32 (4 regels tekst) |
+| OLED 0.96" | 0x3C of 0x3D | `src/display.cpp` | 128×64, 90° gedraaid (staand 64×128). Op zijn kop? `ROTATION` in display.cpp op 3. De 0.91" van de inkooplijst was kapot. |
 
 Analoog:
 
