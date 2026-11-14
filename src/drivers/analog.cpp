@@ -1,4 +1,4 @@
-// Grove GSR (huidgeleiding) en AD8232 (ECG), allebei analoog
+// GSR (huidgeleiding via twee koperen vlakken) en AD8232 (ECG), allebei analoog
 #include "drivers.h"
 #include "pins.h"
 
@@ -9,14 +9,14 @@ bool analogBegin() {
   return pins::ANALOG_FRONTEND;
 }
 
-// Formule uit de Grove GSR-wiki, omgerekend van een 10-bits waarde op Vcc.
-// Meer zweet = lagere spanning = hogere geleiding. De module moet wel met de
-// potmeter afgesteld worden (zonder huid ~ halve Vcc), daarna nog nakijken.
+// Op de pcb: 3,3 V -> koperen vlak -> huid -> vlak -> D9, en 220k naar GND.
+// V = 3,3 * 220k / (Rhuid + 220k), dus G = V / (220k * (3,3 - V)).
+// Meer zweet = lagere huidweerstand = hogere spanning.
 static float toMicroSiemens(float mv) {
-  float x = mv / 3300.0f * 1024;
-  if (x >= 500) return 0;  // geen huidcontact
-  float ohm = (1024 + 2 * x) * 10000 / (512 - x);
-  return 1e6 / ohm;
+  const float R_MOHM = 0.22f;
+  if (mv < 30) return 0;  // geen huidcontact
+  if (mv > 3200) mv = 3200;
+  return mv / (R_MOHM * (3300 - mv));
 }
 
 void analogUpdate() {

@@ -291,8 +291,8 @@ void setup() {
 
   pinMode(pins::ECG_LO_PLUS, INPUT);
   pinMode(pins::ECG_LO_MINUS, INPUT);
-  pinMode(pins::ECG_SDN, OUTPUT);
-  digitalWrite(pins::ECG_SDN, HIGH);  // SDN laag = ad8232 uit
+  // SDN als ingang, de pull-up op het ad8232-bordje houdt hem hoog (= aan)
+  pinMode(pins::ECG_SDN, INPUT);
   pinMode(pins::BUZZER, OUTPUT);
 
   if (!display::begin()) Serial.println("geen oled gevonden");
