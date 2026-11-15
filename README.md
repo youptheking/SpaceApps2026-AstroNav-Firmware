@@ -1,7 +1,8 @@
 # NASA Space Apps 2026 – Team AstroNav – Firmware (polsstation)
 
-> **Status: nog niet gestart.** De ontwikkeling begint op zaterdag 14 november 2026 om 09:00 (NL-tijd).
-> Deze repo bevat bewust alleen projectinformatie. Er staat nog geen code in.
+> **Status: firmware 1.0 werkt op de PCB.** Alle sensoren worden uitgelezen, de lokale alarmen werken, en de data gaat via Bluetooth volgens [BLE-protocol v1](docs/ble-protocol.md).
+>
+> Bouwen en flashen met PlatformIO: `pio run -t upload`. Board: Seeed XIAO ESP32-S3.
 
 > Dit is een **NASA Space Apps Challenge 2026**-project en staat los van de andere AstroNav-projecten (AstroNav-Nano en verwante repos).
 
@@ -42,41 +43,86 @@ Een samenhangend systeem met twee delen:
 
 - **Vormfactor:** ergonomisch polshorloge met klittenband
 - **PCB:** dubbelzijdig, gefreesd op de desktop-CNC
-- **Behuizing:** 3D-geprint (PETG of PLA) met ventilatieroosters en koperen GSR-contactvlakken aan de onderzijde
-- **Hoofdcontroller:** ESP32 met ingebouwde BLE
+- **Behuizing:** 3D-geprint (PETG of PLA) met ventilatieroosters en koperen contactvlakken
+- **Hoofdcontroller:** Seeed XIAO ESP32-S3 met ingebouwde BLE
 - **Lokale indicatie:**
-  - 0.96" I2C OLED: actuele status en directe instructies, zoals "Neem rust", "Start ademhalingstraining" of "Verhoogde CO2"
-  - Piezobuzzer: geluidswaarschuwing bij acute alarmsituaties
+  - 0.96" tweekleurige I2C OLED, staand: waarden, alarmen in de gele strook, en instructies van het dashboard zoals "Take a break" of "Start breathing exercise"
+  - Piezobuzzer: een eigen patroon per ernst (info, waarschuwing, alarm)
+  - Bevestigen met een **dubbeltik** op het horloge
 
 ## Sensoren
 
 | Component | Koppeling | Positie | Functie en relevantie voor ruimtevaart |
 |---|---|---|---|
-| ESP32 | Systeemcontroller | Intern op PCB | Leest sensoren uit, stuurt OLED en buzzer aan, verzorgt BLE-streaming |
-| MAX30102 / MAX86141 | I2C | Onderzijde (tegen huid) | Optische meting van hartslag en zuurstofsaturatie (SpO2) |
-| MAX30102 (ingebouwde temperatuursensor) | I2C | Onderzijde (tegen huid) | Trend van de huidtemperatuur, als signaal voor een immuunreactie of koorts. **Bewuste keuze voor het prototype:** de sensor zit al in de MAX30102 (±1 °C, resolutie 0,0625 °C). Dat scheelt een bordje en ruimte, en is voldoende voor afwijkingen ten opzichte van de eigen baseline. Op een eigen print zou je een speciale lichaamstemperatuursensor gebruiken, zoals de MAX30205 of TMP117. |
-| ICM45686 / MPU6050 | I2C of SPI | Intern op PCB | 3-assige IMU: activiteit, training, slaapkwaliteit, spiertremoren |
-| GSR-contacten | Analoog (ADC) | Onderzijde (tegen huid) | Twee gefreesde koperen vlakken met een spanningsdeler, voor huidgeleiding (acute stress) |
-| AD8232 | Analoog (ADC) | Intern, kabel naar de borst | Continue ECG-hartgolf via 3 plakelektrodes op de borst. Leads-off-detectie meldt een losse elektrode. |
-| ~~BH1750~~ | – | – | **Tijdens de bouw geschrapt:** de pinvolgorde van de footprint klopte niet, en herstellen kostte te veel tijd. Laagste prioriteit van alle sensoren. Kan later via I2C terugkomen. |
-| SCD41 | I2C | Zijkant (met rooster) | Echte CO2 (fotoakoestisch), plus temperatuur en luchtvochtigheid in de cabine, tegen verstikking en hoofdpijn. **Bewust gekozen boven de SCD40:** gespecificeerd tot 5000 ppm in plaats van 2000 ppm (ruimtestations zitten structureel boven aardse binnenwaarden), en met een single-shot-modus voor een lager accuverbruik. |
-| BMP180 (eigen voorraad) | I2C (0x77) | Intern | Cabinedruk. Daarmee reken je CO2 van ppm om naar partiële druk (mmHg) volgens NASA-STD-3001. Hij compenseert de meting van de SCD41 en waarschuwt bij een drukdaling (lek). Lage prioriteit: pas toevoegen als de kern werkt. |
+| XIAO ESP32-S3 | Systeemcontroller | Intern op PCB | Leest sensoren uit, stuurt OLED en buzzer aan, verzorgt BLE-streaming |
+| MAX30102 | I2C | Onderzijde (tegen huid) | PPG op 100 Hz: hartslag, zuurstofsaturatie (SpO2), perfusie. De chiptemperatuur dient als trend van de huidtemperatuur. |
+| MPU-6050 | I2C | Intern op PCB | 3-assige IMU: activiteit, tremor (sterkte en frequentie), schok, dubbeltik |
+| AD8232 | Analoog (ADC) | Kabel naar de borst | ECG op 250 Hz, R-pieken en RR-intervallen (HRV), elektrode-los-detectie |
+| GSR-contacten | Analoog (ADC) | Onderzijde (tegen huid) | Gefreesde koperen vlakken voor huidgeleiding (acute stress) |
+| SCD41 | I2C | Zijkant (met rooster) | Echte CO2, plus temperatuur en luchtvochtigheid in de cabine |
+| BMP180 | I2C | Intern | Cabinedruk: ppCO2 in mmHg en een lekalarm bij een drukdaling |
+| ~~BH1750~~ | – | – | Tijdens de bouw geschrapt: de pinvolgorde van de footprint klopte niet. |
 | 0.96" OLED | I2C | Bovenzijde | Directe actiepunten voor de astronaut |
-| Piezobuzzer | GPIO (PWM) | Intern op PCB | Alarm bij kritieke daling van SpO2 of stijging van CO2 |
+| Piezobuzzer | GPIO (PWM) | Intern op PCB | Lokaal alarm, ook zonder laptop |
 
-Waarom we voor deze sensoren kozen, en welke concessies we bewust deden: zie [docs/ontwerpkeuzes.md](docs/ontwerpkeuzes.md). Stroomverbruik, accuduur en opladen: zie [docs/stroombudget.md](docs/stroombudget.md). Pinindeling: zie [docs/pinout.md](docs/pinout.md). Wat er op de draagprint moet: zie [docs/pcb.md](docs/pcb.md). Planning en voortgang: zie [docs/todo.md](docs/todo.md). BLE-pakketformaat: zie [docs/ble-protocol.md](docs/ble-protocol.md). ECG-elektrodes plaatsen: zie [docs/ecg-elektrodes.md](docs/ecg-elektrodes.md). Grenswaarden voor alarmen uit NASA-STD-3001: zie [docs/nasa-std-3001.md](docs/nasa-std-3001.md).
+## Firmware
 
-## Firmware (gepland)
+- **C++ met PlatformIO** (Arduino-core voor de ESP32-S3)
+- **Snelle sensoren in een eigen task** op een vaste tik van 4 ms, zodat ECG, PPG, IMU en GSR dezelfde klok hebben (nodig voor RR-intervallen en later PTT)
+- **Lokale beslislogica:** alarmen met de codes van het protocol, direct op het OLED en met de buzzer, ook zonder verbinding met de laptop
+- **Bluetooth Low Energy** volgens [BLE-protocol v1](docs/ble-protocol.md): ruwe streams, vitale waarden, lucht, cabine, status en alarmen. Geen koppelen op bluetooth-niveau: de app ontgrendelt het horloge met de code die op het scherm staat (`control` 0x13), zodat het op Windows, Android en met `btleplug` werkt.
+- **Geschiedenis:** 7 dagen aan minuutsamenvattingen in de flash, op te halen door het dashboard
+- **Robuust:** ontbrekende sensoren worden elke 10 s opnieuw gezocht, losse contacten leggen de bus niet plat, en een watchdog herstart het horloge als het toch vastloopt
 
-- **Taal:** C++ op de ESP32
-- **Sensoruitlezing:** alle sensoren met hoge frequentie
-- **Lokale beslislogica:** waarschuwingen en instructies direct op het OLED-scherm, buzzer bij noodsituaties, ook zonder verbinding met de laptop
-- **Draadloze telemetrie:** gestructureerde datapakketten via BLE naar het desktopdashboard
+## Wat er niet in zit
+
+Gepland, maar niet in deze versie. Eerlijk vermeld, zodat niemand het in de data zoekt.
+
+**Demomodus.** Voor de presentatie vult het horloge wat ontbreekt met nepwaarden (licht, accu, en een sensor die wegvalt), zodat het dashboard het hele plaatje kan laten zien. Dat is nooit stiekem: elk STATUS-pakket krijgt een SIM-pakket mee dat precies zegt welke waarden gesimuleerd zijn, het dashboard zet daar "SIMULATED" bij, en op het horloge staat een `*` achter de waarde. Echte sensoren en de ruwe streams (ECG, PPG, IMU, GSR) zijn altijd echt. Uit te zetten met `DEMO_MODE` in `include/pins.h`, `sim off` via usb, of `control` 0x12. Zie [docs/ble-protocol.md](docs/ble-protocol.md#uitbreidingen-op-v1).
+
+| Wat | Waarom niet | Gevolg |
+|---|---|---|
+| **Lichtsensor (BH1750)** voor het circadiaans ritme | De pinvolgorde van de footprint klopte niet, herstellen kostte te veel tijd | Niet gemeten. In de demomodus een **gesimuleerde** waarde, gemarkeerd in het SIM-pakket. |
+| **Accu en aan/uit-schakelaar** | Connector en schakelaar zijn tijdens de bouw van de PCB afgebroken | Het horloge draait altijd op usb, het accualarm (code 9) gaat nooit af. In de demomodus een **gesimuleerde** accu, gemarkeerd in het SIM-pakket. Weer aan te zetten met `HAS_BATTERY` in `include/pins.h`. |
+| **Echte huidtemperatuur (MCP9808/TMP117)** | Zit niet op de PCB | De chiptemperatuur van de MAX30102 dient als trend, geen koortsmeting. Geen koortsalarm. |
+| **ppO2** (zuurstof in de cabine) | Geen sensor | [V2 6022] noemt het, wij dekken het niet |
+| **Stroomverbruik meten** en zuinig meten met de SCD41 (single-shot) | Geen tijd; zonder accu ook minder belangrijk | De SCD41 meet continu elke 5 s |
+| **Wrist-raise** (scherm aan als je je pols optilt, via de INT van de MPU-6050) | INT is niet aangesloten | Het scherm staat altijd aan |
+| **1-uursgemiddelde CO2 na een herstart** | Begint dan opnieuw bij nul | Na een herstart duurt het tot een uur voordat het gemiddelde weer klopt. De minuten staan wel in de geschiedenis. |
+| **PTT** (bloeddruktrend), slaapanalyse, HRV-trends | Dat doet het dashboard, niet de pols | De firmware levert de ruwe ECG, PPG en RR met dezelfde klok, zodat het later kan |
+
+**Hardware die anders is dan het ontwerp:** de footprint van de MAX30102 klopte niet (aangesloten met draadjes), R5/R6 moesten er toch op (4,3 kΩ pull-ups, zie [docs/sensoren.md](docs/sensoren.md)), en de 0.91" OLED is vervangen door een 0.96" die 90° gedraaid zit.
+
+**Nog niet getest:** hartslag en SpO2 met een vinger tegen de sensor naast een echte saturatiemeter, de ECG met elektrodes op de borst, de dubbeltik in de behuizing, en de hele keten met het dashboard.
+
+## NASA-bronnen
+
+De lokale alarmen volgen **NASA-STD-3001 Volume 2, Revision F**:
+
+- **[V2 6004]** CO2: het 1-uursgemiddelde van ppCO2 mag niet boven 3 mmHg komen
+- **[V2 6022]** de crew lokaal (OLED en buzzer) én op afstand (Bluetooth naar het dashboard) waarschuwen, ook bij een drukdaling (mogelijk lek)
+- **[V2 6012]** grenzen voor cabinetemperatuur en luchtvochtigheid
+- **[V2 6001]** data bewaren voor trendanalyse: het horloge slaat 7 dagen aan minuutsamenvattingen op, met CO2 per 5 seconden volgens Tabel 6.1-1 (zie [de geschiedenis](docs/ble-protocol.md#uitbreidingen-op-v1))
+
+Alle grenswaarden, hoe we de norm toepassen en de links naar de bronnen staan in [docs/alarmen.md](docs/alarmen.md).
+
+## Documentatie
+
+- [docs/sensoren.md](docs/sensoren.md): bedrading, adressen, wat je moet weten per sensor, en de hardwaretests
+- [docs/ble-protocol.md](docs/ble-protocol.md): BLE-protocol v1, hoe de firmware het invult, de uitbreidingen en de USB-commando's
+- [docs/alarmen.md](docs/alarmen.md): alarmen, grenswaarden, buzzerpatronen en NASA-bronnen
+- [docs/inkooplijst.md](docs/inkooplijst.md): onderdelen
+- [docs/ontwerpkeuzes.md](docs/ontwerpkeuzes.md): waarom deze sensoren, en welke concessies bewust zijn gedaan
+- [docs/nasa-std-3001.md](docs/nasa-std-3001.md): de gebruikte NASA-grenswaarden met bronnen
+- [docs/stroombudget.md](docs/stroombudget.md): stroomverbruik, accuduur en opladen
+- [docs/ecg-elektrodes.md](docs/ecg-elektrodes.md): waar de ECG-elektrodes op de borst gaan
+- [docs/todo.md](docs/todo.md): planning van het weekend
 
 ## Gebruik van AI (SI)
 
 Volgens de regels van NASA Space Apps vermelden we waar AI-tools ("Super Intelligence", SI) zijn gebruikt.
 
 - **Idee en concept:** eigen werk. Het concept met polsstation en dashboard, en de keuze voor de challenge, stonden vast vóór er AI werd gebruikt.
-- **Voorbereiding met Claude (Anthropic):** onderzoek naar leverbare onderdelen, de stroom- en pinberekeningen het opzoeken van de grenswaarden in NASA-STD-3001, de planning voor het weekend (`docs/todo.md`) en de eerste versies van de documenten in `docs/` (inkooplijst, ontwerpkeuzes, stroombudget, pinout, PCB-overzicht). De ontwerpbeslissingen zijn door de maker genomen en gecontroleerd.
+- **Voorbereiding met Claude (Anthropic):** onderzoek naar leverbare onderdelen, de stroom- en pinberekeningen, het opzoeken van de grenswaarden in NASA-STD-3001, de planning voor het weekend (`docs/todo.md`) en de eerste versies van de documenten in `docs/`. De ontwerpbeslissingen zijn door de maker genomen en gecontroleerd.
 - **Code:** waar code met AI-hulp is geschreven, staat dat in de commitbeschrijving en in een opmerking in het betreffende bestand.
+
