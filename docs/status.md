@@ -104,6 +104,10 @@ NASA's Human Research Program groups the dangers of spaceflight into five hazard
 - Datasheets: MAX30102, AD8232, MPU-6050, SCD41, BMP180, SSD1306
 - Libraries: SparkFun MAX3010x, Sensirion I2C SCD4x, Adafruit SSD1306 / GFX / BusIO / BMP085, btleplug, Tauri, React
 
+## Hardware design
+
+Schematic and PCB on OSHWLab: https://oshwlab.com/youphoutkamp/project_ougymktu. Gerbers and the STL files of the case are in the dashboard repo under `hardware/`.
+
 ## Built with
 
 Seeed XIAO ESP32-S3 · MAX30102 · AD8232 · MPU-6050 · SCD41 · BMP180 · SSD1306 OLED · PlatformIO (Arduino core) · Tauri 2 · Rust (`btleplug`) · React · TypeScript · Vite · Vitest · desktop CNC (PCB) · 3D printing (enclosure)

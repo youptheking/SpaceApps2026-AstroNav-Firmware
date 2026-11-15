@@ -29,7 +29,7 @@ A wrist-worn sensor station that measures the astronaut's body and the cabin air
 
 ## Hardware
 
-Seeed XIAO ESP32-S3 on a double-sided PCB milled on a desktop CNC, in a 3D-printed case with a velcro strap. The Gerbers and the STL files of the case are in the [main repo](https://github.com/youptheking/SpaceApps2026-AstroNav-Dashboard/tree/main/hardware), together with the known issues of this PCB revision.
+Seeed XIAO ESP32-S3 on a double-sided PCB milled on a desktop CNC, in a 3D-printed case with a velcro strap. The Gerbers and the STL files of the case are in the [main repo](https://github.com/youptheking/SpaceApps2026-AstroNav-Dashboard/tree/main/hardware), together with the known issues of this PCB revision. The schematic and PCB design are on [OSHWLab](https://oshwlab.com/youphoutkamp/project_ougymktu).
 
 | Part | Bus | Position | Purpose |
 |---|---|---|---|
