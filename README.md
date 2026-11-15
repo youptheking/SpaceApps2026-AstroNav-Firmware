@@ -106,6 +106,8 @@ De lokale alarmen volgen **NASA-STD-3001 Volume 2, Revision F**:
 
 Alle grenswaarden, hoe we de norm toepassen en de links naar de bronnen staan in [docs/alarmen.md](docs/alarmen.md).
 
+Daarnaast gebruiken we de indeling van het **NASA Human Research Program**: de [5 hazards of human spaceflight](https://www.nasa.gov/hrp/hazards/) en de bijbehorende [risks](https://www.nasa.gov/hrp/risks/). Elk lichaamssysteem in het dashboard noemt zijn hazard en risico. Straling dekken we niet; daarvoor verwijzen we naar het CANS-project van de [Canadian Space Agency](https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp). Het overzicht staat in [docs/status.md](docs/status.md).
+
 ## Documentatie
 
 - [docs/status.md](docs/status.md): **wat werkt, in het Engels** (voor de projectpagina)

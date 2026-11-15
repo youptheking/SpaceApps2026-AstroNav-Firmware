@@ -57,6 +57,18 @@ A wrist station that measures the astronaut's body and the cabin air, warns on t
 
 Physiological limits (SpO2, heart rate, stress) are not in the NASA documents we searched. They come from the WHO pulse-oximetry manual or are our own choice, and are labelled that way. The system gives advice, not a diagnosis.
 
+## The five hazards of human spaceflight (NASA HRP)
+
+NASA's Human Research Program groups the dangers of spaceflight into five hazards. This is how AstroNav covers them. Each body system in the console names its hazard and the matching HRP risk.
+
+| Hazard (NASA HRP) | What AstroNav does | HRP risks it relates to |
+|---|---|---|
+| **Isolation and Confinement** | Stress from HRV (ECG) and skin conductance (GSR), advice such as a breathing break, sent to the wrist | Risk of Behavioral Changes and Psychiatric Disorders · Risk of Inadequate Sleep and Irregular Schedules |
+| **Gravity Fields** | Heart rate and rhythm (ECG + optical), activity and tremor (IMU) | Risk of Cardiovascular Adaptations · Risk of Reduced Cardiorespiratory and Musculoskeletal Fitness · Risk of Spaceflight-Induced Bone Changes |
+| **Hostile/Closed Environments** | Cabin CO2 against NASA-STD-3001, cabin pressure and leak detection, temperature and humidity, SpO2, skin-temperature trend | Risk of Hypoxia · Risk of Altered Immune System Responses |
+| **Distance from Earth** | Everything works on the wrist without the laptop or the ground: local alarms, buzzer and instructions on the screen | (supports crew autonomy when "medical care … from Earth" becomes hard) |
+| **Space Radiation** | **Not covered.** No radiation sensor on the watch. | Risk of Radiation-Induced Cancers. A next step would be a dosimeter; the CSA is developing CANS, a compact autonomous neutron spectrometer. |
+
 ## Honest limitations
 
 | Limitation | Why |
@@ -70,6 +82,24 @@ Physiological limits (SpO2, heart rate, stress) are not in the NASA documents we
 | 7-day watch history not yet shown in the console | Stored on the watch, not fetched yet. |
 | Blood-pressure trend (pulse transit time) | Not built; raw ECG and PPG already share one clock so it can be added. |
 | Several real watches at once | One Bluetooth connection at a time; the other crew members are demo watches. Next step: connect the whole crew and show them side by side. |
+
+## References
+
+**NASA**
+- NASA-STD-3001 Vol. 2, Rev. F (V2 6001, 6004, 6012, 6022): https://standards.nasa.gov/standard/NASA/NASA-STD-3001_VOL_2
+- NASA OCHMO Technical Briefs: Carbon Dioxide, ECLSS, Behavioral Health
+- NASA HRP, 5 Hazards of Human Spaceflight: https://www.nasa.gov/hrp/hazards/
+- NASA HRP, Risks of Human Spaceflight: https://www.nasa.gov/hrp/risks/
+- NASA HRP, Ongoing HRP Research (context: ARCHeR on Artemis II monitored well-being, activity and sleep; Tempus Pro tested near real-time health data): https://www.nasa.gov/hrp/ongoing-hrp-research/
+
+**Canadian Space Agency (Space Apps partner)**
+- Monitoring radiation for astronaut health (CANS neutron spectrometer; the hazard we do not cover): https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp
+- Why do we conduct science experiments in space? (deep-space risks: weightlessness, radiation, isolation, communication delays, less reliance on Earth for emergency medical help): https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp
+
+**Other**
+- WHO Pulse Oximetry Training Manual (SpO2 thresholds 94 % and 90 %)
+- Datasheets: MAX30102, AD8232, MPU-6050, SCD41, BMP180, SSD1306
+- Libraries: SparkFun MAX3010x, Sensirion I2C SCD4x, Adafruit SSD1306 / GFX / BusIO / BMP085, btleplug, Tauri, React
 
 ## Built with
 
