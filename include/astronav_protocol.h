@@ -47,7 +47,7 @@ constexpr uint8_t FLAG_SHOCK           = 1 << 3;
 constexpr uint8_t OK_MAX30102 = 1 << 0, OK_AD8232 = 1 << 1, OK_MPU6050 = 1 << 2, OK_SCD41 = 1 << 3,
                   OK_BMP180 = 1 << 4, OK_BH1750 = 1 << 5, OK_OLED = 1 << 6, OK_GSR = 1 << 7;
 
-// NASA-STD-3001 Vol. 2, V2 6004: ppCO2 1-uursgemiddelde <= 3 mmHg (zie docs/nasa-std-3001.md)
+// NASA-STD-3001 Vol. 2, V2 6004: ppCO2 1-uursgemiddelde <= 3 mmHg (zie docs/alarmen.md)
 constexpr float CO2_LIMIT_1H_MMHG = 3.0f;
 constexpr float CO2_TARGET_MMHG   = 2.5f;   // OCHMO Technical Brief CO2, lange termijn
 

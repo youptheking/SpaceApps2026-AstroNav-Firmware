@@ -5,7 +5,7 @@
 
 // Minuutsamenvattingen in flash, zodat het dashboard trends kan maken ook als
 // de laptop een tijd niet verbonden was. NASA-STD-3001 Vol. 2 [V2 6001].
-// Zie docs/ble.md voor het formaat.
+// Formaat: "Uitbreidingen op v1" in docs/ble-protocol.md.
 
 struct __attribute__((packed)) HistoryRecord {
   uint8_t version = 2;
@@ -32,7 +32,7 @@ struct __attribute__((packed)) HistoryRecord {
   uint16_t battery_mv = 0;
 };
 
-static_assert(sizeof(HistoryRecord) == 58, "docs/ble.md bijwerken");
+static_assert(sizeof(HistoryRecord) == 58, "docs/ble-protocol.md bijwerken");
 
 namespace history {
 
