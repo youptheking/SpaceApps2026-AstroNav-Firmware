@@ -262,6 +262,26 @@ Lees velden op vaste offsets met `u16::from_le_bytes`, `u32::from_le_bytes` enzo
 
 Zo is het protocol in de firmware (versie 1.0) ingevuld. Alles hierboven geldt, dit zijn de details en de keuzes die het protocol open liet.
 
+### Status per pakket op het prototype
+
+Wat er op het gebouwde horloge echt doorkomt. Een dashboard kan op de ongeldige waarden rekenen in plaats van op deze tabel, maar zo weet je wat je kunt verwachten.
+
+| Type | Pakket | Status | Opmerking |
+|---|---|---|---|
+| 0x01 | `ECG` | ✅ | 250 Hz, ook als een elektrode los zit (dan staat `VITALS.flags` bit2 aan) |
+| 0x02 | `PPG` | ✅ | 100 Hz rood + IR |
+| 0x03 | `IMU` | ✅ | 50 Hz, ±4 g / ±500 °/s |
+| 0x04 | `GSR` | ✅ | 10 Hz in nS |
+| 0x05 | `VITALS` | ✅ | alle velden, `reserved` = 0 |
+| 0x06 | `RR` | ✅ | alleen als er slagen zijn (elektrodes vast) |
+| 0x07 | `AIR` | ✅ | elke 5 s |
+| 0x08 | `CABIN` | ⚠️ deels | `pressure_pa` en `pressure_trend` werken. `lux_c10` is **altijd `0xFFFFFFFF`**: de BH1750 is geschrapt. |
+| 0x09 | `STATUS` | ⚠️ deels | `sensors_ok`, `alarms` en `fw_version` werken. `vbat_mv` = **`0xFFFF`** en `battery_pct` = **`0xFF`**: geen accu, het prototype draait op usb. `sensors_ok` bit5 (BH1750) is altijd 0. |
+| 0x20 | `EVENT` | ✅ | codes 0–12, behalve code 9 (accu bijna leeg): die komt op het prototype nooit |
+| – | `history` | ✅ | uitbreiding, zie hieronder |
+
+`control` 0x01–0x04 en de uitbreidingen 0x10 en 0x11 werken allemaal. Getest via usb (`alert`, `ack`, `streams`) en op de pols; met een echt dashboard is de hele keten nog niet getest, want dat bestaat nog niet.
+
 ### Koppelen
 
 - Naam in de advertentie: `AstroNav-Wrist`. De service-UUID zit in de advertentie, de naam in de scan response (samen passen ze niet in 31 bytes).

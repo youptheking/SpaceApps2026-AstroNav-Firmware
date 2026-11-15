@@ -311,7 +311,7 @@ void updateTelemetry() {
   }
 
   // onder 2,5 V hangt er geen accu aan, alleen usb
-  uint16_t mv = analogReadMilliVolts(pins::BATT) * pins::BATT_DIVIDER;
+  uint16_t mv = pins::HAS_BATTERY ? analogReadMilliVolts(pins::BATT) * pins::BATT_DIVIDER : 0;
   if (mv > 2500) {
     telemetry.battery_mv = mv;
     telemetry.battery_pct = batteryPercent(mv);
