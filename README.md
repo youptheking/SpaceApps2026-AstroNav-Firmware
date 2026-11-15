@@ -5,10 +5,12 @@ Team AstroNav (solo) · Amsterdam (virtual) · by [YoupSpace](https://youpspace.
 
 A wrist-worn sensor station that measures the astronaut's body and the cabin air, warns on the wrist even without a laptop, and streams everything over Bluetooth Low Energy to the desktop console.
 
-| Repo | What |
+**Start at the main repo:** [SpaceApps2026-AstroNav-Dashboard](https://github.com/youptheking/SpaceApps2026-AstroNav-Dashboard) has the project overview, the console, and the PCB and case files. This repo is the watch firmware.
+
+| Where | What |
 |---|---|
-| **SpaceApps2026-AstroNav-Firmware** (this repo) | Wrist station: PCB, sensors, firmware |
-| [SpaceApps2026-AstroNav-Dashboard](https://github.com/youptheking/SpaceApps2026-AstroNav-Dashboard) | Desktop console that receives the data and turns it into trends and advice |
+| [SpaceApps2026-AstroNav-Dashboard](https://github.com/youptheking/SpaceApps2026-AstroNav-Dashboard) (main repo) | Desktop console, PCB Gerbers, 3D printable case, project overview |
+| **SpaceApps2026-AstroNav-Firmware** (this repo) | Watch firmware, BLE protocol, sensor and alarm documentation |
 
 > Separate from the other AstroNav projects (AstroNav-Nano and related repos).
 
@@ -27,7 +29,7 @@ A wrist-worn sensor station that measures the astronaut's body and the cabin air
 
 ## Hardware
 
-Seeed XIAO ESP32-S3 on a double-sided PCB milled on a desktop CNC, in a 3D-printed case with a velcro strap.
+Seeed XIAO ESP32-S3 on a double-sided PCB milled on a desktop CNC, in a 3D-printed case with a velcro strap. The Gerbers and the STL files of the case are in the [main repo](https://github.com/youptheking/SpaceApps2026-AstroNav-Dashboard/tree/main/hardware), together with the known issues of this PCB revision.
 
 | Part | Bus | Position | Purpose |
 |---|---|---|---|
@@ -85,6 +87,10 @@ The idea and concept are my own. Claude (Anthropic) was used to research parts, 
 - [docs/ecg-elektrodes.md](docs/ecg-elektrodes.md): where the ECG electrodes go
 - [docs/ontwerpkeuzes.md](docs/ontwerpkeuzes.md): design choices
 - [docs/pinout.md](docs/pinout.md), [docs/pcb.md](docs/pcb.md), [docs/stroombudget.md](docs/stroombudget.md), [docs/inkooplijst.md](docs/inkooplijst.md): pins, PCB, power budget, parts list
+
+## License
+
+The firmware is open source under [GPL-3.0](LICENSE): you may use it, change it and share it, as long as you share your changes under the same license. The hardware (PCB and case) is under CERN-OHL-S v2, see the [main repo](https://github.com/youptheking/SpaceApps2026-AstroNav-Dashboard#license). The names AstroNav and YoupSpace and the logos are not covered by these licenses.
 
 ---
 
