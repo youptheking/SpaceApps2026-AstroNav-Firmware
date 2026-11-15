@@ -108,6 +108,7 @@ Alle grenswaarden, hoe we de norm toepassen en de links naar de bronnen staan in
 
 ## Documentatie
 
+- [docs/status.md](docs/status.md): **wat werkt, in het Engels** (voor de projectpagina)
 - [docs/sensoren.md](docs/sensoren.md): bedrading, adressen, wat je moet weten per sensor, en de hardwaretests
 - [docs/ble-protocol.md](docs/ble-protocol.md): BLE-protocol v1, hoe de firmware het invult, de uitbreidingen en de USB-commando's
 - [docs/alarmen.md](docs/alarmen.md): alarmen, grenswaarden, buzzerpatronen en NASA-bronnen
