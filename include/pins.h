@@ -28,4 +28,9 @@ constexpr float BATT_DIVIDER = 2.0;
 // accupercentage of "Battery low" geven. Weer op true als er een accu aan zit.
 constexpr bool HAS_BATTERY = false;
 
+// Demomodus: wat er op het prototype niet is (licht, accu, of een sensor die
+// wegvalt) krijgt nepwaarden, en het SIM-pakket vertelt het dashboard welke.
+// Echte sensoren gaan altijd voor. Uit voor een eerlijke meting zonder vulling.
+constexpr bool DEMO_MODE = true;
+
 }

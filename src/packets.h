@@ -19,4 +19,8 @@ astronav::CabinPacket cabin(const Telemetry &t);
 astronav::StatusPacket status(const Telemetry &t, uint8_t sensorsOk);
 astronav::EventPacket event(uint8_t code, uint8_t state, uint8_t severity, int16_t value, uint8_t source);
 
+// uitbreiding: welke waarden nep zijn, in de bits van STATUS.sensors_ok
+astronav::SimPacket sim(const Telemetry &t, bool demo);
+uint8_t simulated(const Telemetry &t);  // alleen de bits, zonder volgnummer op te hogen
+
 }

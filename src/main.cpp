@@ -35,7 +35,9 @@ const char *MESSAGES[] = {
 const size_t MESSAGE_COUNT = sizeof(MESSAGES) / sizeof(MESSAGES[0]);
 
 Telemetry telemetry;
-bool simulate = false;  // `sim on` via usb vult ontbrekende sensoren aan
+// demomodus: wat ontbreekt (licht, accu, een sensor die wegvalt) krijgt nepwaarden,
+// en het SIM-pakket zegt welke. Uit met `sim off` of control 0x12.
+bool simulate = pins::DEMO_MODE;
 uint32_t unixAtBoot = 0;
 uint16_t muted = 0;  // alarmen die bevestigd zijn, buzzer stil tot ze weer opnieuw beginnen
 
@@ -50,6 +52,7 @@ uint32_t breatheEnd = 0;  // 0 = geen oefening
 
 uint32_t lastTick = 0, lastStatus = 0, lastScreen = 0, lastAirSim = 0;
 uint16_t statusAlerts = 0;
+uint8_t statusSim = 0, statusExtra = 0;
 
 // geschiedenis versturen, een paar records per keer
 uint32_t historyNext = 0;  // 0 = niks aan het versturen
@@ -169,6 +172,9 @@ void handleControl(const uint8_t *buf, size_t len) {
     case CMD_HISTORY:
       requestHistory(arg32);
       break;
+    case CMD_DEMO:
+      if (len >= 2) simulate = buf[1];
+      break;
     case CMD_SET_TIME:
       setTime(arg32);
       break;
@@ -187,6 +193,8 @@ void printShow() {
                 t.vitals_flags);
   Serial.printf("gemeten 0x%02X  gesimuleerd 0x%02X  stream %s  verloren %u\n", t.flags & ~t.sim_flags & ~HAS_TIME,
                 t.sim_flags, sampler::rawStreams() ? "aan" : "uit", sampler::dropped());
+  Serial.printf("demo %s  licht %.1f lux%s  accu%s\n", simulate ? "aan" : "uit", t.lux_c10 / 10.0,
+                t.sim_light ? " (sim)" : "", t.sim_battery ? " (sim)" : "");
   const char *a = alerts::text(t.alerts);
   Serial.printf("alarmen 0x%04X  %s%s\n", t.alerts, a ? a : "-", (t.status & STATUS_MUTED) ? "  (stil)" : "");
 }
@@ -318,7 +326,14 @@ void updateTelemetry() {
   }
 
   sensors::fill(telemetry);
-  if (simulate) sim::fill(telemetry, sensors::ALL & ~sensors::groups());
+  if (simulate) {
+    sim::fill(telemetry, sensors::ALL & ~sensors::groups());
+    sim::fillLight(telemetry);
+    if (!telemetry.battery_mv) {
+      sim::fillBattery(telemetry);
+      telemetry.battery_pct = batteryPercent(telemetry.battery_mv);
+    }
+  }
   if (breatheEnd) telemetry.status |= STATUS_BREATHING;
 
   alerts::update(telemetry, onAlert);
@@ -375,8 +390,21 @@ void sendStatus() {
   uint8_t ok = sensors::okBits() | (display::found() ? OK_OLED : 0);
   StatusPacket s = packets::status(telemetry, ok);
   ble::sendData(&s, sizeof(s));
+
+  // meteen erachteraan: welke waarden nep zijn, zodat het dashboard dat erbij kan zetten
+  SimPacket m = packets::sim(telemetry, simulate);
+  ble::sendData(&m, sizeof(m));
+
   lastStatus = millis();
   statusAlerts = telemetry.alerts;
+  statusSim = m.simulated;
+  statusExtra = m.extra;
+}
+
+// is er iets veranderd aan wat er gesimuleerd wordt? Dan meteen opnieuw sturen
+bool simChanged() {
+  uint8_t extra = telemetry.sim_battery ? SIM_BATTERY : 0;
+  return packets::simulated(telemetry) != statusSim || extra != statusExtra;
 }
 
 // eens per seconde: alles bijwerken en de langzame pakketten versturen
@@ -398,7 +426,7 @@ void tick() {
     ble::sendData(&a, sizeof(a));
   }
 
-  if (millis() - lastStatus >= STATUS_EVERY_MS || telemetry.alerts != statusAlerts) sendStatus();
+  if (millis() - lastStatus >= STATUS_EVERY_MS || telemetry.alerts != statusAlerts || simChanged()) sendStatus();
 }
 
 // als een module halverwege een byte bleef hangen (bijv. na een reset),

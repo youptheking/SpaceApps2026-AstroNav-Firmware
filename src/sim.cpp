@@ -75,4 +75,25 @@ void fill(Telemetry &t, uint8_t which) {
   }
 }
 
+// Cabineverlichting: ~380 lux overdag, elke 15 minuten 3 minuten gedimd tot
+// "nacht". Op het ISS zie je 16 zonsopkomsten per dag, de verlichting is daar
+// het houvast voor het dag-nachtritme. In het echt zou dit de BH1750 meten.
+void fillLight(Telemetry &t) {
+  float s = millis() / 1000.0f;
+  bool night = fmodf(s, 900) > 720;
+  float lux = night ? 6 + noise(1) : 380 + 30 * sinf(s / 50) + noise(8);
+  t.lux_c10 = lux * 10;
+  t.sim_light = 1;
+  t.status |= STATUS_SIMULATED;
+}
+
+// accu loopt langzaam leeg van ~85 % naar ~40 % en begint dan opnieuw,
+// zodat het accualarm (onder 15 %) in de demo niet afgaat
+void fillBattery(Telemetry &t) {
+  uint32_t minutes = millis() / 60000;
+  t.battery_mv = 4050 - (minutes * 3) % 300;
+  t.sim_battery = 1;
+  t.status |= STATUS_SIMULATED;
+}
+
 }
