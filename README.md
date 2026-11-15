@@ -1,7 +1,8 @@
 # NASA Space Apps 2026 – Team AstroNav – Firmware (polsstation)
 
-> **Status: nog niet gestart.** De ontwikkeling begint op zaterdag 14 november 2026 om 09:00 (NL-tijd).
-> Deze repo bevat bewust alleen projectinformatie. Er staat nog geen code in.
+> **Status: firmware 1.0 werkt op de PCB.** Alle sensoren worden uitgelezen, de lokale alarmen werken, en de data gaat via Bluetooth volgens [BLE-protocol v1](docs/ble-protocol.md).
+>
+> Bouwen en flashen met PlatformIO: `pio run -t upload`. Board: Seeed XIAO ESP32-S3.
 
 > Dit is een **NASA Space Apps Challenge 2026**-project en staat los van de andere AstroNav-projecten (AstroNav-Nano en verwante repos).
 
@@ -43,45 +44,50 @@ Een samenhangend systeem met twee delen:
 - **Vormfactor:** ergonomisch polshorloge met klittenband
 - **PCB:** dubbelzijdig, gefreesd op de desktop-CNC
 - **Behuizing:** 3D-geprint (PETG of PLA) met ventilatieroosters en koperen contactvlakken
-- **Hoofdcontroller:** ESP32 met ingebouwde BLE
+- **Hoofdcontroller:** Seeed XIAO ESP32-S3 met ingebouwde BLE
 - **Lokale indicatie:**
-  - 0.96" I2C OLED: actuele status en directe instructies, zoals "Neem rust", "Start ademhalingstraining" of "Verhoogde CO2"
-  - Piezobuzzer: geluidswaarschuwing bij acute alarmsituaties
+  - 0.96" tweekleurige I2C OLED, staand: waarden, alarmen in de gele strook, en instructies van het dashboard zoals "Take a break" of "Start breathing exercise"
+  - Piezobuzzer: een eigen patroon per ernst (info, waarschuwing, alarm)
+  - Bevestigen met een **dubbeltik** op het horloge
 
 ## Sensoren
 
 | Component | Koppeling | Positie | Functie en relevantie voor ruimtevaart |
 |---|---|---|---|
-| ESP32 | Systeemcontroller | Intern op PCB | Leest sensoren uit, stuurt OLED en buzzer aan, verzorgt BLE-streaming |
-| MAX30102 / MAX86141 | I2C | Onderzijde (tegen huid) | Optische meting van hartslag en zuurstofsaturatie (SpO2) |
-| TMP117 / MCP9808 | I2C | Onderzijde (tegen huid) | Nauwkeurige lichaamstemperatuur (immuunreactie, koorts) |
-| ICM45686 / MPU6050 | I2C of SPI | Intern op PCB | 3-assige IMU: activiteit, training, slaapkwaliteit, spiertremoren |
-| GSR- en AD8232-contacten | Analoog (ADC) | Onderzijde en bovenrand | Gefreesde koperen vlakken voor huidgeleiding (acute stress) en ECG-hartgolf |
+| XIAO ESP32-S3 | Systeemcontroller | Intern op PCB | Leest sensoren uit, stuurt OLED en buzzer aan, verzorgt BLE-streaming |
+| MAX30102 | I2C | Onderzijde (tegen huid) | PPG op 100 Hz: hartslag, zuurstofsaturatie (SpO2), perfusie. De chiptemperatuur dient als trend van de huidtemperatuur. |
+| MPU-6050 | I2C | Intern op PCB | 3-assige IMU: activiteit, tremor (sterkte en frequentie), schok, dubbeltik |
+| AD8232 | Analoog (ADC) | Kabel naar de borst | ECG op 250 Hz, R-pieken en RR-intervallen (HRV), elektrode-los-detectie |
+| GSR-contacten | Analoog (ADC) | Onderzijde (tegen huid) | Gefreesde koperen vlakken voor huidgeleiding (acute stress) |
+| SCD41 | I2C | Zijkant (met rooster) | Echte CO2, plus temperatuur en luchtvochtigheid in de cabine |
+| BMP180 | I2C | Intern | Cabinedruk: ppCO2 in mmHg en een lekalarm bij een drukdaling |
 | ~~BH1750~~ | – | – | Tijdens de bouw geschrapt: de pinvolgorde van de footprint klopte niet. |
-| SCD40 / SGP30 | I2C | Zijkant (met rooster) | CO2 en luchtkwaliteit in de cabine, tegen verstikking en hoofdpijn |
 | 0.96" OLED | I2C | Bovenzijde | Directe actiepunten voor de astronaut |
-| Piezobuzzer | GPIO (PWM) | Intern op PCB | Alarm bij kritieke daling van SpO2 of stijging van CO2 |
+| Piezobuzzer | GPIO (PWM) | Intern op PCB | Lokaal alarm, ook zonder laptop |
 
-## Firmware (gepland)
+## Firmware
 
-- **Taal:** C++ op de ESP32
-- **Sensoruitlezing:** alle sensoren met hoge frequentie
-- **Lokale beslislogica:** waarschuwingen en instructies direct op het OLED-scherm, buzzer bij noodsituaties, ook zonder verbinding met de laptop
-- **Draadloze telemetrie:** gestructureerde datapakketten via BLE naar het desktopdashboard
+- **C++ met PlatformIO** (Arduino-core voor de ESP32-S3)
+- **Snelle sensoren in een eigen task** op een vaste tik van 4 ms, zodat ECG, PPG, IMU en GSR dezelfde klok hebben (nodig voor RR-intervallen en later PTT)
+- **Lokale beslislogica:** alarmen met de codes van het protocol, direct op het OLED en met de buzzer, ook zonder verbinding met de laptop
+- **Bluetooth Low Energy** volgens [BLE-protocol v1](docs/ble-protocol.md): ruwe streams, vitale waarden, lucht, cabine, status en alarmen. Koppelen met een vaste code die op het scherm staat.
+- **Geschiedenis:** 7 dagen aan minuutsamenvattingen in de flash, op te halen door het dashboard
+- **Robuust:** ontbrekende sensoren worden elke 10 s opnieuw gezocht, losse contacten leggen de bus niet plat, en een watchdog herstart het horloge als het toch vastloopt
 
 ## NASA-bronnen
 
 De lokale alarmen volgen **NASA-STD-3001 Volume 2, Revision F**:
 
 - **[V2 6004]** CO2: het 1-uursgemiddelde van ppCO2 mag niet boven 3 mmHg komen
-- **[V2 6022]** de crew lokaal (OLED en buzzer) én op afstand (Bluetooth naar het dashboard) waarschuwen
+- **[V2 6022]** de crew lokaal (OLED en buzzer) én op afstand (Bluetooth naar het dashboard) waarschuwen, ook bij een drukdaling (mogelijk lek)
 - **[V2 6012]** grenzen voor cabinetemperatuur en luchtvochtigheid
-- **[V2 6001]** data bewaren voor trendanalyse: het horloge slaat 7 dagen aan minuutsamenvattingen op, met CO2 per 5 seconden volgens Tabel 6.1-1 (zie [docs/ble.md](docs/ble.md#geschiedenis))
+- **[V2 6001]** data bewaren voor trendanalyse: het horloge slaat 7 dagen aan minuutsamenvattingen op, met CO2 per 5 seconden volgens Tabel 6.1-1 (zie [de geschiedenis](docs/ble-protocol.md#uitbreidingen-op-v1))
 
 Alle grenswaarden, hoe we de norm toepassen en de links naar de bronnen staan in [docs/alarmen.md](docs/alarmen.md).
 
 ## Documentatie
 
-- [docs/sensoren.md](docs/sensoren.md): sensoren aansluiten, wat er echt is en wat gesimuleerd wordt
-- [docs/ble.md](docs/ble.md): Bluetooth-protocol, pakketten, commando's en geschiedenis
-- [docs/alarmen.md](docs/alarmen.md): alarmen, grenswaarden en NASA-bronnen
+- [docs/sensoren.md](docs/sensoren.md): bedrading, adressen, wat je moet weten per sensor, en de hardwaretests
+- [docs/ble-protocol.md](docs/ble-protocol.md): BLE-protocol v1, hoe de firmware het invult, de uitbreidingen en de USB-commando's
+- [docs/alarmen.md](docs/alarmen.md): alarmen, grenswaarden, buzzerpatronen en NASA-bronnen
+- [docs/inkooplijst.md](docs/inkooplijst.md): onderdelen
