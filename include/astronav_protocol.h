@@ -1,8 +1,5 @@
 // AstroNav BLE-protocol v1 – gedeelde definities voor de firmware.
 // Bron van waarheid: docs/ble-protocol.md. Pas dat document aan bij elke wijziging hier.
-//
-// Generated with Claude (SI) based on Team AstroNav's protocol design.
-// See README "Gebruik van AI (SI)".
 #pragma once
 #include <stdint.h>
 
@@ -15,17 +12,20 @@ constexpr const char* SERVICE_UUID      = "2075864c-7ef8-4db3-9901-ff4606218bb1"
 constexpr const char* CHAR_DATA_UUID    = "8b4d589b-2465-4b5e-9a2c-219eb307cabe";  // notify
 constexpr const char* CHAR_EVENTS_UUID  = "631cd0ae-17e9-48b0-beec-431b6a4ca732";  // indicate
 constexpr const char* CHAR_CONTROL_UUID = "4419bc3d-3bfd-40d1-8da1-6bcae37219b5";  // write
+constexpr const char* CHAR_HISTORY_UUID = "d7a1e5c2-3b4f-4c8a-9e61-0b7f2a9c4d13";  // notify, uitbreiding
 
 enum PacketType : uint8_t {
   PKT_ECG = 0x01, PKT_PPG = 0x02, PKT_IMU = 0x03, PKT_GSR = 0x04,
   PKT_VITALS = 0x05, PKT_RR = 0x06, PKT_AIR = 0x07, PKT_CABIN = 0x08,
   PKT_STATUS = 0x09, PKT_EVENT = 0x20,
+  PKT_SIM = 0x0A,  // uitbreiding: welke waarden gesimuleerd zijn (demomodus)
 };
 
 enum EventCode : uint8_t {
   EV_CO2_NASA_LIMIT = 0, EV_CO2_EARLY = 1, EV_SPO2_LOW = 2, EV_HR_HIGH = 3,
   EV_HR_LOW = 4, EV_ECG_LEADS_OFF = 5, EV_NO_SKIN_CONTACT = 6, EV_SHOCK = 7,
   EV_PRESSURE_DROP = 8, EV_BATTERY_LOW = 9, EV_STRESS_HIGH = 10, EV_ACKNOWLEDGED = 11,
+  EV_CABIN_CLIMATE = 12,  // uitbreiding: V2 6012/6022, cabinetemperatuur of -vocht buiten het werkgebied
 };
 
 enum Severity : uint8_t { SEV_INFO = 0, SEV_WARNING = 1, SEV_ALARM = 2 };
@@ -33,6 +33,11 @@ enum EventSource : uint8_t { SRC_WRIST = 0, SRC_DASHBOARD = 1, SRC_ASTRONAUT = 2
 
 enum ControlCmd : uint8_t {
   CMD_BUZZER_TEST = 0x01, CMD_STREAMS = 0x02, CMD_CLEAR_ALERT = 0x03, CMD_ALERT = 0x04,
+  // uitbreidingen, zie "Uitbreidingen" in docs/ble-protocol.md
+  CMD_HISTORY = 0x10,  // u32 vanaf_seq, 0 = alleen het bereik opvragen
+  CMD_SET_TIME = 0x11,  // u32 unix-tijd, voor de tijdstempels in de geschiedenis
+  CMD_DEMO = 0x12,      // u8 0/1: demomodus uit of aan
+  CMD_UNLOCK = 0x13,    // u32 code van het scherm, moet als eerste na het verbinden
 };
 
 // VITALS.flags
@@ -41,10 +46,14 @@ constexpr uint8_t FLAG_MOTION_ARTIFACT = 1 << 1;
 constexpr uint8_t FLAG_ECG_LEADS_OFF   = 1 << 2;
 constexpr uint8_t FLAG_SHOCK           = 1 << 3;
 
-// Wachttijd bij het opstarten (voeding en buffercondensatoren laten stabiliseren)
-constexpr uint32_t STARTUP_DELAY_MS = 2000;
+// STATUS.sensors_ok
+constexpr uint8_t OK_MAX30102 = 1 << 0, OK_AD8232 = 1 << 1, OK_MPU6050 = 1 << 2, OK_SCD41 = 1 << 3,
+                  OK_BMP180 = 1 << 4, OK_BH1750 = 1 << 5, OK_OLED = 1 << 6, OK_GSR = 1 << 7;
 
-// NASA-STD-3001 Vol. 2, V2 6004: ppCO2 1-uursgemiddelde <= 3 mmHg (zie docs/nasa-std-3001.md)
+// SIM.extra
+constexpr uint8_t SIM_BATTERY = 1 << 0;
+
+// NASA-STD-3001 Vol. 2, V2 6004: ppCO2 1-uursgemiddelde <= 3 mmHg (zie docs/alarmen.md)
 constexpr float CO2_LIMIT_1H_MMHG = 3.0f;
 constexpr float CO2_TARGET_MMHG   = 2.5f;   // OCHMO Technical Brief CO2, lange termijn
 
@@ -66,6 +75,9 @@ struct CabinPacket  { Header h; uint32_t pressure_pa; int16_t pressure_trend;
                       uint32_t lux_c10; uint16_t reserved; };        // 20 bytes
 struct StatusPacket { Header h; uint16_t vbat_mv; uint8_t battery_pct, sensors_ok;
                       uint16_t alarms; uint8_t fw_major, fw_minor; }; // 16 bytes
+// uitbreiding: simulated heeft de bits van STATUS.sensors_ok. Een bit aan =
+// de waarden van die sensor zijn nep (demomodus), niet gemeten.
+struct SimPacket    { Header h; uint8_t demo, simulated, extra; };      // 11 bytes
 struct EventPacket  { Header h; uint8_t code, state, severity; int16_t value;
                       uint8_t source; };                           // 14 bytes
 #pragma pack(pop)
@@ -80,5 +92,6 @@ static_assert(sizeof(AirPacket) == 21, "AIR");
 static_assert(sizeof(CabinPacket) == 20, "CABIN");
 static_assert(sizeof(StatusPacket) == 16, "STATUS");
 static_assert(sizeof(EventPacket) == 14, "EVENT");
+static_assert(sizeof(SimPacket) == 11, "SIM");
 
 }  // namespace astronav
