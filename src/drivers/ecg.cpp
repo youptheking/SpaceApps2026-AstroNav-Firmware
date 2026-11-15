@@ -32,7 +32,32 @@ const uint16_t ECG_RAIL_LOW_MV = 0, ECG_RAIL_HIGH_MV = 3150;
 const int CLIP_BLOCK = 500;       // 2 s op 250 Hz
 const int MAX_CLIPPED_PCT = 5;
 static int blockCount = 0, blockClipped = 0;
-static volatile bool saturated = false;
+// begint als onbetrouwbaar: pas een schoon blok van 2 s laat slagen door, anders
+// glipten bij het opstarten nep-RR's (gezien: 360 ms = "170 bpm") naar de HRV
+static volatile bool saturated = true;
+
+// opname voor `ecgdump`: de sample-task vult, loop() print (Serial is te traag voor de task)
+const int CAPTURE_LEN = 750;  // 3 s
+static uint16_t capture[CAPTURE_LEN];
+static volatile int captureCount = CAPTURE_LEN;  // vol = geen opname bezig
+static bool capturePending = false;
+
+void ecgCaptureStart() {
+  capturePending = true;
+  captureCount = 0;
+}
+
+bool ecgCapturePrint() {
+  if (!capturePending || captureCount < CAPTURE_LEN) return false;
+  capturePending = false;
+  Serial.print("ecgdump:");
+  for (int i = 0; i < CAPTURE_LEN; i++) {
+    Serial.print(i ? ',' : ' ');
+    Serial.print(capture[i]);
+  }
+  Serial.println();
+  return true;
+}
 
 static float removeMains(uint16_t mv) {
   mainsSum += mv;
@@ -97,6 +122,8 @@ void ecgSample(uint32_t now) {
     if (sampler::rawStreams()) sampler::push(&packet, sizeof(packet));
     inPacket = 0;
   }
+
+  if (captureCount < CAPTURE_LEN) capture[captureCount++] = mv;
 
   // LO+ of LO- hoog = elektrode los
   bool off = digitalRead(pins::ECG_LO_PLUS) || digitalRead(pins::ECG_LO_MINUS);

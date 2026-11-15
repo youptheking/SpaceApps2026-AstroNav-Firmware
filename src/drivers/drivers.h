@@ -49,6 +49,9 @@ bool ecgBegin();
 void ecgSample(uint32_t now);
 void rrSend(uint32_t now);
 void ecgFill(Telemetry &t);
+// testhulp: 3 s ruwe ECG opnemen en daarna via Serial printen (serieel commando `ecgdump`)
+void ecgCaptureStart();
+bool ecgCapturePrint();  // true als er een opname klaar was en geprint is
 bool gsrBegin();
 void gsrSample(uint32_t now);
 void gsrFill(Telemetry &t);

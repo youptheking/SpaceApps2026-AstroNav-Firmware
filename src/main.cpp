@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <BLEDevice.h>
 #include <Wire.h>
 
 #include "alerts.h"
@@ -229,6 +230,33 @@ void handleCommand(String line) {
   } else if (cmd == "sensors") {
     sensors::print();
     Serial.printf("%-9s 0x3C  %s\n", "OLED", display::found() ? "ok" : "niet gevonden");
+  } else if (cmd == "ecgtest") {
+    // hardwarecheck van de AD8232: staat hij aan, en stuurt hij D0 echt aan?
+    // Een zwevende D0 volgt de interne pull-up/pull-down; een aangestuurde niet.
+    int up = 0, down = 0;
+    const int TRIES = 20;
+    for (int i = 0; i < TRIES; i++) {
+      pinMode(pins::ECG_OUT, INPUT_PULLUP);
+      delayMicroseconds(50);
+      up += digitalRead(pins::ECG_OUT);
+      pinMode(pins::ECG_OUT, INPUT_PULLDOWN);
+      delayMicroseconds(50);
+      down += digitalRead(pins::ECG_OUT);
+    }
+    pinMode(pins::ECG_OUT, INPUT);  // analogRead zet hem daarna zelf weer analoog
+    uint32_t sum = 0;
+    uint16_t lo = 0xFFFF, hi = 0;
+    for (int i = 0; i < 100; i++) {
+      uint16_t mv = analogReadMilliVolts(pins::ECG_OUT);
+      sum += mv;
+      lo = min(lo, mv);
+      hi = max(hi, mv);
+      delay(2);
+    }
+    Serial.printf("ecgtest: SDN(D3)=%d  LO+(D2)=%d  LO-(D1)=%d  D0 met pull-up %d/%d hoog, met pull-down %d/%d hoog  "
+                  "D0 %lu mV (min %u, max %u)\n",
+                  digitalRead(pins::ECG_SDN), digitalRead(pins::ECG_LO_PLUS), digitalRead(pins::ECG_LO_MINUS), up, TRIES,
+                  down, TRIES, sum / 100, lo, hi);
   } else if (cmd == "bmp") {
     Serial.printf("bmp180: %.1f C  %u Pa\n", bmp180Temperature(), telemetry.pressure_pa);
   } else if (cmd == "show") {
@@ -240,6 +268,13 @@ void handleCommand(String line) {
     int a = arg.indexOf(' '), b = arg.lastIndexOf(' ');
     if (a < 0 || b <= a) return reply("err alert <code> <ernst> <tekst>");
     showRemote(arg.substring(0, a).toInt(), arg.substring(a + 1, b).toInt(), arg.substring(b + 1).toInt());
+  } else if (cmd == "ecgdump") {
+    ecgCaptureStart();  // loop() print hem over 3 s
+  } else if (cmd == "adv") {
+    // testhulp: radio stil zonder verbinding, om storing van de antenne op de ECG te zoeken
+    if (arg == "off") BLEDevice::stopAdvertising();
+    else BLEDevice::startAdvertising();
+    reply("ok");
   } else if (cmd == "streams") {
     sampler::setRawStreams(arg != "off");
     reply("ok");
@@ -530,6 +565,7 @@ void loop() {
 
   updateBuzzer();
   sendHistoryChunk();
+  ecgCapturePrint();
 
   // tijdens de ademhaling vaker, anders loopt de cirkel schokkerig
   uint32_t screenInterval = breatheEnd ? 50 : 200;
