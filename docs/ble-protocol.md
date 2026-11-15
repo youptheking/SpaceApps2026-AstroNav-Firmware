@@ -1,6 +1,6 @@
 # BLE-protocol v1 – polsstation → dashboard
 
-Status: **voorstel**, 14 november 2026. Na akkoord is dit de afspraak waar firmware en dashboard allebei op bouwen. Achtergrond en keuzes: [ble-data.md](ble-data.md).
+Status: **afgesproken en geïmplementeerd** in de firmware 1.0 (15 november 2026). Firmware en dashboard bouwen allebei hierop. De gedeelde definities staan in `include/astronav_protocol.h`. Wat de firmware precies doet en de paar uitbreidingen staan onderaan, bij [Implementatie in de firmware](#implementatie-in-de-firmware).
 
 ## Algemene afspraken
 
@@ -257,3 +257,121 @@ Het `RR`-pakket heeft een variabele lengte: kop + `count` + `count × u16`.
 ## Uitlezen in Rust (dashboard)
 
 Lees velden op vaste offsets met `u16::from_le_bytes`, `u32::from_le_bytes` enzovoort. Controleer eerst de **lengte** en de **versie** van het pakket voordat je het verwerkt. Pakketten met een onbekend type sla je over.
+
+## Implementatie in de firmware
+
+Zo is het protocol in de firmware (versie 1.0) ingevuld. Alles hierboven geldt, dit zijn de details en de keuzes die het protocol open liet.
+
+### Koppelen
+
+- Naam in de advertentie: `AstroNav-Wrist`. De service-UUID zit in de advertentie, de naam in de scan response (samen passen ze niet in 31 bytes).
+- Koppelen gaat met een **vaste 6-cijferige code**. Die komt uit het MAC-adres: elk horloge heeft zijn eigen code, maar die blijft altijd hetzelfde. Zolang er geen laptop verbonden is, staat de code op het OLED (en in de USB-monitor bij het opstarten).
+- Alle characteristics vragen een **versleutelde, geauthenticeerde** verbinding (MITM, bonding). Zonder koppeling kun je niks lezen of schrijven. Na de eerste keer onthouden laptop en horloge de koppeling.
+- Het horloge heeft **geen seriële (UART) service**. Een "Bluetooth serial"-app op de telefoon werkt daarom niet. Testen kan met nRF Connect: verbinden, code invoeren, en notify aanzetten op `data` en `events`.
+
+### Timing en tijdstempels
+
+- ECG, PPG, IMU en GSR worden in een eigen task gesampled op een vaste tik van 4 ms (FreeRTOS, `src/sampler.cpp`). `t_ms` komt voor alle pakketten van dezelfde klok (`millis()`, de hardwaretimer van de ESP32).
+- **PPG:** de MAX30102 meet op zijn eigen 100 Hz-klok. De firmware leest de FIFO elke 40 ms en rekent de tijd terug vanaf het moment van uitlezen (10 ms per sample).
+- **RR:** `t_ms` is het tijdstip van de R-piek waar het eerste interval in het pakket **begint**. Maximaal 5 intervallen per pakket, één pakket per seconde, alleen als er slagen waren. De R-pieken komen uit een uitgeklede Pan-Tompkins (`src/rpeaks.cpp`), intervallen buiten 300–2000 ms worden weggegooid.
+- **AIR** gaat bij elke nieuwe meting van de SCD41, dus elke 5 s (de frequentie van NASA Tabel 6.1-1 voor CO2). VITALS en CABIN gaan elke seconde, STATUS elke 10 s en meteen als de alarmen veranderen.
+- `control` 0x02 zet alleen ECG, PPG, IMU en GSR uit. RR, VITALS en de rest blijven komen.
+
+### Ongeldige waarden
+
+Zoals in de algemene afspraken: `0` voor hartslag en SpO2, anders de hoogste waarde van het type. Daarnaast:
+
+| Veld | Ongeldig | Wanneer |
+|---|---|---|
+| `VITALS.perfusion_c10` | `0xFF` | geen geldige PPG |
+| `VITALS.skin_temp_c100` | `0x7FFF` | MAX30102 niet gevonden |
+| `VITALS.activity`, `tremor_hz_c10`, `tremor_amp` | `0xFF` | geen IMU |
+| alle velden van `AIR`, ook `nasa_status` | max van het type | geen verse SCD41-meting (> 30 s oud) |
+| `CABIN.pressure_trend` | `0x7FFF` | geen (verse) BMP180-meting |
+| `STATUS.vbat_mv`, `battery_pct` | `0xFFFF`, `0xFF` | geen accu (alleen USB) |
+
+`ppco2_c100` wordt uitgerekend met de cabinedruk van de BMP180. Zonder BMP180 neemt de firmware 1 atm (101 325 Pa, ISS). De BMP180 geeft de druk ook één keer per minuut door aan de SCD41, die zijn ppm daarmee compenseert. Een BMP180-meting met een onmogelijke temperatuur (buiten −20 tot 60 °C) telt niet, zodat het lekalarm niet vals afgaat.
+
+### Berekend op de pols
+
+| Veld | Hoe |
+|---|---|
+| `hr_ppg`, `spo2` | Maxim-algoritme (SparkFun-bibliotheek) op 25 Hz, venster van 4 s, elke seconde. Onder de IR-drempel (geen huid) niks. |
+| `hr_ecg` | gemiddelde van de laatste 8 RR-intervallen, 0 na 3 s zonder slag |
+| `perfusion_c10` | (max − min) / gemiddelde van het IR-signaal over 4 s |
+| `skin_temp_c100` | chiptemperatuur van de MAX30102, elke 10 s. Is een trend, geen lichaamstemperatuur. |
+| `activity` | rms van de versnelling boven 0,5 Hz: < 25 mg = 0 (rust), < 150 mg = 1 (licht), anders 2. Eigen keuze. |
+| `tremor_amp` | rms in de 4–12 Hz band in mg (1 per mg, max 255) |
+| `tremor_hz_c10` | uit de nuldoorgangen op de as met de meeste tremor, 0 onder 3 mg |
+| `flags` bit1 (artefact) | activiteit > 60 mg: de PPG is dan niet te vertrouwen |
+| `flags` bit3 (schok) | meer dan 3 g in de laatste seconde |
+
+### Alarmen en buzzer
+
+De codes, grenzen en ernst staan in [alarmen.md](alarmen.md). Elk alarm gaat als `EVENT` met `source` 0 over `events` (indicate): bij het begin, bij het einde en als het erger wordt (SpO2 van waarschuwing naar alarm).
+
+- **Buzzer:** de patronen per ernst van hierboven. Info-gebeurtenissen van de pols zelf (elektrode los, geen huidcontact) piepen niet, anders piept hij elke keer als je hem afdoet. Een info-melding van het dashboard geeft wel één piep.
+- **Dubbeltik** bevestigt alles wat op dat moment actief is: buzzer stil, de melding van het dashboard weg, en `EVENT` code 11 met `source` 2 en als `value` de code van de melding (of van het ergste alarm). Komt een alarm later opnieuw op, dan piept hij weer.
+- **`control` 0x03** zet de buzzer stil voor die ene code, en haalt een dashboardmelding met die code weg.
+- **`control` 0x04:** de tekst komt op het scherm (in het Engels, afgebroken voor het staande scherm), het patroon hoort bij de ernst, en de pols stuurt `EVENT` met dezelfde code, `state` 1 en `source` 1 terug. Bij `message_id` 1 start ook de ademhalingsoefening van 2 minuten.
+
+### Uitbreidingen op v1
+
+Deze dingen zitten niet in de afspraak hierboven. Ze breken niks: een dashboard dat ze niet kent, merkt er niks van.
+
+**Eventcode 12: cabineklimaat.** Cabinetemperatuur of luchtvochtigheid een minuut buiten het werkgebied van NASA-STD-3001 [V2 6012] (18–27 °C, 25–75 % RV). Ernst: waarschuwing, `value` = temperatuur ×100. [V2 6022] vraagt om te waarschuwen bij temperatuur en vochtigheid, daarom deze code. In `STATUS.alarms` is het bit 12.
+
+**`control` 0x11: klok zetten.** `u32` unix-tijd. Alleen nodig voor de tijdstempels in de geschiedenis. Het dashboard stuurt dit direct na het verbinden.
+
+**Geschiedenis (characteristic `history`, `d7a1e5c2-3b4f-4c8a-9e61-0b7f2a9c4d13`, notify).** NASA-STD-3001 [V2 6001]: *"The system shall provide environmental and suit monitoring data in formats compatible with performing temporal trend analyses."* Het horloge slaat elke minuut een samenvatting op in de flash, ook zonder laptop. Er passen **7 dagen** in (10 080 minuten); daarna worden de oudste overschreven. Elk record heeft een `seq` dat altijd oploopt, ook na een herstart.
+
+Ophalen met **`control` 0x10** + `u32 vanaf_seq`:
+
+1. `vanaf_seq` = 0: het horloge stuurt alleen het bereik, `[0x00][u32 oudste][u32 nieuwste]`.
+2. `vanaf_seq` > 0: alle records vanaf daar, als `[aantal u8][record × aantal]`. Zoveel als de MTU toelaat (max 4), elke 20 ms een pakket. Aan het eind komt het bereik nog een keer, dan weet het dashboard dat het klaar is.
+3. Het dashboard onthoudt de hoogste `seq` en vraagt de volgende keer vanaf `seq + 1`.
+
+Record, versie 2, 58 bytes, little-endian (`HistoryRecord` in `src/history.h`):
+
+| Offset | Type | Veld | Eenheid |
+|---|---|---|---|
+| 0 | u8 | version | 2 |
+| 1 | u32 | seq | |
+| 5 | u32 | unix_time | begin van de minuut, 0 = klok niet gezet |
+| 9 | u8 | flags | welke sensoren deze minuut gemeten hebben, zie hieronder |
+| 10 | u8 | status | bit0 gesimuleerd, bit1 ademhalingsoefening, bit3 buzzer stil |
+| 11 | u16 | alerts | alle alarmen die deze minuut aan waren (bit n = code n) |
+| 13 | u8 | hr_avg | bpm |
+| 14 | u8 | hr_min | bpm |
+| 15 | u8 | hr_max | bpm |
+| 16 | u8 | spo2_avg | % |
+| 17 | u8 | spo2_min | % |
+| 18 | i16 | skin_temp | 0.01 °C, chiptemperatuur MAX30102 |
+| 20 | u16[12] | co2 | ppm, per 5 seconden (NASA Tabel 6.1-1) |
+| 44 | u16 | ppco2_avg | 0.01 mmHg, 1-uursgemiddelde aan het eind van de minuut ([V2 6004]) |
+| 46 | i16 | cabin_temp | 0.01 °C |
+| 48 | u16 | humidity | 0.01 % |
+| 50 | u16 | pressure | 0.1 hPa, cabinedruk |
+| 52 | u16 | gsr | 0.01 µS |
+| 54 | u8 | activity | % van de minuut niet in rust |
+| 55 | u8 | tremor | mg, hoogste waarde |
+| 56 | u16 | battery_mv | mV, laatste meting |
+
+`flags`: bit0 hartslag/SpO2, bit1 huidtemperatuur, bit2 SCD41, bit3 cabinedruk, bit4 IMU, bit5 GSR, bit6 ECG-elektrodes vast, bit7 klok gezet. Een waarde telt alleen als de bijbehorende bit aan staat.
+
+### Testen zonder dashboard (USB, 115200)
+
+| Commando | Wat |
+|---|---|
+| `info` | naam, code, verbonden of niet |
+| `sensors` | welke sensoren gevonden zijn |
+| `show` | alle meetwaarden en actieve alarmen |
+| `alert <code> <ernst> <tekst>` | doet hetzelfde als `control` 0x04 |
+| `ack` | doet hetzelfde als een dubbeltik |
+| `streams on/off` | `control` 0x02 |
+| `sim on/off`, `sim <veld> <waarde>` | ontbrekende sensoren simuleren, of een vaste waarde (`co2`, `spo2`, `hr`, `temp`, `cabin`, `pressure`) |
+| `breathe [min]`, `breathe off` | ademhalingsoefening |
+| `history`, `history <n>`, `history wipe` | bereik, laatste n minuten als tekst, alles wissen |
+| `time <unix>` | klok zetten |
+| `reg <adres> <reg> [n]` | i2c-register uitlezen (hex), om een sensor na te kijken |
+| `bmp`, `oled`, `buzz`, `reboot` | BMP180 nakijken, scherm opnieuw zoeken, piep, herstart |
