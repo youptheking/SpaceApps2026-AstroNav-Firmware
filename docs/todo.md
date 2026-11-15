@@ -11,7 +11,8 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 1. [x] BLE-test op de laptop: verbinden en ontgrendelen werkt
 2. [x] Sensordata klopt in het dashboard, melding terug naar de pols en SIM-labels nagelopen
 3. [x] Behuizing geprint en alles erin
-4. [ ] Video opnemen (kan met de demomodus als de hardware tegenzit)
+4. [ ] Video opnemen (kan met de demomodus als de hardware tegenzit). Let op: de ECG-hartslag is nog niet betrouwbaar, laat die niet zien als echte meting
+4a. [x] Alles op `main`, branches opgeruimd, geschiedenis van het horloge gewist
 5. [ ] **18:00: geen nieuwe functies meer**
 6. [ ] Documentatie op orde (zie punt 6), projectpagina invullen, repo's openbaar
 7. [ ] ⚠️ **Submit for Judging vóór 22:00**
@@ -43,6 +44,9 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 - [x] MAX30102 op de pols getest: gaf een te lage SpO2 (74–89 %) bij beweging of zwakke perfusie, die metingen worden nu genegeerd
 - [x] MAX30102 naast een echte saturatiemeter
 - [x] AD8232: ECG met elektrodes op de borst
+- [x] AD8232: losse kabels opnieuw gesoldeerd en met hete lijm vastgezet
+- [ ] ⚠️ AD8232: nog geen betrouwbare hartslag. De 50 Hz-netbrom is minder sinds de antenne verplaatst is, maar er zitten piekjes in op een raster van 150 ms. Niet van de BLE-radio (getest met `adv off`). Bron zoeken: OLED, MAX30102-leds, GSR of massa. Testen met `ecgdump` en `ecgtest`.
+- [ ] BMP180 geeft onzin (~224 kPa); de firmware gooit die metingen weg, dus geen cabinedruk en geen lekalarm. Losse sensor of verbinding?
 - [x] GSR: reageert op de huid
 - [ ] ~~Accuspanning~~ geen accu
 
@@ -69,6 +73,9 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 - [x] ⚠️ Getest met de laptop via BLE
 - [x] Geen valse alarmen: geen hartslag of SpO2 bij beweging, events blokkeren `loop()` niet meer
 - [x] Reden van de laatste herstart op de seriële poort
+- [x] ECG: 50 Hz eruit voor de R-piekdetectie, geen hartslag of RR bij een afgekapt signaal
+- [x] Seriële testcommando's `ecgtest`, `ecgdump`, `adv on/off`
+- [x] Geschiedenis op het horloge gewist (testdata van vóór de fixes), vanaf nu alleen schone minuten
 
 ## 4. Dashboard
 
@@ -84,7 +91,14 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 - [x] Logo's toegevoegd
 - [x] ⚠️ Verbinding met het echte horloge werkt
 - [x] ⚠️ Sensordata klopt in het dashboard
-- [ ] Geschiedenis ophalen (`history`) wordt nog niet gebruikt
+- [x] Automatisch opnieuw verbinden, met de bewaarde code
+- [x] Signaalkwaliteit: geen SpO2/hartslag bij beweging of zwakke perfusie, ECG zonder netbrom getekend, RR genegeerd bij een slechte ECG
+- [x] Crew selector met demo-crewleden
+- [x] Geluid per lamp uitzetten, link naar youpspace.com
+- [x] NASA hazards: de vijf HRP-hazards met status, risico's en bronnen
+- [x] 7 dagen: geschiedenis van het horloge ophalen en tonen, getest met het echte horloge (279 min in 1,5 s, vult ontbrekende records zelf aan)
+- [x] Check-in zelf invullen, per crewlid en per dag
+- [x] Dummy data overal gemarkeerd, melding onder de bovenbalk
 - [ ] ~~PTT~~ alleen als echt alles af is
 - [ ] ~~AI-vermelding bovenaan elk bestand~~ besloten: niet in de bestanden, wel in de README en op de projectpagina
 
@@ -101,7 +115,10 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 - [ ] ⚠️ **18:00: geen nieuwe functies meer**
 - [x] Documenten van de branch `ccr-5b998f8a-3pwruq` samengevoegd in `setup/platformio`
 - [x] Sectie "Use of AI" in beide READMEs
-- [ ] ⚠️ Mergen naar `main`, zodat de GitHub-link de laatste versie laat zien: firmware PR #1 (`setup/platformio`) staat open, het dashboard (`feature/dashboard`) heeft nog geen PR
+- [x] ⚠️ Alles op `main` in beide repo's; oude branches opgeruimd (alleen `main` over)
+- [ ] Op GitHub nakijken of firmware-PR #1 als merged staat (de branch is via `main` samengevoegd en daarna verwijderd)
+- [x] Git-geschiedenis van het dashboard op eigen naam gezet; lokale branch `backup-before-cleanup` kan weg zodra alles goed is
+- [ ] Beslissen: firmware-repo ook zo opschonen, of de Claude-co-auteurs daar laten staan (de README zegt nu dat ze in de geschiedenis staan)
 - [ ] SpO2-drempels (94 % / 90 %) nalezen in de WHO Pulse Oximetry Training Manual
 - [ ] Video **max 30 s**, **Engelse ondertitels**, geen personen onder de 18, op YouTube
   - Noem: zwaartekrachtpunt (`ontwerpkeuzes.md` punt 8), NASA-grens, lokaal + op afstand waarschuwen
