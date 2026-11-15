@@ -117,7 +117,7 @@ Alle grenswaarden, hoe we de norm toepassen en de links naar de bronnen staan in
 - [docs/nasa-std-3001.md](docs/nasa-std-3001.md): de gebruikte NASA-grenswaarden met bronnen
 - [docs/stroombudget.md](docs/stroombudget.md): stroomverbruik, accuduur en opladen
 - [docs/ecg-elektrodes.md](docs/ecg-elektrodes.md): waar de ECG-elektrodes op de borst gaan
-- [docs/todo.md](docs/todo.md): planning van het weekend
+- [docs/todo.md](docs/todo.md): checklist voor de inzending
 
 ## Gebruik van AI (SI)
 

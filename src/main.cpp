@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <BLEDevice.h>
 #include <Wire.h>
 
 #include "alerts.h"
@@ -19,6 +20,11 @@ using namespace astronav;
 
 const uint32_t STATUS_EVERY_MS = 10000;
 const uint32_t BREATHE_MS = 2 * 60000;
+
+// Onder 0,5 % perfusie is de pulsgolf te klein voor een betrouwbare SpO2 of
+// hartslag; het Maxim-algoritme geeft dan lage SpO2 (gezien: 74-85 % bij een
+// gezonde pols). Met beweging (FLAG_MOTION_ARTIFACT) geldt hetzelfde.
+const uint8_t MIN_PERFUSION_C10 = 5;
 
 // teksten bij control 0x04 (message_id), zie docs/ble-protocol.md. In het Engels,
 // afgebroken voor het staande scherm (8 tekens breed).
@@ -224,6 +230,33 @@ void handleCommand(String line) {
   } else if (cmd == "sensors") {
     sensors::print();
     Serial.printf("%-9s 0x3C  %s\n", "OLED", display::found() ? "ok" : "niet gevonden");
+  } else if (cmd == "ecgtest") {
+    // hardwarecheck van de AD8232: staat hij aan, en stuurt hij D0 echt aan?
+    // Een zwevende D0 volgt de interne pull-up/pull-down; een aangestuurde niet.
+    int up = 0, down = 0;
+    const int TRIES = 20;
+    for (int i = 0; i < TRIES; i++) {
+      pinMode(pins::ECG_OUT, INPUT_PULLUP);
+      delayMicroseconds(50);
+      up += digitalRead(pins::ECG_OUT);
+      pinMode(pins::ECG_OUT, INPUT_PULLDOWN);
+      delayMicroseconds(50);
+      down += digitalRead(pins::ECG_OUT);
+    }
+    pinMode(pins::ECG_OUT, INPUT);  // analogRead zet hem daarna zelf weer analoog
+    uint32_t sum = 0;
+    uint16_t lo = 0xFFFF, hi = 0;
+    for (int i = 0; i < 100; i++) {
+      uint16_t mv = analogReadMilliVolts(pins::ECG_OUT);
+      sum += mv;
+      lo = min(lo, mv);
+      hi = max(hi, mv);
+      delay(2);
+    }
+    Serial.printf("ecgtest: SDN(D3)=%d  LO+(D2)=%d  LO-(D1)=%d  D0 met pull-up %d/%d hoog, met pull-down %d/%d hoog  "
+                  "D0 %lu mV (min %u, max %u)\n",
+                  digitalRead(pins::ECG_SDN), digitalRead(pins::ECG_LO_PLUS), digitalRead(pins::ECG_LO_MINUS), up, TRIES,
+                  down, TRIES, sum / 100, lo, hi);
   } else if (cmd == "bmp") {
     Serial.printf("bmp180: %.1f C  %u Pa\n", bmp180Temperature(), telemetry.pressure_pa);
   } else if (cmd == "show") {
@@ -235,6 +268,13 @@ void handleCommand(String line) {
     int a = arg.indexOf(' '), b = arg.lastIndexOf(' ');
     if (a < 0 || b <= a) return reply("err alert <code> <ernst> <tekst>");
     showRemote(arg.substring(0, a).toInt(), arg.substring(a + 1, b).toInt(), arg.substring(b + 1).toInt());
+  } else if (cmd == "ecgdump") {
+    ecgCaptureStart();  // loop() print hem over 3 s
+  } else if (cmd == "adv") {
+    // testhulp: radio stil zonder verbinding, om storing van de antenne op de ECG te zoeken
+    if (arg == "off") BLEDevice::stopAdvertising();
+    else BLEDevice::startAdvertising();
+    reply("ok");
   } else if (cmd == "streams") {
     sampler::setRawStreams(arg != "off");
     reply("ok");
@@ -327,6 +367,14 @@ void updateTelemetry() {
   }
 
   sensors::fill(telemetry);
+
+  // een optische meting die we niet kunnen vertrouwen, bestaat niet: geen alarm,
+  // niet op het scherm, niet in de geschiedenis en niet naar het dashboard
+  bool moving = telemetry.vitals_flags & FLAG_MOTION_ARTIFACT;
+  if ((telemetry.flags & HAS_HEART) && (moving || telemetry.perfusion_c10 < MIN_PERFUSION_C10)) {
+    telemetry.flags &= ~HAS_HEART;
+  }
+
   if (simulate) {
     sim::fill(telemetry, sensors::ALL & ~sensors::groups());
     sim::fillLight(telemetry);
@@ -444,8 +492,38 @@ void recoverBus() {
   }
 }
 
+// Waarom het horloge opnieuw opstartte. Het openen van de usb-poort reset de
+// ESP32-S3 ook, dus de reden van de herstart daarvóór blijft in RTC-geheugen
+// staan (overleeft een reset, niet stroom eraf; dan is het POWERON).
+RTC_NOINIT_ATTR uint32_t previousResetReason;
+RTC_NOINIT_ATTR uint32_t resetMagic;
+
+const char *resetName(uint32_t r) {
+  switch (r) {
+    case ESP_RST_POWERON: return "stroom aan (of usb-stekker los geweest)";
+    case ESP_RST_SW: return "software-herstart";
+    case ESP_RST_PANIC: return "crash (panic)";
+    case ESP_RST_INT_WDT: return "interrupt-watchdog";
+    case ESP_RST_TASK_WDT: return "task-watchdog (loop of sampler hing)";
+    case ESP_RST_WDT: return "watchdog";
+    case ESP_RST_BROWNOUT: return "brownout (spanning te laag)";
+    default: return "anders (bijv. usb-poort geopend)";
+  }
+}
+
+void logResetReason() {
+  uint32_t now = esp_reset_reason();
+  bool known = resetMagic == 0xA57A0001;
+  Serial.printf("herstart: %s (%lu)", resetName(now), now);
+  if (known) Serial.printf(", daarvoor: %s (%lu)", resetName(previousResetReason), previousResetReason);
+  Serial.println();
+  previousResetReason = now;
+  resetMagic = 0xA57A0001;
+}
+
 void setup() {
   Serial.begin(115200);
+  logResetReason();
   recoverBus();
   Wire.begin(pins::I2C_SDA, pins::I2C_SCL, pins::I2C_FREQ_HZ);
   Wire.setTimeOut(50);
@@ -487,6 +565,7 @@ void loop() {
 
   updateBuzzer();
   sendHistoryChunk();
+  ecgCapturePrint();
 
   // tijdens de ademhaling vaker, anders loopt de cirkel schokkerig
   uint32_t screenInterval = breatheEnd ? 50 : 200;

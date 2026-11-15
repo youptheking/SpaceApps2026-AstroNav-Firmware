@@ -25,6 +25,9 @@ static BLECharacteristic *dataChar;
 static BLECharacteristic *eventsChar;
 static BLECharacteristic *historyChar;
 static QueueHandle_t controlQueue;
+// events gaan via een eigen task: indicate() wacht tot 1 s op de bevestiging
+// van de laptop, en dat mag loop() (sensoren, scherm, watchdog) niet ophouden
+static QueueHandle_t eventQueue;
 
 static volatile bool link = false;      // er is iemand verbonden
 static volatile bool unlocked = false;  // en die heeft de goede code gestuurd
@@ -72,6 +75,16 @@ class ControlCallbacks : public BLECharacteristicCallbacks {
   }
 };
 
+static void eventTask(void *) {
+  EventPacket e;
+  for (;;) {
+    if (xQueueReceive(eventQueue, &e, portMAX_DELAY) != pdTRUE) continue;
+    if (!unlocked) continue;  // verbinding weg terwijl hij in de rij stond
+    eventsChar->setValue((uint8_t *)&e, sizeof(e));
+    eventsChar->indicate();
+  }
+}
+
 static BLECharacteristic *addChar(BLEService *service, const char *uuid, uint32_t props) {
   BLECharacteristic *c = service->createCharacteristic(uuid, props);
   c->addDescriptor(new BLE2902());
@@ -84,6 +97,9 @@ void begin() {
   code = 100000 + (uint32_t)(mac % 900000);
 
   controlQueue = xQueueCreate(8, sizeof(Control));
+  eventQueue = xQueueCreate(16, sizeof(EventPacket));
+  // core 0 bij de bluetooth-stack, lage prioriteit: wachten mag hier
+  xTaskCreatePinnedToCore(eventTask, "ble-events", 4096, nullptr, 1, nullptr, 0);
 
   BLEDevice::init(DEVICE_NAME);
   BLEDevice::setMTU(247);
@@ -131,8 +147,8 @@ void sendData(const void *packet, size_t len) {
 
 void sendEvent(const EventPacket &e) {
   if (!unlocked) return;
-  eventsChar->setValue((uint8_t *)&e, sizeof(e));
-  eventsChar->indicate();
+  // vol = de laptop bevestigt niks meer; dan liever een event kwijt dan een hangend horloge
+  if (xQueueSend(eventQueue, &e, 0) != pdTRUE) Serial.println("bluetooth: event-rij vol, event overgeslagen");
 }
 
 void sendHistory(const uint8_t *data, size_t len) {
