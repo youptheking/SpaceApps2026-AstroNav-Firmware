@@ -2,7 +2,7 @@
 
 ![Plaatsing van de ECG-elektrodes: links op de ledematen, rechts op de borst](img/ecg-elektrodes.png)
 
-*Bron afbeelding: TODO, vul de herkomst in vóór de repo openbaar wordt (Space Apps vraagt bronvermelding, en toestemming bij auteursrechtelijk beschermd materiaal).*
+*Bron afbeelding: [Circuit Digest, "Understanding ECG Sensor and Program AD8232 ECG Sensor with Arduino"](https://circuitdigest.com/microcontroller-projects/understanding-ecg-sensor-and-program-ad8232-ecg-sensor-with-arduino-to-diagnose-various-medical-conditions).*
 
 Het polsstation gebruikt de **borstplaatsing** (rechts in de afbeelding). Zo meet hij continu, zonder dat de astronaut iets hoeft te doen. Zie `ontwerpkeuzes.md`, punt 3.
 
