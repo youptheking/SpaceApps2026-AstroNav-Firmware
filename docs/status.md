@@ -45,6 +45,10 @@ A wrist station that measures the astronaut's body and the cabin air, warns on t
 | Event log with who raised and who handled each alert | Works |
 | Demo watch on the laptop (same packets, 5-minute story) | Works |
 | Crew selector: one real wrist station plus three demo crew members, each with its own story; a status dot per crew member shows who needs attention | Works (new; demo members are clearly labelled) |
+| NASA hazards view: the five HRP hazards with live status, what we measure and the HRP risks | Works (new) |
+| 7-day history fetched from the watch over BLE, hourly charts and a table per day (V2 6001) | Works (new; tested against the protocol, to be tested with the watch) |
+| Daily check-in: sleep, mood, optional blood pressure and glucose, stored per crew member | Works (new) |
+| Without a watch: a clear "No watch connected" notice with a **Start demo (dummy data)** button; every dummy value is labelled | Works (new) |
 | 44 automated tests (packets, signal quality, demo, interface) | Pass |
 
 ## How we used NASA resources
@@ -78,8 +82,7 @@ NASA's Human Research Program groups the dangers of spaceflight into five hazard
 | Skin temperature is a trend, not a fever reading | Comes from the MAX30102 chip temperature (±1 °C). |
 | Wrist SpO2 is less reliable than a fingertip | The MAX30102 is designed for fingertips. |
 | No ppO2 sensor | V2 6022 lists it; we do not cover it. |
-| Check-in (sleep, mood, blood pressure, glucose) and crew name | Example data in the console. |
-| 7-day watch history not yet shown in the console | Stored on the watch, not fetched yet. |
+| Crew names | Made up. |
 | Blood-pressure trend (pulse transit time) | Not built; raw ECG and PPG already share one clock so it can be added. |
 | Several real watches at once | One Bluetooth connection at a time; the other crew members are demo watches. Next step: connect the whole crew and show them side by side. |
 
