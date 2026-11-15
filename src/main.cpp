@@ -219,7 +219,8 @@ void handleCommand(String line) {
     reply("pong");
   } else if (cmd == "info") {
     Serial.printf("%s  code %06lu  %s  firmware %u.%u\n", ble::name(), ble::passkey(),
-                  ble::connected() ? "verbonden" : "niet verbonden", packets::FW_MAJOR, packets::FW_MINOR);
+                  ble::connected() ? "verbonden" : ble::linked() ? "verbonden, wacht op code" : "niet verbonden",
+                  packets::FW_MAJOR, packets::FW_MINOR);
   } else if (cmd == "sensors") {
     sensors::print();
     Serial.printf("%-9s 0x3C  %s\n", "OLED", display::found() ? "ok" : "niet gevonden");
@@ -473,6 +474,11 @@ void loop() {
 
   sensors::update();
   if (sensors::has(OK_MPU6050) && mpu6050TakeDoubleTap()) acknowledge();
+
+  // net ontgrendeld: meteen STATUS en SIM, dan weet de app dat de code goed was
+  static bool wasUnlocked = false;
+  if (ble::connected() && !wasUnlocked) sendStatus();
+  wasUnlocked = ble::connected();
 
   if (millis() - lastTick >= 1000) {
     lastTick = millis();

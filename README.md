@@ -70,7 +70,7 @@ Een samenhangend systeem met twee delen:
 - **C++ met PlatformIO** (Arduino-core voor de ESP32-S3)
 - **Snelle sensoren in een eigen task** op een vaste tik van 4 ms, zodat ECG, PPG, IMU en GSR dezelfde klok hebben (nodig voor RR-intervallen en later PTT)
 - **Lokale beslislogica:** alarmen met de codes van het protocol, direct op het OLED en met de buzzer, ook zonder verbinding met de laptop
-- **Bluetooth Low Energy** volgens [BLE-protocol v1](docs/ble-protocol.md): ruwe streams, vitale waarden, lucht, cabine, status en alarmen. Koppelen met een vaste code die op het scherm staat.
+- **Bluetooth Low Energy** volgens [BLE-protocol v1](docs/ble-protocol.md): ruwe streams, vitale waarden, lucht, cabine, status en alarmen. Geen koppelen op bluetooth-niveau: de app ontgrendelt het horloge met de code die op het scherm staat (`control` 0x13), zodat het op Windows, Android en met `btleplug` werkt.
 - **Geschiedenis:** 7 dagen aan minuutsamenvattingen in de flash, op te halen door het dashboard
 - **Robuust:** ontbrekende sensoren worden elke 10 s opnieuw gezocht, losse contacten leggen de bus niet plat, en een watchdog herstart het horloge als het toch vastloopt
 
@@ -89,7 +89,6 @@ Gepland, maar niet in deze versie. Eerlijk vermeld, zodat niemand het in de data
 | **Stroomverbruik meten** en zuinig meten met de SCD41 (single-shot) | Geen tijd; zonder accu ook minder belangrijk | De SCD41 meet continu elke 5 s |
 | **Wrist-raise** (scherm aan als je je pols optilt, via de INT van de MPU-6050) | INT is niet aangesloten | Het scherm staat altijd aan |
 | **1-uursgemiddelde CO2 na een herstart** | Begint dan opnieuw bij nul | Na een herstart duurt het tot een uur voordat het gemiddelde weer klopt. De minuten staan wel in de geschiedenis. |
-| **Koppelingen wissen** | Geen commando voor | Weigert een laptop of telefoon de koppeling na een nieuwe koppeling, dan op dat apparaat het horloge vergeten |
 | **PTT** (bloeddruktrend), slaapanalyse, HRV-trends | Dat doet het dashboard, niet de pols | De firmware levert de ruwe ECG, PPG en RR met dezelfde klok, zodat het later kan |
 
 **Hardware die anders is dan het ontwerp:** de footprint van de MAX30102 klopte niet (aangesloten met draadjes), R5/R6 moesten er toch op (4,3 kΩ pull-ups, zie [docs/sensoren.md](docs/sensoren.md)), en de 0.91" OLED is vervangen door een 0.96" die 90° gedraaid zit.

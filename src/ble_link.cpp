@@ -8,6 +8,13 @@ using namespace astronav;
 
 namespace ble {
 
+// Geen koppelen op bluetooth-niveau: Windows en btleplug konden de codevraag
+// niet goed afhandelen, en een telefoon viel na het koppelen weer weg. Nu mag
+// iedereen verbinden, maar het horloge stuurt niks en luistert naar niks tot
+// de app de code van het scherm stuurt (control 0x13). Bij verbreken gaat hij
+// weer op slot.
+const int MAX_TRIES = 5;
+
 struct Control {
   uint8_t len;
   uint8_t data[20];
@@ -19,40 +26,44 @@ static BLECharacteristic *eventsChar;
 static BLECharacteristic *historyChar;
 static QueueHandle_t controlQueue;
 
-static volatile bool linked = false;
+static volatile bool link = false;      // er is iemand verbonden
+static volatile bool unlocked = false;  // en die heeft de goede code gestuurd
+static volatile int tries = 0;
 static uint32_t code;
 
 class ServerCallbacks : public BLEServerCallbacks {
-  void onConnect(BLEServer *s, esp_ble_gatts_cb_param_t *param) override {
-    // direct om koppeling vragen, dan krijgt de laptop meteen de codevraag
-    esp_ble_set_encryption(param->connect.remote_bda, ESP_BLE_SEC_ENCRYPT_MITM);
+  void onConnect(BLEServer *s) override {
+    link = true;
+    unlocked = false;
+    tries = 0;
   }
 
   void onDisconnect(BLEServer *s) override {
-    linked = false;
+    link = false;
+    unlocked = false;
     s->startAdvertising();
-  }
-};
-
-class SecurityCallbacks : public BLESecurityCallbacks {
-  uint32_t onPassKeyRequest() override { return code; }
-  void onPassKeyNotify(uint32_t) override {}
-  bool onSecurityRequest() override { return true; }
-  bool onConfirmPIN(uint32_t) override { return false; }
-
-  void onAuthenticationComplete(esp_ble_auth_cmpl_t result) override {
-    if (result.success) {
-      linked = true;
-    } else {
-      Serial.printf("koppelen mislukt (reden 0x%02X)\n", result.fail_reason);
-      server->disconnect(server->getConnId());
-    }
   }
 };
 
 class ControlCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *c) override {
     std::string value = c->getValue();
+    if (value.empty()) return;
+
+    if (!unlocked) {
+      // op slot: alleen de code telt, al het andere wordt genegeerd
+      uint32_t given = 0;
+      if ((uint8_t)value[0] == CMD_UNLOCK && value.size() >= 5) memcpy(&given, value.data() + 1, 4);
+      if (given == code) {
+        unlocked = true;
+        Serial.println("bluetooth: ontgrendeld");
+      } else if (++tries >= MAX_TRIES) {
+        Serial.println("bluetooth: te vaak een verkeerde code, verbinding verbroken");
+        server->disconnect(server->getConnId());
+      }
+      return;
+    }
+
     Control cmd = {};
     cmd.len = min(value.size(), sizeof(cmd.data));
     memcpy(cmd.data, value.data(), cmd.len);
@@ -63,11 +74,7 @@ class ControlCallbacks : public BLECharacteristicCallbacks {
 
 static BLECharacteristic *addChar(BLEService *service, const char *uuid, uint32_t props) {
   BLECharacteristic *c = service->createCharacteristic(uuid, props);
-  c->setAccessPermissions(ESP_GATT_PERM_READ_ENC_MITM);
-
-  BLE2902 *cccd = new BLE2902();
-  cccd->setAccessPermissions(ESP_GATT_PERM_READ_ENC_MITM | ESP_GATT_PERM_WRITE_ENC_MITM);
-  c->addDescriptor(cccd);
+  c->addDescriptor(new BLE2902());
   return c;
 }
 
@@ -80,8 +87,6 @@ void begin() {
 
   BLEDevice::init(DEVICE_NAME);
   BLEDevice::setMTU(247);
-  BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT_MITM);
-  BLEDevice::setSecurityCallbacks(new SecurityCallbacks());
 
   server = BLEDevice::createServer();
   server->setCallbacks(new ServerCallbacks());
@@ -91,17 +96,11 @@ void begin() {
   eventsChar = addChar(service, CHAR_EVENTS_UUID, BLECharacteristic::PROPERTY_INDICATE);
   historyChar = addChar(service, CHAR_HISTORY_UUID, BLECharacteristic::PROPERTY_NOTIFY);
 
-  BLECharacteristic *control = service->createCharacteristic(CHAR_CONTROL_UUID, BLECharacteristic::PROPERTY_WRITE);
-  control->setAccessPermissions(ESP_GATT_PERM_WRITE_ENC_MITM);
+  BLECharacteristic *control = service->createCharacteristic(
+      CHAR_CONTROL_UUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
   control->setCallbacks(new ControlCallbacks());
 
   service->start();
-
-  BLESecurity *security = new BLESecurity();
-  security->setStaticPIN(code);
-  // setStaticPIN zet zelf alleen SC aan, zonder MITM vraagt windows geen code
-  security->setAuthenticationMode(ESP_LE_AUTH_REQ_SC_MITM_BOND);
-  security->setRespEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
 
   // uuid en naam passen samen niet in 31 bytes, dus naam in de scan response
   BLEAdvertisementData advData;
@@ -119,30 +118,31 @@ void begin() {
   Serial.printf("bluetooth: %s, code %06lu\n", DEVICE_NAME, code);
 }
 
-bool connected() { return linked; }
+bool connected() { return unlocked; }
+bool linked() { return link; }
 uint32_t passkey() { return code; }
 const char *name() { return DEVICE_NAME; }
 
 void sendData(const void *packet, size_t len) {
-  if (!linked) return;
+  if (!unlocked) return;
   dataChar->setValue((uint8_t *)packet, len);
   dataChar->notify();
 }
 
 void sendEvent(const EventPacket &e) {
-  if (!linked) return;
+  if (!unlocked) return;
   eventsChar->setValue((uint8_t *)&e, sizeof(e));
   eventsChar->indicate();
 }
 
 void sendHistory(const uint8_t *data, size_t len) {
-  if (!linked) return;
+  if (!unlocked) return;
   historyChar->setValue((uint8_t *)data, len);
   historyChar->notify();
 }
 
 size_t maxPayload() {
-  if (!linked) return 20;
+  if (!link) return 20;
   return server->getPeerMTU(server->getConnId()) - 3;
 }
 
