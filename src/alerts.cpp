@@ -35,18 +35,18 @@ struct Rule {
 
 // op volgorde van belangrijkheid voor het scherm
 static const Rule rules[] = {
-  {EV_SPO2_LOW, 30, "Zuurstof laag"},
-  {EV_CO2_NASA_LIMIT, 0, "CO2 > 3 mmHg (1 uur)"},
-  {EV_PRESSURE_DROP, 60, "Druk daalt! Cabine"},
-  {EV_CO2_EARLY, 60, "CO2 nu > 3 mmHg"},
-  {EV_HR_HIGH, 300, "Hartslag hoog: rust"},
-  {EV_HR_LOW, 60, "Hartslag laag"},
-  {EV_SHOCK, 0, "Schok gemeten"},
-  {EV_CABIN_CLIMATE, 60, "Cabine temp/vocht"},
-  {EV_STRESS_HIGH, 600, "Stress: neem rust"},
-  {EV_BATTERY_LOW, 10, "Accu laag: opladen"},
-  {EV_ECG_LEADS_OFF, 5, "Elektrode los"},
-  {EV_NO_SKIN_CONTACT, 10, "Geen huidcontact"},
+  {EV_SPO2_LOW, 30, "Low oxygen (SpO2)"},
+  {EV_CO2_NASA_LIMIT, 0, "CO2 > 3 mmHg (1 hour)"},
+  {EV_PRESSURE_DROP, 60, "Cabin pressure drop!"},
+  {EV_CO2_EARLY, 60, "CO2 now > 3 mmHg"},
+  {EV_HR_HIGH, 300, "High heart rate: rest"},
+  {EV_HR_LOW, 60, "Low heart rate"},
+  {EV_SHOCK, 0, "Impact detected"},
+  {EV_CABIN_CLIMATE, 60, "Cabin temp/humidity"},
+  {EV_STRESS_HIGH, 600, "Stress: take a break"},
+  {EV_BATTERY_LOW, 10, "Battery low: charge"},
+  {EV_ECG_LEADS_OFF, 5, "ECG electrode off"},
+  {EV_NO_SKIN_CONTACT, 10, "No skin contact"},
 };
 const size_t RULE_COUNT = sizeof(rules) / sizeof(rules[0]);
 const uint32_t CLEAR_AFTER_MS = 5000;

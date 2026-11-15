@@ -20,17 +20,17 @@ using namespace astronav;
 const uint32_t STATUS_EVERY_MS = 10000;
 const uint32_t BREATHE_MS = 2 * 60000;
 
-// teksten bij control 0x04 (message_id), zie docs/ble-protocol.md. Afgebroken
-// voor het staande scherm, dat is 8 tekens breed.
+// teksten bij control 0x04 (message_id), zie docs/ble-protocol.md. In het Engels,
+// afgebroken voor het staande scherm (8 tekens breed).
 const char *MESSAGES[] = {
-  "Neem rust",
-  "Start adem- haling 2 min",
-  "CO2 hoog: check venti- latie",
-  "Zuurstof laag: stop acti- viteit",
-  "Druk daalt: check cabine",
-  "Slaap tekort: plan rust- moment",
-  "Elek- trode los: check borst",
-  "Accu laag: opladen",
+  "Take a break",
+  "Start breath- ing exer- cise 2 min",
+  "CO2 high: check venti- lation",
+  "Low oxygen: stop activ- ity",
+  "Pressure falling: check cabin",
+  "Sleep deficit: plan rest",
+  "Elec- trode off: check chest",
+  "Battery low: charge",
 };
 const size_t MESSAGE_COUNT = sizeof(MESSAGES) / sizeof(MESSAGES[0]);
 
@@ -343,9 +343,9 @@ void updateBuzzer() {
 // 4 s in, 4 s vast, 6 s uit
 void showBreathing() {
   uint32_t t = (millis() - breatheStart) % 14000;
-  if (t < 4000) display::showBreathing("Adem in", t / 4000.0);
-  else if (t < 8000) display::showBreathing("Vasthouden", 1.0);
-  else display::showBreathing("Adem uit", 1.0 - (t - 8000) / 6000.0);
+  if (t < 4000) display::showBreathing("Breathe in", t / 4000.0);
+  else if (t < 8000) display::showBreathing("Hold", 1.0);
+  else display::showBreathing("Breathe out", 1.0 - (t - 8000) / 6000.0);
 }
 
 void updateScreen() {
