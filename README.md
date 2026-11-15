@@ -1,131 +1,93 @@
-# NASA Space Apps 2026 – Team AstroNav – Firmware (polsstation)
+# AstroNav Wrist Station – Firmware
 
-> **Status: firmware 1.0 werkt op de PCB.** Alle sensoren worden uitgelezen, de lokale alarmen werken, en de data gaat via Bluetooth volgens [BLE-protocol v1](docs/ble-protocol.md).
->
-> Bouwen en flashen met PlatformIO: `pio run -t upload`. Board: Seeed XIAO ESP32-S3.
+**NASA Space Apps Challenge 2026** · Challenge: *Create Health Monitoring Software for Astronauts on Space Missions*
+Team AstroNav (solo) · Amsterdam (virtual) · by [YoupSpace](https://youpspace.com)
 
-> Dit is een **NASA Space Apps Challenge 2026**-project en staat los van de andere AstroNav-projecten (AstroNav-Nano en verwante repos).
+A wrist-worn sensor station that measures the astronaut's body and the cabin air, warns on the wrist even without a laptop, and streams everything over Bluetooth Low Energy to the desktop console.
 
-Zusterrepo: **SpaceApps2026-AstroNav-Dashboard** (de desktopapp)
+| Repo | What |
+|---|---|
+| **SpaceApps2026-AstroNav-Firmware** (this repo) | Wrist station: PCB, sensors, firmware |
+| [SpaceApps2026-AstroNav-Dashboard](https://github.com/youptheking/SpaceApps2026-AstroNav-Dashboard) | Desktop console that receives the data and turns it into trends and advice |
+
+> Separate from the other AstroNav projects (AstroNav-Nano and related repos).
+
+## Features
+
+- **Body:** heart rate and SpO2 (MAX30102, PPG at 100 Hz), ECG with R-peaks and RR intervals (AD8232, 250 Hz, chest electrodes), skin conductance for stress (GSR), skin-temperature trend
+- **Movement:** activity, tremor (4–12 Hz), shock and double tap to acknowledge (MPU-6050). Based on motion, not posture, because in microgravity there is no gravity reference.
+- **Cabin:** real CO2, temperature and humidity (SCD41), cabin pressure and leak alarm (BMP180), ppCO2 in mmHg corrected for the measured pressure
+- **Local alarms without a laptop:** NASA-STD-3001 CO2 limit, low SpO2, high or low heart rate, loose electrode, shock, pressure drop, cabin climate. Shown on the OLED, each severity with its own buzzer pattern.
+- **Messages from the console** to the wrist, such as "Take a break" or "Start breathing exercise"
+- **Bluetooth Low Energy** with its own binary protocol: raw streams, vitals, air, cabin, status and events. No OS pairing: the app unlocks the watch with the 6-digit code on its screen, so it works on Windows, Android and `btleplug`.
+- **7-day history** of minute summaries in flash
+- **One clock for all fast sensors:** ECG, PPG, IMU and GSR on a fixed 4 ms tick, so RR intervals (and later pulse transit time) line up
+- **Honest data:** optical values during movement or weak perfusion are dropped instead of shown. In demo mode simulated values are flagged in every status update and marked with `*` on the watch.
+- **Self-recovering:** missing sensors are retried every 10 s, I2C bus recovery, watchdog
+
+## Hardware
+
+Seeed XIAO ESP32-S3 on a double-sided PCB milled on a desktop CNC, in a 3D-printed case with a velcro strap.
+
+| Part | Bus | Position | Purpose |
+|---|---|---|---|
+| MAX30102 | I2C | Underside, on the skin | Heart rate, SpO2, perfusion, chip temperature |
+| AD8232 | ADC | Cable to the chest | ECG, RR intervals, electrode-off detection |
+| GSR pads | ADC | Underside, on the skin | Skin conductance (stress) |
+| MPU-6050 | I2C | On the PCB | Activity, tremor, shock, double tap |
+| SCD41 | I2C | Side, behind a grille | CO2, temperature, humidity |
+| BMP180 | I2C | On the PCB | Cabin pressure |
+| 0.96" OLED | I2C | Top | Values, alerts, messages |
+| Piezo buzzer | PWM | On the PCB | Local alarm |
+
+## Build and flash
+
+```
+pio run -e xiao_esp32s3 -t upload
+```
+
+USB serial commands (`info`, `sim`, `alert`, `ecgtest`, …) are listed in [docs/ble-protocol.md](docs/ble-protocol.md).
+
+## NASA resources
+
+The local alarms follow **NASA-STD-3001 Volume 2, Revision F**:
+
+- **[V2 6004]** 1-hour average ppCO2 must stay at or below 3 mmHg
+- **[V2 6022]** alert the crew locally (OLED and buzzer) and remotely (console), also on a pressure drop
+- **[V2 6012]** cabin temperature and humidity limits
+- **[V2 6001]** keep data for trend analysis: 7 days of minute summaries on the watch
+
+Physiological limits (SpO2, heart rate) come from the WHO Pulse Oximetry Training Manual or are our own choice, and are labelled that way. The system gives advice, not a diagnosis. Details: [docs/alarmen.md](docs/alarmen.md) and [docs/nasa-std-3001.md](docs/nasa-std-3001.md).
+
+## Limitations
+
+| What | Why |
+|---|---|
+| No battery or power switch | Both broke off the PCB during the build; the watch runs on USB. The battery value in demo mode is simulated and flagged. |
+| No light sensor (BH1750) | The footprint pin order was wrong. Light in demo mode is simulated and flagged. |
+| Skin temperature is a trend, not a fever reading | Comes from the MAX30102 chip temperature |
+| Wrist SpO2 is less reliable than a fingertip | The MAX30102 is designed for fingertips |
+| No ppO2 sensor | Listed in V2 6022, not covered |
+| Blood-pressure trend (PTT), sleep analysis | Not built. ECG and PPG already share one clock, so it can be added in the console. |
+
+## Use of AI
+
+Per the Space Apps rules, we disclose where AI ("SI") was used.
+
+- **Idea and concept:** our own. The wrist station plus console and the choice of challenge were fixed before any AI was used.
+- **Claude (Anthropic)** was used to research parts, do power and pin calculations, look up limits in NASA-STD-3001, plan the weekend, draft the documentation, and write most of the code from our own design (protocol, alarm logic, limits, screen layout).
+- **Hardware** (PCB design, milling, soldering, case) and all testing on the real watch were done by hand. Everything AI produced was reviewed and tested on our own hardware. AI-assisted commits are marked in the git history.
+
+## Documentation (Dutch)
+
+- [docs/status.md](docs/status.md): project status in English
+- [docs/sensoren.md](docs/sensoren.md): wiring, addresses, notes per sensor, hardware tests
+- [docs/ble-protocol.md](docs/ble-protocol.md): BLE protocol v1, extensions, USB commands
+- [docs/alarmen.md](docs/alarmen.md): alarms, limits, buzzer patterns, sources
+- [docs/ecg-elektrodes.md](docs/ecg-elektrodes.md): where the ECG electrodes go
+- [docs/ontwerpkeuzes.md](docs/ontwerpkeuzes.md): design choices
+- [docs/pinout.md](docs/pinout.md), [docs/pcb.md](docs/pcb.md), [docs/stroombudget.md](docs/stroombudget.md), [docs/inkooplijst.md](docs/inkooplijst.md): pins, PCB, power budget, parts list
 
 ---
 
-## Deelname
-
-| | |
-|---|---|
-| Teamnaam | Team AstroNav |
-| Deelnamevorm | Solo |
-| Locatie inschrijving | Amsterdam (virtueel evenement) |
-| Werkomgeving | Eigen werkplaats met desktop-CNC, 3D-printers, soldeerstation en testapparatuur |
-
-## Tijdlijn
-
-| Moment | Datum en tijd (NL) |
-|---|---|
-| Start | Zaterdag 14 november 2026, 09:00 |
-| Inleverdeadline | Zondag 15 november 2026, 23:59 |
-
-## Challenge
-
-**Create Health Monitoring Software for Astronauts on Space Missions**
-
-Langdurige ruimtemissies brengen risico's met zich mee: straling, isolatie, gewichtloosheid, veranderingen in het immuunsysteem, spieratrofie, belasting van hart en bloedvaten, en stress. Astronauten moeten hun eigen gezondheid kunnen bewaken en direct kunnen ingrijpen.
-
-## Oplossing
-
-Een samenhangend systeem met twee delen:
-
-1. **Polsstation (deze repo):** een sensorstation dat je om de pols draagt, met een gefreesde PCB en een 3D-geprinte behuizing. Het meet lichaam en cabine, geeft lokaal waarschuwingen en stuurt telemetrie via Bluetooth Low Energy.
-2. **Desktopdashboard:** een laptopapp die de data ontvangt en realtime grafieken, trends en een beslissingspaneel toont.
-
-## Hardware en vormfactor
-
-- **Vormfactor:** ergonomisch polshorloge met klittenband
-- **PCB:** dubbelzijdig, gefreesd op de desktop-CNC
-- **Behuizing:** 3D-geprint (PETG of PLA) met ventilatieroosters en koperen contactvlakken
-- **Hoofdcontroller:** Seeed XIAO ESP32-S3 met ingebouwde BLE
-- **Lokale indicatie:**
-  - 0.96" tweekleurige I2C OLED, staand: waarden, alarmen in de gele strook, en instructies van het dashboard zoals "Take a break" of "Start breathing exercise"
-  - Piezobuzzer: een eigen patroon per ernst (info, waarschuwing, alarm)
-  - Bevestigen met een **dubbeltik** op het horloge
-
-## Sensoren
-
-| Component | Koppeling | Positie | Functie en relevantie voor ruimtevaart |
-|---|---|---|---|
-| XIAO ESP32-S3 | Systeemcontroller | Intern op PCB | Leest sensoren uit, stuurt OLED en buzzer aan, verzorgt BLE-streaming |
-| MAX30102 | I2C | Onderzijde (tegen huid) | PPG op 100 Hz: hartslag, zuurstofsaturatie (SpO2), perfusie. De chiptemperatuur dient als trend van de huidtemperatuur. |
-| MPU-6050 | I2C | Intern op PCB | 3-assige IMU: activiteit, tremor (sterkte en frequentie), schok, dubbeltik |
-| AD8232 | Analoog (ADC) | Kabel naar de borst | ECG op 250 Hz, R-pieken en RR-intervallen (HRV), elektrode-los-detectie |
-| GSR-contacten | Analoog (ADC) | Onderzijde (tegen huid) | Gefreesde koperen vlakken voor huidgeleiding (acute stress) |
-| SCD41 | I2C | Zijkant (met rooster) | Echte CO2, plus temperatuur en luchtvochtigheid in de cabine |
-| BMP180 | I2C | Intern | Cabinedruk: ppCO2 in mmHg en een lekalarm bij een drukdaling |
-| ~~BH1750~~ | – | – | Tijdens de bouw geschrapt: de pinvolgorde van de footprint klopte niet. |
-| 0.96" OLED | I2C | Bovenzijde | Directe actiepunten voor de astronaut |
-| Piezobuzzer | GPIO (PWM) | Intern op PCB | Lokaal alarm, ook zonder laptop |
-
-## Firmware
-
-- **C++ met PlatformIO** (Arduino-core voor de ESP32-S3)
-- **Snelle sensoren in een eigen task** op een vaste tik van 4 ms, zodat ECG, PPG, IMU en GSR dezelfde klok hebben (nodig voor RR-intervallen en later PTT)
-- **Lokale beslislogica:** alarmen met de codes van het protocol, direct op het OLED en met de buzzer, ook zonder verbinding met de laptop
-- **Bluetooth Low Energy** volgens [BLE-protocol v1](docs/ble-protocol.md): ruwe streams, vitale waarden, lucht, cabine, status en alarmen. Geen koppelen op bluetooth-niveau: de app ontgrendelt het horloge met de code die op het scherm staat (`control` 0x13), zodat het op Windows, Android en met `btleplug` werkt.
-- **Geschiedenis:** 7 dagen aan minuutsamenvattingen in de flash, op te halen door het dashboard
-- **Robuust:** ontbrekende sensoren worden elke 10 s opnieuw gezocht, losse contacten leggen de bus niet plat, en een watchdog herstart het horloge als het toch vastloopt
-
-## Wat er niet in zit
-
-Gepland, maar niet in deze versie. Eerlijk vermeld, zodat niemand het in de data zoekt.
-
-**Demomodus.** Voor de presentatie vult het horloge wat ontbreekt met nepwaarden (licht, accu, en een sensor die wegvalt), zodat het dashboard het hele plaatje kan laten zien. Dat is nooit stiekem: elk STATUS-pakket krijgt een SIM-pakket mee dat precies zegt welke waarden gesimuleerd zijn, het dashboard zet daar "SIMULATED" bij, en op het horloge staat een `*` achter de waarde. Echte sensoren en de ruwe streams (ECG, PPG, IMU, GSR) zijn altijd echt. Uit te zetten met `DEMO_MODE` in `include/pins.h`, `sim off` via usb, of `control` 0x12. Zie [docs/ble-protocol.md](docs/ble-protocol.md#uitbreidingen-op-v1).
-
-| Wat | Waarom niet | Gevolg |
-|---|---|---|
-| **Lichtsensor (BH1750)** voor het circadiaans ritme | De pinvolgorde van de footprint klopte niet, herstellen kostte te veel tijd | Niet gemeten. In de demomodus een **gesimuleerde** waarde, gemarkeerd in het SIM-pakket. |
-| **Accu en aan/uit-schakelaar** | Connector en schakelaar zijn tijdens de bouw van de PCB afgebroken | Het horloge draait altijd op usb, het accualarm (code 9) gaat nooit af. In de demomodus een **gesimuleerde** accu, gemarkeerd in het SIM-pakket. Weer aan te zetten met `HAS_BATTERY` in `include/pins.h`. |
-| **Echte huidtemperatuur (MCP9808/TMP117)** | Zit niet op de PCB | De chiptemperatuur van de MAX30102 dient als trend, geen koortsmeting. Geen koortsalarm. |
-| **ppO2** (zuurstof in de cabine) | Geen sensor | [V2 6022] noemt het, wij dekken het niet |
-| **Stroomverbruik meten** en zuinig meten met de SCD41 (single-shot) | Geen tijd; zonder accu ook minder belangrijk | De SCD41 meet continu elke 5 s |
-| **Wrist-raise** (scherm aan als je je pols optilt, via de INT van de MPU-6050) | INT is niet aangesloten | Het scherm staat altijd aan |
-| **1-uursgemiddelde CO2 na een herstart** | Begint dan opnieuw bij nul | Na een herstart duurt het tot een uur voordat het gemiddelde weer klopt. De minuten staan wel in de geschiedenis. |
-| **PTT** (bloeddruktrend), slaapanalyse, HRV-trends | Dat doet het dashboard, niet de pols | De firmware levert de ruwe ECG, PPG en RR met dezelfde klok, zodat het later kan |
-
-**Hardware die anders is dan het ontwerp:** de footprint van de MAX30102 klopte niet (aangesloten met draadjes), R5/R6 moesten er toch op (4,3 kΩ pull-ups, zie [docs/sensoren.md](docs/sensoren.md)), en de 0.91" OLED is vervangen door een 0.96" die 90° gedraaid zit.
-
-**Nog niet getest:** hartslag en SpO2 met een vinger tegen de sensor naast een echte saturatiemeter, de ECG met elektrodes op de borst, de dubbeltik in de behuizing, en de hele keten met het dashboard.
-
-## NASA-bronnen
-
-De lokale alarmen volgen **NASA-STD-3001 Volume 2, Revision F**:
-
-- **[V2 6004]** CO2: het 1-uursgemiddelde van ppCO2 mag niet boven 3 mmHg komen
-- **[V2 6022]** de crew lokaal (OLED en buzzer) én op afstand (Bluetooth naar het dashboard) waarschuwen, ook bij een drukdaling (mogelijk lek)
-- **[V2 6012]** grenzen voor cabinetemperatuur en luchtvochtigheid
-- **[V2 6001]** data bewaren voor trendanalyse: het horloge slaat 7 dagen aan minuutsamenvattingen op, met CO2 per 5 seconden volgens Tabel 6.1-1 (zie [de geschiedenis](docs/ble-protocol.md#uitbreidingen-op-v1))
-
-Alle grenswaarden, hoe we de norm toepassen en de links naar de bronnen staan in [docs/alarmen.md](docs/alarmen.md).
-
-Daarnaast gebruiken we de indeling van het **NASA Human Research Program**: de [5 hazards of human spaceflight](https://www.nasa.gov/hrp/hazards/) en de bijbehorende [risks](https://www.nasa.gov/hrp/risks/). Elk lichaamssysteem in het dashboard noemt zijn hazard en risico. Straling dekken we niet; daarvoor verwijzen we naar het CANS-project van de [Canadian Space Agency](https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp). Het overzicht staat in [docs/status.md](docs/status.md).
-
-## Documentatie
-
-- [docs/status.md](docs/status.md): **wat werkt, in het Engels** (voor de projectpagina)
-- [docs/sensoren.md](docs/sensoren.md): bedrading, adressen, wat je moet weten per sensor, en de hardwaretests
-- [docs/ble-protocol.md](docs/ble-protocol.md): BLE-protocol v1, hoe de firmware het invult, de uitbreidingen en de USB-commando's
-- [docs/alarmen.md](docs/alarmen.md): alarmen, grenswaarden, buzzerpatronen en NASA-bronnen
-- [docs/inkooplijst.md](docs/inkooplijst.md): onderdelen
-- [docs/ontwerpkeuzes.md](docs/ontwerpkeuzes.md): waarom deze sensoren, en welke concessies bewust zijn gedaan
-- [docs/nasa-std-3001.md](docs/nasa-std-3001.md): de gebruikte NASA-grenswaarden met bronnen
-- [docs/stroombudget.md](docs/stroombudget.md): stroomverbruik, accuduur en opladen
-- [docs/ecg-elektrodes.md](docs/ecg-elektrodes.md): waar de ECG-elektrodes op de borst gaan
-- [docs/todo.md](docs/todo.md): checklist voor de inzending
-
-## Gebruik van AI (SI)
-
-Volgens de regels van NASA Space Apps vermelden we waar AI-tools ("Super Intelligence", SI) zijn gebruikt.
-
-- **Idee en concept:** eigen werk. Het concept met polsstation en dashboard, en de keuze voor de challenge, stonden vast vóór er AI werd gebruikt.
-- **Voorbereiding met Claude (Anthropic):** onderzoek naar leverbare onderdelen, de stroom- en pinberekeningen, het opzoeken van de grenswaarden in NASA-STD-3001, de planning voor het weekend (`docs/todo.md`) en de eerste versies van de documenten in `docs/`. De ontwerpbeslissingen zijn door de maker genomen en gecontroleerd.
-- **Code:** waar code met AI-hulp is geschreven, staat dat in de commitbeschrijving en in een opmerking in het betreffende bestand.
-
+Made by [YoupSpace](https://youpspace.com) for NASA Space Apps 2026.
