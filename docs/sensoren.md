@@ -50,7 +50,7 @@ De bus draait op 100 kHz. Het OLED schakelt tijdens het versturen even naar 400 
 | D2 | AD8232 LO+ |
 | D3 | AD8232 SDN (ingang, de pull-up op het bordje houdt hem aan) |
 | D7 | Piezobuzzer via 100 Ω |
-| D8 | Accuspanning via 2× 200 kΩ (BAT_SW+), `× 2` |
+| D8 | Accuspanning via 2× 200 kΩ (BAT_SW+), `× 2`. Op het prototype niet gebruikt: accuconnector en schakelaar zijn kapot, `HAS_BATTERY` in `include/pins.h` staat op `false` en het horloge draait op usb. |
 | D9 | GSR: 3,3 V → koperen vlak → huid → vlak → D9, met 220 kΩ naar GND (10 Hz) |
 | D6, D10 | vrij |
 

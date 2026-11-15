@@ -74,6 +74,26 @@ Een samenhangend systeem met twee delen:
 - **Geschiedenis:** 7 dagen aan minuutsamenvattingen in de flash, op te halen door het dashboard
 - **Robuust:** ontbrekende sensoren worden elke 10 s opnieuw gezocht, losse contacten leggen de bus niet plat, en een watchdog herstart het horloge als het toch vastloopt
 
+## Wat er niet in zit
+
+Gepland, maar niet in deze versie. Eerlijk vermeld, zodat niemand het in de data zoekt.
+
+| Wat | Waarom niet | Gevolg |
+|---|---|---|
+| **Lichtsensor (BH1750)** voor het circadiaans ritme | De pinvolgorde van de footprint klopte niet, herstellen kostte te veel tijd | `CABIN.lux_c10` is altijd ongeldig |
+| **Accu en aan/uit-schakelaar** | Connector en schakelaar zijn tijdens de bouw van de PCB afgebroken | Het horloge draait altijd op usb. `STATUS.vbat_mv` en `battery_pct` zijn ongeldig, het accualarm (code 9) gaat nooit af. Weer aan te zetten met `HAS_BATTERY` in `include/pins.h`. |
+| **Echte huidtemperatuur (MCP9808/TMP117)** | Zit niet op de PCB | De chiptemperatuur van de MAX30102 dient als trend, geen koortsmeting. Geen koortsalarm. |
+| **ppO2** (zuurstof in de cabine) | Geen sensor | [V2 6022] noemt het, wij dekken het niet |
+| **Stroomverbruik meten** en zuinig meten met de SCD41 (single-shot) | Geen tijd; zonder accu ook minder belangrijk | De SCD41 meet continu elke 5 s |
+| **Wrist-raise** (scherm aan als je je pols optilt, via de INT van de MPU-6050) | INT is niet aangesloten | Het scherm staat altijd aan |
+| **1-uursgemiddelde CO2 na een herstart** | Begint dan opnieuw bij nul | Na een herstart duurt het tot een uur voordat het gemiddelde weer klopt. De minuten staan wel in de geschiedenis. |
+| **Koppelingen wissen** | Geen commando voor | Weigert een laptop of telefoon de koppeling na een nieuwe koppeling, dan op dat apparaat het horloge vergeten |
+| **PTT** (bloeddruktrend), slaapanalyse, HRV-trends | Dat doet het dashboard, niet de pols | De firmware levert de ruwe ECG, PPG en RR met dezelfde klok, zodat het later kan |
+
+**Hardware die anders is dan het ontwerp:** de footprint van de MAX30102 klopte niet (aangesloten met draadjes), R5/R6 moesten er toch op (4,3 kΩ pull-ups, zie [docs/sensoren.md](docs/sensoren.md)), en de 0.91" OLED is vervangen door een 0.96" die 90° gedraaid zit.
+
+**Nog niet getest:** hartslag en SpO2 met een vinger tegen de sensor naast een echte saturatiemeter, de ECG met elektrodes op de borst, de dubbeltik in de behuizing, en de hele keten met het dashboard.
+
 ## NASA-bronnen
 
 De lokale alarmen volgen **NASA-STD-3001 Volume 2, Revision F**:

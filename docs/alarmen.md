@@ -57,7 +57,7 @@ De cabinedruk komt van de BMP180. Zonder BMP180 nemen we 1 atm (101 325 Pa, zoal
 | 6 | Geen huidcontact | IR-signaal van de MAX30102 te laag | 10 s | info | – |
 | 7 | Schok | meer dan 3 g | direct | waarschuwing | eigen keuze |
 | 8 | Drukdaling (mogelijk lek) | trend < −50 Pa/min | 60 s | alarm | NASA [V2 6022], grens eigen keuze |
-| 9 | Accu bijna leeg | < 15 % | 10 s | waarschuwing | – |
+| 9 | Accu bijna leeg | < 15 % | 10 s | waarschuwing | – (op het prototype nooit: geen accu, zie de README) |
 | 10 | Hoge stress | huidgeleiding 25 % boven de eigen basislijn, en als de ECG er is ook RMSSD 30 % onder de eigen basislijn | 10 min | waarschuwing | eigen keuze, onderbouwd met de Behavioral Health-brief |
 | 11 | Bevestigd door de astronaut | dubbeltik | – | info | – |
 | 12 | Cabineklimaat (uitbreiding) | < 18 of > 27 °C, of < 25 of > 75 % RV | 60 s | waarschuwing | NASA [V2 6012] |

@@ -23,4 +23,9 @@ constexpr uint8_t GSR = D9;   // 220k naar GND, zie drivers/gsr.cpp
 constexpr bool ANALOG_FRONTEND = true;
 constexpr float BATT_DIVIDER = 2.0;
 
+// Op het prototype zijn de accuconnector en de schakelaar kapot, dus het
+// draait altijd op usb. Dan hangt D8 los en zou een zwevende waarde een vals
+// accupercentage of "Battery low" geven. Weer op true als er een accu aan zit.
+constexpr bool HAS_BATTERY = false;
+
 }
