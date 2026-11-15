@@ -3,7 +3,7 @@
 
 // Eigen task voor de snelle sensoren, op een vaste tik van 4 ms (250 Hz).
 // ECG, PPG, IMU en GSR krijgen zo allemaal hun tijdstempel van dezelfde
-// klok, nodig voor RR-intervallen en later PTT (docs/ble-data.md).
+// klok, nodig voor RR-intervallen en later PTT (docs/ble-protocol.md).
 namespace sampler {
 
 void begin();
