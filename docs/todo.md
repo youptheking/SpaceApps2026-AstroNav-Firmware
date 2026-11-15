@@ -11,10 +11,10 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 1. [x] BLE-test op de laptop: verbinden en ontgrendelen werkt
 2. [x] Sensordata klopt in het dashboard, melding terug naar de pols en SIM-labels nagelopen
 3. [x] Behuizing geprint en alles erin
-4. [ ] Video opnemen (kan met de demomodus als de hardware tegenzit). Let op: de ECG-hartslag is nog niet betrouwbaar, laat die niet zien als echte meting
+4. [x] Video opgenomen en op YouTube: https://youtu.be/2jEGsgc2vFc
 4a. [x] Alles op `main`, branches opgeruimd, geschiedenis van het horloge gewist, beide repo's bouwen en alle tests slagen
-5. [ ] **18:00: geen nieuwe functies meer**
-6. [ ] Projectpagina invullen (documentatie, READMEs en openbare repo's zijn klaar)
+5. [x] **18:00: geen nieuwe functies meer**
+6. [ ] Projectpagina afmaken: videolink, "Try it yourself" en de OSHWLab-link erin, bullets op losse regels (tekst en foto's staan er al)
 7. [ ] ⚠️ **Submit for Judging vóór 22:00**
 
 ---
@@ -112,20 +112,25 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 
 ## 6. Inleveren
 
-- [ ] ⚠️ **18:00: geen nieuwe functies meer**
+- [x] ⚠️ **18:00: geen nieuwe functies meer**
+- [x] Licenties: GPL-3.0 (software) en CERN-OHL-S v2 (hardware)
+- [x] Hardwarebestanden in de dashboard-repo: Gerbers en de STL's van de behuizing
+- [x] Windows-installer als GitHub-release v0.1.0
+- [x] Hardware op OSHWLab (nog in review), link in beide READMEs
+- [x] Alles nagelopen: builds, tests, links, geen geheimen, eerlijke teksten over BMP180 en ECG
 - [x] Documenten van de branch `ccr-5b998f8a-3pwruq` samengevoegd, staan nu op `main`
 - [x] Sectie "Use of AI" in beide READMEs
 - [x] ⚠️ Alles op `main` in beide repo's; oude branches opgeruimd (alleen `main` over)
 - [x] Firmware-PR #1 staat als merged op GitHub
 - [x] Git-geschiedenis van beide repo's op eigen naam gezet; lokaal en op GitHub weer gelijk
-- [ ] Na het inleveren: lokale branch `backup/main-before-rewrite` in beide repo's weghalen (`git branch -D backup/main-before-rewrite`)
+- [x] Backup-branches weggehaald, repo's opgeruimd
 - [x] SpO2-drempels nagelezen in de WHO Pulse Oximetry Training Manual (p. 12): waarschuwen bij **94 % of lager** (was < 94), alarm onder 90 %. Firmware en dashboard aangepast
-- [ ] Video **max 30 s**, **Engelse ondertitels**, geen personen onder de 18, op YouTube
+- [x] Video (28 s, Engelse ondertitels) op YouTube: https://youtu.be/2jEGsgc2vFc
   - Noem: zwaartekrachtpunt (`ontwerpkeuzes.md` punt 8), NASA-grens, lokaal + op afstand waarschuwen
-- [ ] Projectpagina in het Engels: tekst staat klaar in `docs/project-page.md`, nog plakken op spaceappschallenge.org
+- [ ] Projectpagina in het Engels: tekst en foto's staan erin, nog de laatste aanvullingen uit `docs/project-page.md`
   - [x] Project Name
   - [x] High-Level Summary
-  - [ ] Link to Project Demo (YouTube-link invullen in `docs/project-page.md`)
+  - [x] Link to Project Demo: https://youtu.be/2jEGsgc2vFc
   - [x] Link to Final Project (GitHub)
   - [x] Detailed Project Description
   - [x] Use of SI
