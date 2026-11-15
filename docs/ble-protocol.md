@@ -178,7 +178,7 @@ HRV (RMSSD, SDNN) en onregelmatig ritme berekent het dashboard hieruit.
 
 | Code | Gebeurtenis | Voorstel | Bron | Zekerheid |
 |---|---|---|---|---|
-| 2 | SpO2 laag | **< 94 %** gedurende 30 s = waarschuwing · **< 90 %** gedurende 30 s = alarm | WHO Pulse Oximetry Training Manual (94 % en 90 % als drempels) | Gemiddeld. **Nalezen in het WHO-document.** |
+| 2 | SpO2 laag | **≤ 94 %** gedurende 30 s = waarschuwing · **< 90 %** gedurende 30 s = alarm | WHO Pulse Oximetry Training Manual (2011), p. 12: "94% or below" moet snel beoordeeld worden, "< 90% is a clinical emergency" | Hoog: nagelezen in het WHO-document (15 nov). Alleen bij een betrouwbare meting (geen beweging, perfusie ≥ 0,5 %). |
 | 3 | Hartslag hoog | **> 120 bpm in rust** (IMU: activiteit = 0) gedurende 5 min | Eigen ontwerpkeuze, op basis van een normale rusthartslag van 60–100 bpm (bijv. American Heart Association) | Ontwerpkeuze. Tijdens training is een hoge hartslag normaal, daarom gekoppeld aan de IMU. |
 | 4 | Hartslag laag | **< 40 bpm** gedurende 1 min | Eigen ontwerpkeuze. Onder 60 heet bradycardie, maar bij getrainde mensen (astronauten) is 40–60 normaal. | Ontwerpkeuze |
 | 10 | Hoge stress | HRV (RMSSD) **> 30 % onder de eigen baseline** gedurende 10 min, plus verhoogde GSR | Eigen ontwerpkeuze. Er bestaat geen universele grens voor HRV, alleen een persoonlijke vergelijking is zinvol. | Ontwerpkeuze. Advies ("Neem rust", "Start ademhalingstraining"), geen alarm. |

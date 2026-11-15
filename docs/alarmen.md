@@ -10,7 +10,7 @@ Het polsstation controleert elke seconde alle metingen en waarschuwt zelf, ook a
 | [NASA OCHMO Technical Brief – Carbon Dioxide](https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf) | Waarom de grens op 3 mmHg ligt, en het doel van 2,5 mmHg |
 | [NASA OCHMO Technical Brief – ECLSS](https://www.nasa.gov/wp-content/uploads/2023/07/eclss-technical-brief-ochmo.pdf) | Overzicht van V2 6004, V2 6012 en V2 6022 |
 | [NASA OCHMO Technical Brief – Behavioral Health](https://www.nasa.gov/wp-content/uploads/2023/03/behavioral-health-technical-brief-ochmo-1.pdf) | Waarom stress bewaken belangrijk is (geeft geen grenswaarden) |
-| WHO Pulse Oximetry Training Manual | SpO2-drempels van 94 % en 90 % |
+| WHO Pulse Oximetry Training Manual (WHO/Lifebox, 2011), p. 12 | SpO2: gezond 95 % of meer, waarschuwen bij 94 % of lager, onder 90 % een noodgeval |
 
 De oudere [Revision D](https://standards.nasa.gov/sites/default/files/standards/NASA/D/nasa-std-3001-vol-2-rev-d-signature.pdf) staat er ook nog online. Wij hebben het in Revision F nagekeken: V2 6004 staat daar nog steeds op 3 mmHg, en V2 6022 is inhoudelijk hetzelfde gebleven.
 
@@ -50,7 +50,7 @@ De cabinedruk komt van de BMP180. Zonder BMP180 nemen we 1 atm (101 325 Pa, zoal
 |---|---|---|---|---|---|
 | 0 | CO2 boven de NASA-grens | 1-uursgemiddelde > 3 mmHg | direct | alarm | NASA [V2 6004] |
 | 1 | CO2 nu boven 3 mmHg | actuele ppCO2 > 3 mmHg | 60 s | waarschuwing | vroege waarschuwing voor [V2 6004] |
-| 2 | SpO2 laag | < 94 % = waarschuwing, < 90 % = alarm | 30 s | waarschuwing / alarm | WHO Pulse Oximetry Training Manual |
+| 2 | SpO2 laag | ≤ 94 % = waarschuwing, < 90 % = alarm | 30 s | waarschuwing / alarm | WHO Pulse Oximetry Training Manual, p. 12 |
 | 3 | Hartslag hoog | > 120 bpm **in rust** (IMU: activiteit 0) | 5 min | waarschuwing | eigen keuze (normale rusthartslag 60–100) |
 | 4 | Hartslag laag | < 40 bpm | 1 min | waarschuwing | eigen keuze (bij getrainde mensen is 40–60 normaal) |
 | 5 | ECG-elektrode los | LO+ of LO− hoog | 5 s | info | – |

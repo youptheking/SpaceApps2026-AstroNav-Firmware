@@ -21,7 +21,10 @@ const float CABIN_RH_MIN = 25.0, CABIN_RH_MAX = 75.0;
 const float PRESSURE_DROP_PA_MIN = -50;
 
 // Lichaamswaarden: geen NASA-grenzen, zie de tabel in docs/ble-protocol.md
-const uint8_t SPO2_WARN = 94, SPO2_ALARM = 90;  // WHO Pulse Oximetry Training Manual
+// WHO Pulse Oximetry Training Manual (WHO/Lifebox, 2011), p. 12: gezond is 95 % of meer;
+// "If SpO2 is 94% or below, the patient must be assessed quickly"; "SpO2 of < 90% is a
+// clinical emergency". Dus: waarschuwen bij 94 % of lager, alarm onder 90 %.
+const uint8_t SPO2_WARN_AT_OR_BELOW = 94, SPO2_ALARM_BELOW = 90;
 const uint8_t HR_HIGH_AT_REST = 120, HR_LOW = 40;
 const float GSR_RISE = 1.25;    // 25 % boven de eigen basislijn
 const float RMSSD_DROP = 0.7;   // 30 % onder de eigen basislijn
@@ -160,8 +163,8 @@ void update(Telemetry &t, Changed changed) {
   rule(EV_CO2_NASA_LIMIT, air && co2Avg > CO2_LIMIT_1H_MMHG, SEV_ALARM, t.ppco2_avg, changed);
   rule(EV_CO2_EARLY, air && co2Now > CO2_LIMIT_1H_MMHG, SEV_WARNING, t.ppco2, changed);
 
-  uint8_t spo2Sev = t.spo2 < SPO2_ALARM ? SEV_ALARM : SEV_WARNING;
-  rule(EV_SPO2_LOW, heart && t.spo2 < SPO2_WARN, spo2Sev, t.spo2, changed);
+  uint8_t spo2Sev = t.spo2 < SPO2_ALARM_BELOW ? SEV_ALARM : SEV_WARNING;
+  rule(EV_SPO2_LOW, heart && t.spo2 <= SPO2_WARN_AT_OR_BELOW, spo2Sev, t.spo2, changed);
 
   // hoge hartslag tijdens sporten is normaal, dus alleen in rust
   rule(EV_HR_HIGH, heart && t.heart_rate > HR_HIGH_AT_REST && (t.flags & HAS_IMU) && t.activity == 0,

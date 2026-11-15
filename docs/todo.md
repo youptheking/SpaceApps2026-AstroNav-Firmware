@@ -119,7 +119,7 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 - [ ] Op GitHub nakijken of firmware-PR #1 als merged staat (de branch is via `main` samengevoegd en daarna verwijderd)
 - [x] Git-geschiedenis van het dashboard op eigen naam gezet; lokale branch `backup-before-cleanup` kan weg zodra alles goed is
 - [ ] Beslissen: firmware-repo ook zo opschonen, of de Claude-co-auteurs daar laten staan (de README zegt nu dat ze in de geschiedenis staan)
-- [ ] SpO2-drempels (94 % / 90 %) nalezen in de WHO Pulse Oximetry Training Manual
+- [x] SpO2-drempels nagelezen in de WHO Pulse Oximetry Training Manual (p. 12): waarschuwen bij **94 % of lager** (was < 94), alarm onder 90 %. Firmware en dashboard aangepast
 - [ ] Video **max 30 s**, **Engelse ondertitels**, geen personen onder de 18, op YouTube
   - Noem: zwaartekrachtpunt (`ontwerpkeuzes.md` punt 8), NASA-grens, lokaal + op afstand waarschuwen
 - [ ] Projectpagina in het Engels:

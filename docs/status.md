@@ -100,7 +100,7 @@ NASA's Human Research Program groups the dangers of spaceflight into five hazard
 - Why do we conduct science experiments in space? (deep-space risks: weightlessness, radiation, isolation, communication delays, less reliance on Earth for emergency medical help): https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp
 
 **Other**
-- WHO Pulse Oximetry Training Manual (SpO2 thresholds 94 % and 90 %)
+- WHO Pulse Oximetry Training Manual (WHO/Lifebox, 2011), p. 12: SpO2 95 % or above is healthy, 94 % or below needs quick assessment, below 90 % is a clinical emergency
 - Datasheets: MAX30102, AD8232, MPU-6050, SCD41, BMP180, SSD1306
 - Libraries: SparkFun MAX3010x, Sensirion I2C SCD4x, Adafruit SSD1306 / GFX / BusIO / BMP085, btleplug, Tauri, React
 
