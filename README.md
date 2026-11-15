@@ -5,6 +5,8 @@ Team AstroNav (solo) · Amsterdam (virtual) · by [YoupSpace](https://youpspace.
 
 A wrist-worn sensor station that measures the astronaut's body and the cabin air, warns on the wrist even without a laptop, and streams everything over Bluetooth Low Energy to the desktop console.
 
+**Demo video (28 s):** https://youtu.be/2jEGsgc2vFc
+
 **Start at the main repo:** [SpaceApps2026-AstroNav-Dashboard](https://github.com/youptheking/SpaceApps2026-AstroNav-Dashboard) has the project overview, the console, and the PCB and case files. This repo is the watch firmware.
 
 | Where | What |
