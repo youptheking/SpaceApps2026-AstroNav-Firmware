@@ -44,6 +44,7 @@ A wrist station that measures the astronaut's body and the cabin air, warns on t
 | "What to do" advice, sent to the wrist with one click | Works |
 | Event log with who raised and who handled each alert | Works |
 | Demo watch on the laptop (same packets, 5-minute story) | Works |
+| Crew selector: one real wrist station plus three demo crew members, each with its own story; a status dot per crew member shows who needs attention | Works (new; demo members are clearly labelled) |
 | 44 automated tests (packets, signal quality, demo, interface) | Pass |
 
 ## How we used NASA resources
@@ -68,6 +69,7 @@ Physiological limits (SpO2, heart rate, stress) are not in the NASA documents we
 | Check-in (sleep, mood, blood pressure, glucose) and crew name | Example data in the console. |
 | 7-day watch history not yet shown in the console | Stored on the watch, not fetched yet. |
 | Blood-pressure trend (pulse transit time) | Not built; raw ECG and PPG already share one clock so it can be added. |
+| Several real watches at once | One Bluetooth connection at a time; the other crew members are demo watches. Next step: connect the whole crew and show them side by side. |
 
 ## Built with
 
