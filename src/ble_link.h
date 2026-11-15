@@ -9,8 +9,9 @@ namespace ble {
 
 void begin();
 
-// true zodra de laptop verbonden is en de koppeling gelukt is
+// true zodra de app verbonden is en de goede code gestuurd heeft (control 0x13)
 bool connected();
+bool linked();  // verbonden, ook als hij nog op slot zit
 
 uint32_t passkey();
 const char *name();

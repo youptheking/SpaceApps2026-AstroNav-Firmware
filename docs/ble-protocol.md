@@ -283,12 +283,15 @@ Wat er op het gebouwde horloge echt doorkomt. Een dashboard kan op de ongeldige 
 
 `control` 0x01–0x04 en de uitbreidingen 0x10 en 0x11 werken allemaal. Getest via usb (`alert`, `ack`, `streams`) en op de pols; met een echt dashboard is de hele keten nog niet getest, want dat bestaat nog niet.
 
-### Koppelen
+### Verbinden en ontgrendelen
 
 - Naam in de advertentie: `AstroNav-Wrist`. De service-UUID zit in de advertentie, de naam in de scan response (samen passen ze niet in 31 bytes).
-- Koppelen gaat met een **vaste 6-cijferige code**. Die komt uit het MAC-adres: elk horloge heeft zijn eigen code, maar die blijft altijd hetzelfde. Zolang er geen laptop verbonden is, staat de code op het OLED (en in de USB-monitor bij het opstarten).
-- Alle characteristics vragen een **versleutelde, geauthenticeerde** verbinding (MITM, bonding). Zonder koppeling kun je niks lezen of schrijven. Na de eerste keer onthouden laptop en horloge de koppeling.
-- Het horloge heeft **geen seriële (UART) service**. Een "Bluetooth serial"-app op de telefoon werkt daarom niet. Testen kan met nRF Connect: verbinden, code invoeren, en notify aanzetten op `data` en `events`.
+- **Geen koppelen (pairing) op bluetooth-niveau.** Dat werkte niet: Windows en `btleplug` konden de codevraag niet afhandelen, en een telefoon viel na het koppelen weer weg. Iedereen kan dus gewoon verbinden, zonder dat het besturingssysteem iets vraagt.
+- **De app ontgrendelt het horloge zelf**, als eerste na het verbinden, met **`control` 0x13** + `u32` code (little-endian). De code is 6 cijfers, komt uit het MAC-adres (per horloge anders, maar altijd hetzelfde) en staat op het OLED zolang er niemand ontgrendeld heeft (en in de USB-monitor bij het opstarten).
+- **Tot het ontgrendelen stuurt het horloge niks** op `data`, `events` en `history`, en negeert het alle andere control-commando's. Na de goede code komt er **meteen een `STATUS`- en `SIM`-pakket**: daaraan ziet de app dat het gelukt is. Komt dat niet binnen een seconde, dan was de code fout.
+- Na **5 verkeerde codes** verbreekt het horloge de verbinding. Bij elk verbreken gaat hij weer op slot.
+- Volgorde voor de app: verbinden → MTU 247 vragen → notify/indicate aanzetten op `data`, `events` (en `history`) → `control` 0x13 met de code → `control` 0x11 met de klok.
+- Het horloge heeft **geen seriële (UART) service**. Een "Bluetooth serial"-app op de telefoon werkt daarom niet. Testen kan met nRF Connect: verbinden, notify aanzetten op `data`, en op `control` de bytes `13` + de code als u32 little-endian schrijven (bijvoorbeeld code 873320 = `0x000D5368`, dus `13 68 53 0D 00`).
 
 ### Timing en tijdstempels
 

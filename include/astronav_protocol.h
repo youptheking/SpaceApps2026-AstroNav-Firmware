@@ -37,6 +37,7 @@ enum ControlCmd : uint8_t {
   CMD_HISTORY = 0x10,  // u32 vanaf_seq, 0 = alleen het bereik opvragen
   CMD_SET_TIME = 0x11,  // u32 unix-tijd, voor de tijdstempels in de geschiedenis
   CMD_DEMO = 0x12,      // u8 0/1: demomodus uit of aan
+  CMD_UNLOCK = 0x13,    // u32 code van het scherm, moet als eerste na het verbinden
 };
 
 // VITALS.flags
