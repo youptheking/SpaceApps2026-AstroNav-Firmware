@@ -14,13 +14,19 @@ static int mode = -1;
 static uint32_t started = 0;
 static uint32_t lastStep = 0;
 static int step = 0;
+static bool played = false;
+
+static void play(uint16_t hz, uint32_t ms) {
+  tone(pins::BUZZER, hz, ms);
+  played = true;
+}
 
 void begin() {
   pinMode(pins::BUZZER, OUTPUT);
 }
 
 void beep() {
-  tone(pins::BUZZER, HIGH_HZ, 120);
+  play(HIGH_HZ, 120);
 }
 
 void set(int severity) {
@@ -30,7 +36,8 @@ void set(int severity) {
   started = millis();
   step = 0;
   lastStep = 0;
-  noTone(pins::BUZZER);
+  // alleen als er al eens een toon was, anders klaagt de core dat LEDC nog niet aan staat
+  if (played) noTone(pins::BUZZER);
 }
 
 void update() {
@@ -41,7 +48,7 @@ void update() {
     // 300 ms hoog, 300 ms laag, zolang het alarm loopt
     if (lastStep && now - lastStep < 300) return;
     lastStep = now;
-    tone(pins::BUZZER, step++ % 2 ? LOW_HZ : HIGH_HZ, 300);
+    play(step++ % 2 ? LOW_HZ : HIGH_HZ, 300);
     return;
   }
 
@@ -51,7 +58,7 @@ void update() {
   if (beepNr < 3 && t % 200 < 100) {
     if (step != beepNr + 1) {
       step = beepNr + 1;
-      tone(pins::BUZZER, HIGH_HZ, 100);
+      play(HIGH_HZ, 100);
     }
   } else if (beepNr >= 3) {
     step = 0;
