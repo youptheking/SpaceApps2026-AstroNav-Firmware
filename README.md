@@ -59,7 +59,7 @@ The local alarms follow **NASA-STD-3001 Volume 2, Revision F**:
 - **[V2 6012]** cabin temperature and humidity limits
 - **[V2 6001]** keep data for trend analysis: 7 days of minute summaries on the watch
 
-Physiological limits (SpO2, heart rate) come from the WHO Pulse Oximetry Training Manual or are our own choice, and are labelled that way. The system gives advice, not a diagnosis. Details: [docs/alarmen.md](docs/alarmen.md) and [docs/nasa-std-3001.md](docs/nasa-std-3001.md).
+Physiological limits (SpO2, heart rate) come from the WHO Pulse Oximetry Training Manual or are my own choice, and are labelled that way. The system gives advice, not a diagnosis. Details: [docs/alarmen.md](docs/alarmen.md) and [docs/nasa-std-3001.md](docs/nasa-std-3001.md).
 
 ## Limitations
 
@@ -70,6 +70,8 @@ Physiological limits (SpO2, heart rate) come from the WHO Pulse Oximetry Trainin
 | Skin temperature is a trend, not a fever reading | Comes from the MAX30102 chip temperature |
 | Wrist SpO2 is less reliable than a fingertip | The MAX30102 is designed for fingertips |
 | No ppO2 sensor | Listed in V2 6022, not covered |
+| ECG heart rate not yet reliable | Small spikes every 150 ms from a source on the board that I have not found yet (not the Bluetooth radio). The ECG trace and loose-electrode detection work; heart rate, RR and HRV are dropped when the signal is poor. The optical heart rate from the MAX30102 works. |
+| No cabin pressure on my unit | The BMP180 on my watch gives impossible readings (about 224 kPa), probably a bad contact. The firmware rejects them, so ppCO2 uses the standard 760 mmHg and the leak alarm stays off. The code for both works with a good sensor. |
 | Blood-pressure trend (PTT), sleep analysis | Not built. ECG and PPG already share one clock, so it can be added in the console. |
 
 ## Use of AI

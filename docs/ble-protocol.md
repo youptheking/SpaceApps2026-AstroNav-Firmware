@@ -419,3 +419,7 @@ Record, versie 2, 58 bytes, little-endian (`HistoryRecord` in `src/history.h`):
 | `time <unix>` | klok zetten |
 | `reg <adres> <reg> [n]` | i2c-register uitlezen (hex), om een sensor na te kijken |
 | `bmp`, `oled`, `buzz`, `reboot` | BMP180 nakijken, scherm opnieuw zoeken, piep, herstart |
+| `ecgtest` | AD8232 nakijken: pinnen, niveaus, elektrode los |
+| `ecgdump` | 3 s ruwe ECG opnemen en daarna als tekst uitprinten |
+| `adv on/off` | bluetooth-advertising aan/uit, om storing van de radio uit te sluiten |
+| `ping` | antwoordt `pong`, om de seriële verbinding te testen |

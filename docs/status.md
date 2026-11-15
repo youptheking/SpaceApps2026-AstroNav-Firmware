@@ -18,11 +18,11 @@ A wrist station that measures the astronaut's body and the cabin air, warns on t
 |---|---|
 | Custom PCB, milled on a desktop CNC, Seeed XIAO ESP32-S3 | Works |
 | **MAX30102** optical sensor: heart rate, SpO2, perfusion, PPG at 100 Hz, chip temperature as skin-temperature trend | Works. Skin-contact detection now has hysteresis so readings no longer drop out on every small dip (fix built, being tested). |
-| **AD8232** ECG at 250 Hz from three chest electrodes, R-peaks, RR intervals, loose-electrode detection | Works |
+| **AD8232** ECG at 250 Hz from three chest electrodes, R-peaks, RR intervals, loose-electrode detection | ECG trace and loose-electrode detection work. Heart rate from the ECG is **not yet reliable**: small spikes every 150 ms from a source on the board (not the Bluetooth radio). |
 | **MPU-6050**: activity level, tremor (4–12 Hz), shock, double tap to acknowledge an alert | Works |
 | **GSR** skin conductance (stress) | Works |
 | **SCD41** real CO2, cabin temperature and humidity | Works |
-| **BMP180** cabin pressure, pressure trend for leak detection, pressure-corrected ppCO2 | Works |
+| **BMP180** cabin pressure, pressure trend for leak detection, pressure-corrected ppCO2 | Code works; the sensor on my unit gives impossible readings (~224 kPa, probably a bad contact). They are rejected, so ppCO2 uses 760 mmHg and the leak alarm stays off. |
 | **OLED** (0.96", portrait) with values, alerts and messages from the dashboard | Works |
 | **Buzzer** with its own pattern per severity (info, warning, alarm) | Works |
 | **Local alarms** without a laptop: CO2 over the NASA limit, low SpO2, high/low heart rate, electrode loose, no skin contact, shock, pressure drop, cabin climate | Works |
@@ -37,9 +37,9 @@ A wrist station that measures the astronaut's body and the cabin air, warns on t
 | Connect and unlock the watch, automatic reconnect | Works |
 | Caution & warning lamps per parameter, ISS-style classes | Works |
 | Mute the alarm sound per lamp (lamp stays lit) | Works (new) |
-| Live ECG trace, heart rate (ECG and optical), SpO2, HRV against personal baseline, skin-temperature trend | Works |
+| Live ECG trace, heart rate (ECG and optical), SpO2, HRV against personal baseline, skin-temperature trend | Works; ECG heart rate and HRV only when the ECG is clean (see AD8232) |
 | Signal-quality checks: optical values during movement or with weak pulse are not shown as real; short dropouts hold the last good value | Works |
-| Cabin air: 1-hour ppCO2 against the **NASA-STD-3001 3 mmHg limit**, pressure trend, temperature, humidity | Works |
+| Cabin air: 1-hour ppCO2 against the **NASA-STD-3001 3 mmHg limit**, pressure trend, temperature, humidity | Works; pressure trend needs a working BMP180 |
 | Body-system overview with what changes in space and when to act | Works |
 | "What to do" advice, sent to the wrist with one click | Works |
 | Event log with who raised and who handled each alert | Works |
