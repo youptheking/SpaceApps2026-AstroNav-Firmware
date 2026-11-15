@@ -275,9 +275,10 @@ Wat er op het gebouwde horloge echt doorkomt. Een dashboard kan op de ongeldige 
 | 0x05 | `VITALS` | ✅ | alle velden, `reserved` = 0 |
 | 0x06 | `RR` | ✅ | alleen als er slagen zijn (elektrodes vast) |
 | 0x07 | `AIR` | ✅ | elke 5 s |
-| 0x08 | `CABIN` | ⚠️ deels | `pressure_pa` en `pressure_trend` werken. `lux_c10` is **altijd `0xFFFFFFFF`**: de BH1750 is geschrapt. |
-| 0x09 | `STATUS` | ⚠️ deels | `sensors_ok`, `alarms` en `fw_version` werken. `vbat_mv` = **`0xFFFF`** en `battery_pct` = **`0xFF`**: geen accu, het prototype draait op usb. `sensors_ok` bit5 (BH1750) is altijd 0. |
+| 0x08 | `CABIN` | ⚠️ deels | `pressure_pa` en `pressure_trend` werken. `lux_c10`: de BH1750 is geschrapt, dus zonder demomodus altijd `0xFFFFFFFF`, in de demomodus een **gesimuleerde** waarde (SIM bit5). |
+| 0x09 | `STATUS` | ⚠️ deels | `sensors_ok`, `alarms` en `fw_version` werken. Accu: het prototype draait op usb, dus zonder demomodus `vbat_mv` = `0xFFFF` en `battery_pct` = `0xFF`, in de demomodus **gesimuleerd** (SIM `extra` bit0). `sensors_ok` bit5 (BH1750) is altijd 0. |
 | 0x20 | `EVENT` | ✅ | codes 0–12, behalve code 9 (accu bijna leeg): die komt op het prototype nooit |
+| 0x0A | `SIM` | ✅ | uitbreiding: welke waarden gesimuleerd zijn, zie hieronder |
 | – | `history` | ✅ | uitbreiding, zie hieronder |
 
 `control` 0x01–0x04 en de uitbreidingen 0x10 en 0x11 werken allemaal. Getest via usb (`alert`, `ack`, `streams`) en op de pols; met een echt dashboard is de hele keten nog niet getest, want dat bestaat nog niet.
@@ -343,6 +344,26 @@ Deze dingen zitten niet in de afspraak hierboven. Ze breken niks: een dashboard 
 
 **`control` 0x11: klok zetten.** `u32` unix-tijd. Alleen nodig voor de tijdstempels in de geschiedenis. Het dashboard stuurt dit direct na het verbinden.
 
+**Demomodus en pakket 0x0A `SIM`.** Voor de demo kan het horloge nepwaarden invullen voor wat op het prototype niet gemeten wordt: licht (de BH1750 is geschrapt), de accu (het prototype draait op usb), en een sensor die er niet is of wegvalt. Het dashboard moet altijd kunnen zien wat echt is, daarom gaat met elk `STATUS`-pakket (en meteen als het verandert) een `SIM`-pakket mee:
+
+| Veld | Type | Betekenis |
+|---|---|---|
+| kop | 8 bytes | type 0x0A |
+| `demo` | u8 | 1 = demomodus staat aan |
+| `simulated` | u8 | **zelfde bits als `STATUS.sensors_ok`**. Bit aan = de waarden van die sensor zijn **gesimuleerd**, niet gemeten. Bit5 (BH1750) staat in de demomodus altijd aan. |
+| `extra` | u8 | bit0 = accu (`STATUS.vbat_mv`, `battery_pct`) is gesimuleerd |
+
+Afspraken:
+- Een **echte sensor gaat altijd voor**: zolang hij werkt, wordt hij nooit vervangen door nepwaarden.
+- Een sensor die wel gevonden is maar onzin meet (bijvoorbeeld de BMP180 met een onmogelijke temperatuur) wordt **niet** aangevuld, dan blijft de waarde ongeldig.
+- De **ruwe streams** (ECG, PPG, IMU, GSR) en RR zijn **altijd echt**, ook in de demomodus.
+- Gesimuleerde waarden kunnen alarmen laten afgaan; het `EVENT` zegt dat niet zelf, het dashboard kan het afleiden uit `SIM`.
+- Op het OLED staat een `*` achter gesimuleerde waarden (bijvoorbeeld `Bat 85%*`).
+
+Voorstel voor het dashboard: zet "SIMULATED" (of een andere kleur) bij elke waarde waarvan de bit in `simulated` of `extra` aan staat, en toon bovenaan "Demo mode" als `demo` = 1.
+
+**`control` 0x12: demomodus.** `u8` 0 = uit, 1 = aan. Standaard aan (`DEMO_MODE` in `include/pins.h`). Uit geeft een eerlijke meting zonder vulling: wat ontbreekt, is dan gewoon ongeldig.
+
 **Geschiedenis (characteristic `history`, `d7a1e5c2-3b4f-4c8a-9e61-0b7f2a9c4d13`, notify).** NASA-STD-3001 [V2 6001]: *"The system shall provide environmental and suit monitoring data in formats compatible with performing temporal trend analyses."* Het horloge slaat elke minuut een samenvatting op in de flash, ook zonder laptop. Er passen **7 dagen** in (10 080 minuten); daarna worden de oudste overschreven. Elk record heeft een `seq` dat altijd oploopt, ook na een herstart.
 
 Ophalen met **`control` 0x10** + `u32 vanaf_seq`:
@@ -389,7 +410,7 @@ Record, versie 2, 58 bytes, little-endian (`HistoryRecord` in `src/history.h`):
 | `alert <code> <ernst> <tekst>` | doet hetzelfde als `control` 0x04 |
 | `ack` | doet hetzelfde als een dubbeltik |
 | `streams on/off` | `control` 0x02 |
-| `sim on/off`, `sim <veld> <waarde>` | ontbrekende sensoren simuleren, of een vaste waarde (`co2`, `spo2`, `hr`, `temp`, `cabin`, `pressure`) |
+| `sim on/off`, `sim <veld> <waarde>` | demomodus aan/uit (= `control` 0x12), of een vaste waarde (`co2`, `spo2`, `hr`, `temp`, `cabin`, `pressure`) |
 | `breathe [min]`, `breathe off` | ademhalingsoefening |
 | `history`, `history <n>`, `history wipe` | bereik, laatste n minuten als tekst, alles wissen |
 | `time <unix>` | klok zetten |
