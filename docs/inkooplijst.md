@@ -1,37 +1,101 @@
-# Inkooplijst – 2 complete sets
+# Inkooplijst – 1 set met reserves voor kwetsbare onderdelen
 
 Alle onderdelen zijn kant-en-klare breakout-bordjes die op een zelf gefreesde draagprint komen.
-De prijzen komen uit zoekresultaten van eind oktober 2026 en zijn **indicatief**. Controleer prijs en voorraad op de productpagina voordat je bestelt.
+Uitgangspunten: **zo klein mogelijk voor een acceptabele prijs** (het wordt om de arm gedragen) en **eerst TinyTronics, dan Amazon**.
 
-> **Let op de levertijd:** de hackathon start op 14 november. Onderdelen met "2–4 weken" levertijd komen waarschijnlijk niet op tijd binnen. Bij die onderdelen staat een alternatief.
+> **Controleer voorraad en prijs live voordat je bestelt.** De gegevens hieronder komen uit zoekmachine-snapshots van 11 november 2026, niet van de live productpagina's. Bij een paar onderdelen gaven verschillende snapshots een andere prijs of voorraad. Dat staat erbij vermeld.
+>
+> **Levertijd:** de hackathon start op zaterdag 14 november. Alles met "2–4 weken" valt af. Bestel uiterlijk woensdag 11 november, zodat het donderdag of vrijdag binnen is.
 
-## Kernonderdelen (per set ×2)
+Resultaat: **alles kan in één bestelling bij TinyTronics.** Je koopt 1 set, met reserves alleen voor de goedkope onderdelen die stuk kunnen of problemen kunnen geven (XIAO, MAX30102, OLED). Het prototype bouw je op het breadboard, daarna gaan dezelfde modules naar de draagprint. Zet ze daar op female headers in plaats van ze vast te solderen, dan kun je ze verplaatsen en wisselen. Amazon is alleen nog nodig voor koperplaat (als je die niet meer hebt) of als een TinyTronics-onderdeel toch uitverkocht blijkt.
 
-| # | Onderdeel | Winkel | Prijs/st | Aantal | Subtotaal | Opmerking |
-|---|---|---|---|---|---|---|
-| 1 | [Seeed Studio XIAO ESP32-S3](https://www.amazon.nl/ESP32S3-2-4GHz-Ondersteund-batterijen-energie-effici%C3%ABntie-interface/dp/B0BYSB66S5) | Amazon | ~€14,79 | 2 | ~€29,58 | Niet op voorraad bij [TinyTronics](https://www.tinytronics.nl/en/development-boards/microcontroller-boards/with-wi-fi/seeed-studio-xiao-esp32-s3) (€9,00, 2–4 weken). Een [3-pack op Amazon](https://www.amazon.nl/Seeed-Studio-XIAO-ESP32S3-Pack/dp/B0DJ6NQFKX) kost ~€42,99 en geeft je één reserve. |
-| 2 | [MAX30102 hartslag/SpO2-module](https://www.tinytronics.nl/en/sensors/body/heart-rate-sensor-and-pulse-oximeter-max30102-i2c) | TinyTronics | €5,00 | 2 | €10,00 | I2C 0x57 |
-| 3 | [MCP9808 temperatuursensor](https://www.tinytronics.nl/en/sensors/temperature/mcp9808-i2c-temperaturesensor) | TinyTronics | €6,50 | 2 | €13,00 | Een TMP117 is niet te krijgen bij TinyTronics of Amazon.nl. De MCP9808 (±0,25 °C typisch) is het alternatief uit het dossier. I2C 0x18. |
-| 4 | [MPU-6050 IMU-module](https://www.tinytronics.nl/en/sensors/acceleration-rotation/mpu-6050-accelerometer-and-gyroscope-3-axis-module-3.3v-5v) | TinyTronics | €8,75 | 2 | €17,50 | I2C 0x68, 200+ op voorraad |
-| 5 | [AD8232 ECG-kit](https://www.tinytronics.nl/en/sensors/body/ecg-kit-ad8232) | TinyTronics | €9,50 | 2 | €19,00 | Inclusief kabel en 3 elektrodes |
-| 6 | [Grove GSR-sensor](https://www.amazon.nl/seeed-studio-101020052-Grove-sensor/dp/B078YKFS7J) | Amazon | ~€15,60 | 2 | ~€31,20 | Niet bij TinyTronics. Prijs onzeker. Analoog naar ADC. |
-| 7 | [BH1750 lichtsensor](https://www.tinytronics.nl/en/sensors/optical/light-and-color/bh1750-16bit-digital-i2c-light-sensor-module) | TinyTronics | €3,50 | 2 | €7,00 | I2C 0x23 |
-| 8 | [GY-SCD40 CO2-module](https://www.tinytronics.nl/en/sensors/air/humidity/gy-scd40-module-co2-humidity-temperature-sensor-i2c) | TinyTronics | €18,25 | 2 | €36,50 | Echte CO2 (NDIR/fotoakoestisch), meet ook temperatuur en luchtvochtigheid. I2C 0x62, 100+ op voorraad. |
-| 9 | [0.96" OLED 128×64 I2C (wit)](https://www.tinytronics.nl/en/displays/oled/0.96-inch-oled-display-128*64-pixels-white-i2c) | TinyTronics | ~€7,00 | 2 | ~€14,00 | SSD1306, I2C 0x3C |
-| 10 | [Piezobuzzer 12 mm met draden](https://www.tinytronics.nl/en/arduino/piezo-electronic-buzzer-with-soldered-wires-12mm) | TinyTronics | €0,30 | 3 | €0,90 | Aansturen met PWM. Klein genoeg voor in het horloge. |
-| 11 | [PKCELL LiPo 3,7 V 500 mAh JST-PH](https://www.tinytronics.nl/en/power/batteries/li-po/pkcell-li-po-battery-3-7v-500mah-jst-ph-lp503035) | TinyTronics | €4,75 | 2 | €9,50 | Ca. 38×31×5 mm. **Levertijd 2–4 weken.** Kies anders de [350 mAh-versie](https://www.tinytronics.nl/en/power/batteries/li-po/pkcell-li-po-battery-3.7v-350mah-jst-ph-lp552035) als die wel op voorraad is. Wordt geladen door de lader op de XIAO. |
-| 12 | [BINLUN klittenband-horlogeband 20/22 mm](https://www.amazon.nl/BINLUN-Horlogeband-Waterdichte-Vervangende-Klittenband/dp/B08BZM2S8G) | Amazon | ~€18,59 | 2 | ~€37,18 | Of los klittenband van de rol, als je de bevestiging zelf in de behuizing print |
+## Besteld (13 november 2026, TinyTronics)
 
-**Kernonderdelen totaal: ~€225**
-
-## Overig
-
-| Onderdeel | Winkel | Prijs | Opmerking |
+| Product | SKU | Aantal | Totaal |
 |---|---|---|---|
-| [Dubbelzijdig koperplaat FR4 1,5 mm, 5× 100×70 mm](https://www.amazon.nl/Aexit-Koperen-Laminaat-Universele-Printplaat/dp/B079WHYMF7) | Amazon | ~€10 | Alleen nodig als je geen voorraad meer hebt voor de CNC |
-| [Wegwerp-ECG-elektrodes (50 st)](https://www.tinytronics.nl/en/disposable-ecg-electrode) | TinyTronics | – | Reserve voor het testen van de AD8232 |
-| Mini-schuifschakelaar (aan/uit tussen LiPo en XIAO) | TinyTronics | ~€0,50 | |
-| Pinheaders (male/female, 2,54 mm), breadboard, jumperdraadjes | TinyTronics | – | Waarschijnlijk heb je dit al liggen. Nodig voor het breadboardprototype van set 1. |
+| Seeed Studio XIAO ESP32-S3 | 004996 | 2 | €18,00 |
+| MAX30102 hartslag/SpO2 | 003136 | 2 | €10,00 |
+| MPU-6050 | 000100 | 1 | €8,75 |
+| ECG Kit AD8232 | 002170 | 1 | €9,50 |
+| GY-SCD41 CO2-module | 005053 | 1 | €26,50 |
+| 0.91" OLED 128×32 wit | 001711 | 1 | €4,00 |
+| Piezobuzzer 12 mm | 000793 | 2 | €0,60 |
+| Goobay klittenbandrol 1 m | 005584 | 1 | €3,00 |
+| Wegwerp-ECG-elektrodes, 50 st | 004826 | 1 | €6,00 |
+| Elektrolytische condensatorset 0,22–470 µF | 000296 | 1 | €4,00 |
+| BH1750 lichtsensor | 000193 | 1 | €3,50 |
+| Kleine schakelaar voor printplaat (SWITCHPCB) | 000382 | 3 | €0,60 |
+| **Totaal** | | | **€94,45** |
+
+**Afwijkingen van het advies hieronder:**
+- **LiPo:** niet besteld, er is een eigen 1S-LiPo. Controleer formaat, beveiligingsprint (PCM) en polariteit.
+- **OLED:** 1 in plaats van 2, dus geen reserve. Wees voorzichtig met het dunne glas.
+- **Schakelaar:** de through-hole SWITCHPCB (30 V / 0,3 A) in plaats van de SMD-MK12C02. De piekstroom van ~300 mA (SCD41 plus ESP32) zit precies op de grens van 0,3 A. Voor korte pieken is dat geen probleem.
+- **Temperatuursensor:** geen. De temperatuur komt uit de MAX30102.
+
+De tabellen hieronder zijn de onderbouwing van de keuzes zoals die vóór de bestelling is gemaakt.
+
+## Kernonderdelen (advies)
+
+| # | Onderdeel | Winkel | Prijs/st | Aantal | Subtotaal | Afmeting | Opmerking |
+|---|---|---|---|---|---|---|---|
+| 1 | [Seeed Studio XIAO ESP32-S3](https://www.tinytronics.nl/en/development-boards/microcontroller-boards/with-wi-fi/seeed-studio-xiao-esp32-s3) | TinyTronics | €9,00 | 2 | €18,00 | 21×17,5 mm | 1 + 1 reserve: als de enige XIAO sneuvelt (ESD, kortsluiting), ligt het hele project stil. 200+ op voorraad (snapshot). Goedkoper dan Amazon (~€14,79). Werkt met een externe U.FL-antenne: houd ruimte vrij in de behuizing. **Niet** de Sense-versie, die heeft 2–4 weken levertijd. |
+| 2 | [MAX30102 hartslag/SpO2 (MAX30102MOD)](https://www.tinytronics.nl/en/sensors/body/heart-rate-sensor-and-pulse-oximeter-max30102-i2c) | TinyTronics | €5,00 | 2 | €10,00 | klein | Op voorraad. 1 + 1 reserve, want goedkope MAX30102-modules hebben soms I2C-pull-ups naar 1,8 V die de bus verstoren. Test hem eerst los. I2C 0x57. |
+| 3 | ~~MCP9808~~ **geschrapt** | – | – | – | – | – | De temperatuur komt uit de ingebouwde sensor van de MAX30102 (±1 °C, resolutie 0,0625 °C). Voor een trend ten opzichte van de baseline is dat genoeg, en het scheelt €6,50 en een bordje van ~19×13 mm. |
+| 4 | [MPU-6050 IMU-module](https://www.tinytronics.nl/en/sensors/acceleration-rotation/mpu-6050-accelerometer-and-gyroscope-3-axis-module-3.3v-5v) | TinyTronics | €8,75 | 1 | €8,75 | ~21×16 mm | Geen wezenlijk kleinere IMU op voorraad. De MPU-6500 is even groot en heeft een ander WHO_AM_I, waardoor sommige MPU6050-libraries niet werken. I2C 0x68. |
+| 5 | [AD8232 ECG-kit](https://www.tinytronics.nl/en/sensors/body/ecg-kit-ad8232) | TinyTronics | €9,50 | 1 | €9,50 | **35,5×30,5×10,5 mm** | **Grootste bordje van het ontwerp.** Geen kleinere AD8232-breakout gevonden. **Continue meting** met 3 plakelektrodes op de borst en de kabel van de kit naar de pols, dus de 3,5 mm-jack blijft zitten (met trekontlasting in de behuizing). Leads-off-detectie (LO+/LO−) meldt automatisch een losse elektrode. Droge elektrodes op één pols geven geen bruikbaar ECG. |
+| 6 | GSR: **zelfbouw**, geen module | – | ~€0 | – | – | – | Twee gefreesde koperen vlakken plus een weerstand (spanningsdeler) naar een ADC-pin. Vervangt de Grove GSR (~€15,60 bij Amazon, 20×40 mm plus klittenband-vingerbandjes). |
+| 7 | [BH1750 lichtsensor](https://www.tinytronics.nl/en/sensors/optical/light-and-color/bh1750-16bit-digital-i2c-light-sensor-module) | TinyTronics | €3,50 | 1 | €3,50 | ~19×14 mm | I2C 0x23 |
+| 8 | [GY-SCD41 CO2-module](https://www.tinytronics.nl/en/sensors/air/humidity/gy-scd41-module-co2-humidity-temperature-sensor-i2c) | TinyTronics | €26,50–29,50 | 1 | ~€26,50–29,50 | sensor 10×10 mm | **Gewijzigd van SCD40.** De SCD40 is alleen gespecificeerd tot 2000 ppm, terwijl de CO2 in een ruimtestation daar vaak boven zit. De SCD41 is gespecificeerd tot 5000 ppm en heeft een single-shot-modus, wat veel stroom spaart. Snapshots: 6 st. bij de ene listing en 50+ bij de andere. Fallback, en de grootste besparingsmogelijkheid (~€10): [GY-SCD40](https://www.tinytronics.nl/en/sensors/air/humidity/gy-scd40-module-co2-humidity-temperature-sensor-i2c) (€18,25, 100+). I2C 0x62. |
+| 9 | [0.91" OLED 128×32 I2C (wit)](https://www.tinytronics.nl/en/displays/oled/0.91-inch-oled-display-128*32-pixels-white-i2c) | TinyTronics | €4,00 | 2 | €8,00 | ~38×12 mm | 1 + 1 reserve (dun glas, breekt makkelijk). **Gewijzigd van 0.96".** Smal strookje dat beter op een pols past, en goedkoper. Er passen 2 regels grote tekst op ("Neem rust", "CO2 hoog"). SSD1306, I2C 0x3C. |
+| 10 | [Piezobuzzer 12 mm met draden](https://www.tinytronics.nl/en/arduino/piezo-electronic-buzzer-with-soldered-wires-12mm) | TinyTronics | €0,30 | 2 | €0,60 | Ø12 mm | Aansturen met PWM |
+| 11 | [LiPo 3,7 V 250 mAh](https://www.tinytronics.nl/en/power/batteries/li-po/li-po-accu-3.7v-250mah) | TinyTronics | €5,00 | 1 | €5,00 | 30,5×17,5×6,5 mm | **Gewijzigd van 500 mAh** (38×31 mm, 2–4 weken levertijd). Rekening houdend met ~70–90 mA verbruik (ESP32-S3 met BLE, SCD41 periodiek, OLED) is dat **ongeveer 3 uur**. Genoeg voor een demo, en met de single-shot-modus van de SCD41 meer. Voorraad volgens snapshots tegenstrijdig. De 150 mAh (27×20 mm) heeft 2–4 weken levertijd. De XIAO laadt via soldeerpads op de onderkant, dus de stekker gaat er toch af. **Controleer of de accu een beveiligingsprint (PCM) heeft.** De lader van de XIAO beschermt de accu waarschijnlijk niet tegen diepontlading. |
+| 12 | [Goobay klittenbandrol 1 m](https://www.tinytronics.nl/en/tools-and-mounting/installation-and-mounting-material/cable-ties-zip-ties-tyraps/goobay-70360-hook-and-loop-fastener-roll-1m) | TinyTronics | €3,00 | 1 | €3,00 | – | **Vervangt de BINLUN-horlogeband (~€37).** Print lussen in de behuizing en knip de band op maat. 10+ op voorraad. |
+
+**Kernonderdelen totaal: ~€93–96**, met elektrodes en schakelaars ~€100–102 (was ~€175–185 voor 2 sets). Met de SCD40 in plaats van de SCD41 ~€8–11 minder.
+
+## Overig – bestellen
+
+| Onderdeel | Winkel | Prijs | Aantal | Opmerking |
+|---|---|---|---|---|
+| [Wegwerp-ECG-elektrodes (50 st)](https://www.tinytronics.nl/en/sensors/body/disposable-ecg-electrode-50-pieces) | TinyTronics | €6,00 | 1 | Kleinste verpakking. De 3 uit de kit zijn te weinig voor een weekend testen en opnieuw plakken. |
+| [Mini SMD-schuifschakelaar MK12C02](https://www.tinytronics.nl/en/switches/manual-switches/slide-switches/mini-smd-pcb-switch-mk12c02) | TinyTronics | €0,20 | 2 | Aan/uit tussen LiPo en XIAO. Wil je through-hole: [SWITCHPCB](https://www.tinytronics.nl/en/switches/manual-switches/slide-switches/small-switch-for-pcb-or-breadboard). |
+
+## Overig – controleer eigen voorraad, anders meebestellen bij TinyTronics
+
+| Onderdeel | Waarvoor |
+|---|---|
+| Female pinheaders 2,54 mm (2× 1×7) | De XIAO in een voetje op de draagprint, zodat hij herbruikbaar blijft en je hem bij een fout snel wisselt. Kost wel ~8 mm extra hoogte. Voor de laagste opbouw soldeer je hem direct. |
+| Male pinheaders 2,54 mm | Bij de meeste breakouts zitten ze los bij. Voor de XIAO niet altijd. |
+| Breadboard (full size) + male-male en male-female jumperdraadjes | Prototype van set 1 op zaterdagochtend |
+| Dun siliconendraad (28–30 AWG), een paar kleuren | Bedrading in het horloge. Is flexibel en dun, beter dan jumperdraadjes. |
+| Weerstanden 1 kΩ–1 MΩ (assortiment) | GSR-spanningsdeler, eventueel extra I2C-pull-ups, en **2× ~200 kΩ als spanningsdeler voor de accuspanning**. De XIAO ESP32-S3 heeft geen ingebouwde accumeting, en zonder die deler weet je niet hoe vol de accu is. |
+| Condensatoren 100 nF + 10 µF + **1× 100–220 µF** (elco of tantaal, ≥6,3 V) | Ontkoppeling en buffer bij de SCD41. Die trekt pieken tot ~200 mA, en zonder buffer kan de ESP32 resetten. Zie [stroombudget.md](stroombudget.md). |
+| USB-C-**data**kabel | Flashen van de XIAO. Laadkabels zonder datalijnen zijn een klassieke tijdverspiller. |
+| Dubbelzijdig koperplaat FR4 ([Amazon, ~€10](https://www.amazon.nl/Aexit-Koperen-Laminaat-Universele-Printplaat/dp/B079WHYMF7)) | Draagprint frezen. Dunner (0,8 mm) is beter voor een pols, als je dat hebt. |
+| Freesjes/graveerstiften (V-bit 20–30°, 0,8–1 mm boor, 1–2 mm uitfrees) | PCB frezen |
+| Soldeertin, flux, desoldeerlint | Soldeerwerk, en ook het vertinnen van de GSR-vlakken tegen oxidatie |
+| Kaptontape | Isoleren van de onderkant van de breakouts en de LiPo |
+| Krimpkous (dun) | Draadverbindingen |
+| M2-schroefjes / inserts | Print vastzetten in de behuizing |
+| PETG- of PLA-filament | Behuizing. PETG is beter tegen zweet en warmte op de huid. |
+
+## Let op bij de bouw
+
+- **I2C-pull-ups stapelen:** bijna elke breakout heeft eigen pull-ups (meestal 4,7–10 kΩ). Zes modules parallel geeft ~1 kΩ. Meestal werkt dat nog, maar haal bij I2C-fouten op een paar modules de pull-upweerstanden eraf.
+- **Antenne:** de U.FL-antenne van de XIAO niet onder de LiPo of tegen koper leggen
+- **Volgorde op zaterdag:** test elke sensor eerst apart op het breadboard (te beginnen met de MAX30102), en sluit dan pas alles samen op de bus aan.
+
+## Bewust overwogen en niet gekozen
+
+| Alternatief | Waarom niet |
+|---|---|
+| [MAX30205-module](https://www.amazon.nl/Lichaamstemperatuursensormodule-Nauwkeurigheid-Laagspanningssensorkaart-Lichaamstemperatuur-Temperatuuralarmfuncties/dp/B0D48KVGBC) (Amazon, ~€14,74) | Gemaakt voor lichaamstemperatuur (0,1 °C in het bereik 37–39 °C). Levering via Amazon, I2C 0x48. Upgrade voor een productieversie op een eigen print. |
+| XIAO nRF52840 Sense (IMU ingebouwd, veel zuiniger) | Bij TinyTronics 2–4 weken levertijd. De firmware is gepland op de ESP32. |
+| SCD40 | Alleen gespecificeerd tot 2000 ppm, zie #8 |
+| 0.96" OLED | Breder en duurder dan de 0.91" |
+| Grove GSR | Groot, duur en alleen bij Amazon. Een spanningsdeler volstaat voor een demo. |
+| LSM6DSOX (Arduino Modulino) | Modulino-bordjes zijn groter dan de MPU-6050 |
 
 ## I2C-bus
 
@@ -39,20 +103,22 @@ Alle adressen zijn uniek, dus alle I2C-sensoren passen samen op één bus:
 
 | Adres | Onderdeel |
 |---|---|
-| 0x18 | MCP9808 |
 | 0x23 | BH1750 |
 | 0x3C | OLED |
 | 0x57 | MAX30102 |
-| 0x62 | SCD40 |
+| 0x62 | SCD41 |
 | 0x68 | MPU-6050 |
 
-Pinnen op de XIAO ESP32-S3: SDA en SCL, 2× ADC (GSR en ECG-uitgang), 2× digitaal (AD8232 LO+ en LO−) en 1× PWM (buzzer). Dat zijn er 7 van de 11 beschikbare.
+Pinnen op de XIAO ESP32-S3: SDA en SCL, 3× ADC (GSR, ECG-uitgang, accuspanning), 2× digitaal (AD8232 LO+ en LO−) en 1× PWM (buzzer). Dat zijn er 8 van de 11 beschikbare. Met de optionele pinnen (AD8232 SDN, MPU-6050 INT, MAX30102 INT) zijn alle 11 in gebruik. Zie [pinout.md](pinout.md).
 
 ## Afwijkingen van het projectdossier
 
-- **TMP117 → MCP9808:** de TMP117 is niet als breakout te krijgen bij TinyTronics of Amazon.nl.
+- **TMP117 → ingebouwde sensor van de MAX30102:** een losse temperatuursensor kost ruimte. Voor het prototype meten we alleen de trend. Op een eigen print zou dat een MAX30205 of TMP117 worden.
 - **ICM45686 → MPU-6050:** van de ICM45686 zijn breakouts nauwelijks verkrijgbaar.
 - **MAX86141 → MAX30102:** er zijn geen gangbare MAX86141-breakouts.
-- **SGP30 niet gekozen:** die geeft alleen een geschatte eCO2, de SCD40 meet echte CO2.
-- **TSL2591 → BH1750:** goedkoper. Geen van beide meet specifiek blauw licht. Daarvoor zou een AS7341 (spectraal) nodig zijn.
+- **SGP30 / SCD40 → SCD41:** de SGP30 geeft alleen een geschatte eCO2. De SCD41 meet echte CO2 en dekt het bereik van een ruimtestation (tot 5000 ppm).
+- **TSL2591 → BH1750:** kleiner en goedkoper. Geen van beide meet specifiek blauw licht. Daarvoor zou een AS7341 (spectraal) nodig zijn.
+- **Grove GSR → zelfbouw-spanningsdeler:** voor formaat en levertijd.
+- **ECG met plakelektrodes op de borst in plaats van koperen vlakken:** voor continue meting zonder handeling van de astronaut. De MAX30102 blijft de continue bron voor hartslag en HRV. De ECG voegt ritme- en aritmiedetectie toe.
+- **0.96" → 0.91" OLED:** smaller formaat voor de pols.
 - **Toegevoegd:** LiPo-accu en aan/uit-schakelaar voor draadloze werking.

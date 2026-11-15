@@ -108,7 +108,22 @@ Alle grenswaarden, hoe we de norm toepassen en de links naar de bronnen staan in
 
 ## Documentatie
 
+- [docs/status.md](docs/status.md): **wat werkt, in het Engels** (voor de projectpagina)
 - [docs/sensoren.md](docs/sensoren.md): bedrading, adressen, wat je moet weten per sensor, en de hardwaretests
 - [docs/ble-protocol.md](docs/ble-protocol.md): BLE-protocol v1, hoe de firmware het invult, de uitbreidingen en de USB-commando's
 - [docs/alarmen.md](docs/alarmen.md): alarmen, grenswaarden, buzzerpatronen en NASA-bronnen
 - [docs/inkooplijst.md](docs/inkooplijst.md): onderdelen
+- [docs/ontwerpkeuzes.md](docs/ontwerpkeuzes.md): waarom deze sensoren, en welke concessies bewust zijn gedaan
+- [docs/nasa-std-3001.md](docs/nasa-std-3001.md): de gebruikte NASA-grenswaarden met bronnen
+- [docs/stroombudget.md](docs/stroombudget.md): stroomverbruik, accuduur en opladen
+- [docs/ecg-elektrodes.md](docs/ecg-elektrodes.md): waar de ECG-elektrodes op de borst gaan
+- [docs/todo.md](docs/todo.md): planning van het weekend
+
+## Gebruik van AI (SI)
+
+Volgens de regels van NASA Space Apps vermelden we waar AI-tools ("Super Intelligence", SI) zijn gebruikt.
+
+- **Idee en concept:** eigen werk. Het concept met polsstation en dashboard, en de keuze voor de challenge, stonden vast vóór er AI werd gebruikt.
+- **Voorbereiding met Claude (Anthropic):** onderzoek naar leverbare onderdelen, de stroom- en pinberekeningen, het opzoeken van de grenswaarden in NASA-STD-3001, de planning voor het weekend (`docs/todo.md`) en de eerste versies van de documenten in `docs/`. De ontwerpbeslissingen zijn door de maker genomen en gecontroleerd.
+- **Code:** waar code met AI-hulp is geschreven, staat dat in de commitbeschrijving en in een opmerking in het betreffende bestand.
+

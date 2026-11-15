@@ -15,7 +15,11 @@ const uint8_t ADDR = 0x57;
 const uint8_t REG_FIFO_WR = 0x04, REG_FIFO_RD = 0x06, REG_FIFO_DATA = 0x07;
 const uint8_t REG_TEMP_INT = 0x1F, REG_TEMP_CONFIG = 0x21;
 
-const uint32_t NO_CONTACT_IR = 50000;  // lager = geen pols tegen de sensor
+// Huidcontact met hysterese. Zonder hysterese springt een pols die rond de grens zit steeds
+// heen en weer, en elke keer gaat de buffer van 4 s leeg: dan verdwijnen HR en SpO2 telkens.
+const uint32_t CONTACT_ON_IR = 50000;   // boven deze waarde: contact
+const uint32_t CONTACT_OFF_IR = 30000;  // pas onder deze waarde ...
+const uint32_t CONTACT_LOST_MS = 1000;  // ... en zo lang aaneen: geen contact meer
 const uint32_t SAMPLE_MS = 10;         // 100 Hz
 const int DECIMATE = 4;                // naar 25 Hz voor het Maxim-algoritme
 
@@ -34,6 +38,7 @@ static uint32_t windowIr[BUFFER_SIZE], windowRed[BUFFER_SIZE];
 static volatile bool windowReady = false;
 
 static volatile bool contact = false;
+static uint32_t lowSince = 0;  // sinds wanneer de IR onder CONTACT_OFF_IR zit (0 = niet)
 static volatile int16_t dieTemp = 0x7FFF;  // 0.01 °C
 static uint32_t tempAsked = 0, lastTemp = 0;
 
@@ -72,11 +77,21 @@ static void addSample(uint32_t red, uint32_t ir, uint32_t t) {
     inPacket = 0;
   }
 
-  contact = ir >= NO_CONTACT_IR;
+  if (ir >= CONTACT_ON_IR) {
+    contact = true;
+    lowSince = 0;
+  } else if (ir < CONTACT_OFF_IR) {
+    if (!lowSince) lowSince = t ? t : 1;
+    if (contact && t - lowSince >= CONTACT_LOST_MS) contact = false;
+  } else {
+    lowSince = 0;  // tussen de twee grenzen: de huidige toestand houden
+  }
   if (!contact) {
     filled = summed = sumRed = sumIr = 0;
     return;
   }
+  // nog contact, maar het signaal zakt even weg: niet in de buffer, maar de buffer ook niet weggooien
+  if (ir < CONTACT_OFF_IR) return;
 
   sumRed += red;
   sumIr += ir;
@@ -174,6 +189,7 @@ void max30102Fill(Telemetry &t) {
     return;
   }
   t.vitals_flags |= FLAG_SKIN_CONTACT;
+  // allebei nodig: alerts.cpp en history.cpp lezen een 0 als echte waarde (SpO2 0 % = alarm)
   if (!hr || !spo2 || millis() - lastValid > 10000) return;
   t.flags |= HAS_HEART;
   t.heart_rate = hr;
