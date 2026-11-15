@@ -18,6 +18,7 @@ enum PacketType : uint8_t {
   PKT_ECG = 0x01, PKT_PPG = 0x02, PKT_IMU = 0x03, PKT_GSR = 0x04,
   PKT_VITALS = 0x05, PKT_RR = 0x06, PKT_AIR = 0x07, PKT_CABIN = 0x08,
   PKT_STATUS = 0x09, PKT_EVENT = 0x20,
+  PKT_SIM = 0x0A,  // uitbreiding: welke waarden gesimuleerd zijn (demomodus)
 };
 
 enum EventCode : uint8_t {
@@ -35,6 +36,7 @@ enum ControlCmd : uint8_t {
   // uitbreidingen, zie "Uitbreidingen" in docs/ble-protocol.md
   CMD_HISTORY = 0x10,  // u32 vanaf_seq, 0 = alleen het bereik opvragen
   CMD_SET_TIME = 0x11,  // u32 unix-tijd, voor de tijdstempels in de geschiedenis
+  CMD_DEMO = 0x12,      // u8 0/1: demomodus uit of aan
 };
 
 // VITALS.flags
@@ -46,6 +48,9 @@ constexpr uint8_t FLAG_SHOCK           = 1 << 3;
 // STATUS.sensors_ok
 constexpr uint8_t OK_MAX30102 = 1 << 0, OK_AD8232 = 1 << 1, OK_MPU6050 = 1 << 2, OK_SCD41 = 1 << 3,
                   OK_BMP180 = 1 << 4, OK_BH1750 = 1 << 5, OK_OLED = 1 << 6, OK_GSR = 1 << 7;
+
+// SIM.extra
+constexpr uint8_t SIM_BATTERY = 1 << 0;
 
 // NASA-STD-3001 Vol. 2, V2 6004: ppCO2 1-uursgemiddelde <= 3 mmHg (zie docs/alarmen.md)
 constexpr float CO2_LIMIT_1H_MMHG = 3.0f;
@@ -69,6 +74,9 @@ struct CabinPacket  { Header h; uint32_t pressure_pa; int16_t pressure_trend;
                       uint32_t lux_c10; uint16_t reserved; };        // 20 bytes
 struct StatusPacket { Header h; uint16_t vbat_mv; uint8_t battery_pct, sensors_ok;
                       uint16_t alarms; uint8_t fw_major, fw_minor; }; // 16 bytes
+// uitbreiding: simulated heeft de bits van STATUS.sensors_ok. Een bit aan =
+// de waarden van die sensor zijn nep (demomodus), niet gemeten.
+struct SimPacket    { Header h; uint8_t demo, simulated, extra; };      // 11 bytes
 struct EventPacket  { Header h; uint8_t code, state, severity; int16_t value;
                       uint8_t source; };                           // 14 bytes
 #pragma pack(pop)
@@ -83,5 +91,6 @@ static_assert(sizeof(AirPacket) == 21, "AIR");
 static_assert(sizeof(CabinPacket) == 20, "CABIN");
 static_assert(sizeof(StatusPacket) == 16, "STATUS");
 static_assert(sizeof(EventPacket) == 14, "EVENT");
+static_assert(sizeof(SimPacket) == 11, "SIM");
 
 }  // namespace astronav

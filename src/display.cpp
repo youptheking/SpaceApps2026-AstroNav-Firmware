@@ -158,11 +158,13 @@ void showStatus(const Telemetry &t, const String &message, const char *alert) {
   if (t.flags & HAS_HEART) snprintf(v, sizeof(v), "%u", t.heart_rate);
   else if (t.hr_ecg) snprintf(v, sizeof(v), "%u", t.hr_ecg);
   else strcpy(v, "--");
-  value(0, "HR", v);
+  // * = gesimuleerd (demomodus), zodat je op de pols ook ziet wat nep is
+  bool simHeart = t.sim_flags & HAS_HEART;
+  value(0, simHeart ? "HR*" : "HR", v);
 
   if (t.flags & HAS_HEART) snprintf(v, sizeof(v), "%u", t.spo2);
   else strcpy(v, "--");
-  value(28, "SpO2 %", v);
+  value(28, simHeart ? "SpO2 %*" : "SpO2 %", v);
 
   // een melding van het dashboard krijgt de onderste helft, CO2 en de rest
   // komen terug zodra hij bevestigd is (een CO2-alarm staat in de gele strook)
@@ -173,13 +175,14 @@ void showStatus(const Telemetry &t, const String &message, const char *alert) {
     // mmHg want daar rekent NASA-STD-3001 mee
     if (t.flags & HAS_AIR) snprintf(v, sizeof(v), "%.2f", t.ppco2_avg / 100.0);
     else strcpy(v, "--");
-    value(56, "CO2 mmHg", v);
+    value(56, (t.sim_flags & HAS_AIR) ? "CO2*mmHg" : "CO2 mmHg", v);
 
     oled.setTextSize(1);
     oled.setCursor(x0, 86);
-    if (t.flags & HAS_PRESSURE) oled.printf("%u hPa", (unsigned)((t.pressure_pa + 50) / 100));
+    if (t.flags & HAS_PRESSURE)
+      oled.printf((t.sim_flags & HAS_PRESSURE) ? "%uhPa*" : "%u hPa", (unsigned)((t.pressure_pa + 50) / 100));
     oled.setCursor(x0, 96);
-    if (t.battery_mv) oled.printf("Batt %u%%", t.battery_pct);
+    if (t.battery_mv) oled.printf(t.sim_battery ? "Bat %u%%*" : "Batt %u%%", t.battery_pct);
     else oled.print("USB");
   }
 

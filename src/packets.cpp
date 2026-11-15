@@ -61,7 +61,8 @@ CabinPacket cabin(const Telemetry &t) {
   bool ok = t.flags & HAS_PRESSURE;
   p.pressure_pa = ok ? t.pressure_pa : 0xFFFFFFFF;
   p.pressure_trend = ok ? t.pressure_trend : 0x7FFF;
-  p.lux_c10 = 0xFFFFFFFF;  // BH1750 geschrapt
+  // BH1750 geschrapt: alleen in de demomodus een (gesimuleerde) waarde
+  p.lux_c10 = t.sim_light ? t.lux_c10 : 0xFFFFFFFF;
   return p;
 }
 
@@ -85,6 +86,28 @@ EventPacket event(uint8_t code, uint8_t state, uint8_t severity, int16_t value, 
   p.severity = severity;
   p.value = value;
   p.source = source;
+  return p;
+}
+
+// zelfde bits als STATUS.sensors_ok, dan kan het dashboard ze naast elkaar leggen
+uint8_t simulated(const Telemetry &t) {
+  uint8_t g = t.sim_flags, bits = 0;
+  if (g & (HAS_HEART | HAS_SKIN_TEMP)) bits |= OK_MAX30102;
+  if (g & ECG_LEADS_OK) bits |= OK_AD8232;
+  if (g & HAS_IMU) bits |= OK_MPU6050;
+  if (g & HAS_AIR) bits |= OK_SCD41;
+  if (g & HAS_PRESSURE) bits |= OK_BMP180;
+  if (g & HAS_GSR) bits |= OK_GSR;
+  if (t.sim_light) bits |= OK_BH1750;
+  return bits;
+}
+
+SimPacket sim(const Telemetry &t, bool demo) {
+  SimPacket p = {};
+  header(p.h, PKT_SIM, t.uptime_ms);
+  p.demo = demo;
+  p.simulated = simulated(t);
+  p.extra = t.sim_battery ? SIM_BATTERY : 0;
   return p;
 }
 

@@ -25,6 +25,8 @@ enum Status : uint8_t {
 struct Telemetry {
   uint8_t flags = 0;
   uint8_t sim_flags = 0;  // welke groepen gesimuleerd zijn
+  uint8_t sim_light = 0;  // lux gesimuleerd (de BH1750 is geschrapt)
+  uint8_t sim_battery = 0;  // accu gesimuleerd (prototype draait op usb)
   uint16_t alerts = 0;    // bit n = eventcode n
   uint32_t uptime_ms = 0;
   uint32_t unix_time = 0;
@@ -43,6 +45,7 @@ struct Telemetry {
   uint16_t humidity = 0;   // 0.01 %
   uint32_t pressure_pa = 0;
   int16_t pressure_trend = 0;  // Pa/min
+  uint32_t lux_c10 = 0;        // alleen in de demomodus
 
   uint16_t gsr = 0;  // huidgeleiding in 0.01 µS
 
