@@ -110,4 +110,4 @@ Seeed XIAO ESP32-S3 · MAX30102 · AD8232 · MPU-6050 · SCD41 · BMP180 · SSD1
 
 ## Use of AI
 
-The idea and concept are our own and were fixed before any AI was used. Claude (Anthropic) was used to research parts, do power and pin calculations, look up limits in NASA-STD-3001, plan the weekend, draft documentation, and write most of the code from our own design (protocol, alarm logic, limits, layout). All of it was reviewed and tested on our own hardware. AI-assisted commits are marked in the git history.
+The idea and concept are my own. Claude (Anthropic) was used to research parts, look up limits in NASA-STD-3001, draft documentation, and write a significant portion of the code from my own design. PCB design, milling, soldering, the case and all testing on the real watch were done by hand. This is also stated in the "Use of AI" section of both READMEs.

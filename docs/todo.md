@@ -12,9 +12,9 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 2. [x] Sensordata klopt in het dashboard, melding terug naar de pols en SIM-labels nagelopen
 3. [x] Behuizing geprint en alles erin
 4. [ ] Video opnemen (kan met de demomodus als de hardware tegenzit). Let op: de ECG-hartslag is nog niet betrouwbaar, laat die niet zien als echte meting
-4a. [x] Alles op `main`, branches opgeruimd, geschiedenis van het horloge gewist
+4a. [x] Alles op `main`, branches opgeruimd, geschiedenis van het horloge gewist, beide repo's bouwen en alle tests slagen
 5. [ ] **18:00: geen nieuwe functies meer**
-6. [ ] Documentatie op orde (zie punt 6), projectpagina invullen, repo's openbaar
+6. [ ] Projectpagina invullen (documentatie, READMEs en openbare repo's zijn klaar)
 7. [ ] ⚠️ **Submit for Judging vóór 22:00**
 
 ---
@@ -113,30 +113,30 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 ## 6. Inleveren
 
 - [ ] ⚠️ **18:00: geen nieuwe functies meer**
-- [x] Documenten van de branch `ccr-5b998f8a-3pwruq` samengevoegd in `setup/platformio`
+- [x] Documenten van de branch `ccr-5b998f8a-3pwruq` samengevoegd, staan nu op `main`
 - [x] Sectie "Use of AI" in beide READMEs
 - [x] ⚠️ Alles op `main` in beide repo's; oude branches opgeruimd (alleen `main` over)
-- [ ] Op GitHub nakijken of firmware-PR #1 als merged staat (de branch is via `main` samengevoegd en daarna verwijderd)
-- [x] Git-geschiedenis van het dashboard op eigen naam gezet; lokale branch `backup-before-cleanup` kan weg zodra alles goed is
-- [ ] Beslissen: firmware-repo ook zo opschonen, of de Claude-co-auteurs daar laten staan (de README zegt nu dat ze in de geschiedenis staan)
+- [x] Firmware-PR #1 staat als merged op GitHub
+- [x] Git-geschiedenis van beide repo's op eigen naam gezet; lokaal en op GitHub weer gelijk
+- [ ] Na het inleveren: lokale branch `backup/main-before-rewrite` in beide repo's weghalen (`git branch -D backup/main-before-rewrite`)
 - [x] SpO2-drempels nagelezen in de WHO Pulse Oximetry Training Manual (p. 12): waarschuwen bij **94 % of lager** (was < 94), alarm onder 90 %. Firmware en dashboard aangepast
 - [ ] Video **max 30 s**, **Engelse ondertitels**, geen personen onder de 18, op YouTube
   - Noem: zwaartekrachtpunt (`ontwerpkeuzes.md` punt 8), NASA-grens, lokaal + op afstand waarschuwen
-- [ ] Projectpagina in het Engels:
-  - [ ] Project Name
-  - [ ] High-Level Summary
-  - [ ] Link to Project Demo
-  - [ ] Link to Final Project (GitHub)
-  - [ ] Detailed Project Description
-  - [ ] Use of SI
-  - [ ] NASA Data (tekst in `docs/nasa-std-3001.md`, nieuwste revisie checken)
-  - [ ] References: libraries, datasheets, NASA- en WHO-documenten
+- [ ] Projectpagina in het Engels: tekst staat klaar in `docs/project-page.md`, nog plakken op spaceappschallenge.org
+  - [x] Project Name
+  - [x] High-Level Summary
+  - [ ] Link to Project Demo (YouTube-link invullen in `docs/project-page.md`)
+  - [x] Link to Final Project (GitHub)
+  - [x] Detailed Project Description
+  - [x] Use of SI
+  - [x] NASA Data
+  - [x] References
 - [x] Bron van `docs/img/ecg-elektrodes.png`: Circuit Digest
 - [x] Beide READMEs in het Engels, met verwijzing naar elkaar en youpspace.com
 - [x] README van het dashboard bijgewerkt
 - [x] README van de firmware bijgewerkt
 - [x] ⚠️ **Beide repo's openbaar**
-- [ ] Links getest in een privévenster
-- [ ] Vinkjes "Terms and Conditions" + "Confirm All Work is Original"
+- [x] Alle links getest (35 weblinks en de links tussen bestanden)
+- [x] Vinkjes "Terms and Conditions" + "Confirm All Work is Original" (staat op Complete)
 - [ ] ⚠️ **Submit for Judging vóór 22:00**
 - [ ] Certificaat downloaden
