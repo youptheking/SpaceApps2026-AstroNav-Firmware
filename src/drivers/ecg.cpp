@@ -18,6 +18,31 @@ static int inPacket = 0;
 static int offCount = 0;
 static volatile bool leadsOff = true;
 
+// 50 Hz netbrom: op 250 Hz is dat precies 5 samples per periode, dus het
+// gemiddelde van de laatste 5 samples haalt hem (en 100 Hz) er volledig uit.
+// De QRS (~100 ms breed) blijft staan. Zonder dit zag de R-piekdetector de
+// brom als hartslag. Het ECG-pakket blijft ruw, het dashboard filtert zelf.
+const int MAINS_PERIOD = 5;
+static uint16_t mainsRing[MAINS_PERIOD];
+static uint32_t mainsSum = 0;
+static int mainsPos = 0, mainsFilled = 0;
+
+// analogReadMilliVolts loopt van 0 tot ~3160 mV; daar zit het signaal vast
+const uint16_t ECG_RAIL_LOW_MV = 0, ECG_RAIL_HIGH_MV = 3150;
+const int CLIP_BLOCK = 500;       // 2 s op 250 Hz
+const int MAX_CLIPPED_PCT = 5;
+static int blockCount = 0, blockClipped = 0;
+static volatile bool saturated = false;
+
+static float removeMains(uint16_t mv) {
+  mainsSum += mv;
+  mainsSum -= mainsRing[mainsPos];
+  mainsRing[mainsPos] = mv;
+  mainsPos = (mainsPos + 1) % MAINS_PERIOD;
+  if (mainsFilled < MAINS_PERIOD) mainsFilled++;
+  return (float)mainsSum / mainsFilled;
+}
+
 // RR-intervallen voor het volgende RR-pakket (max 5 per seconde)
 static uint16_t pending[5];
 static int pendingCount = 0;
@@ -89,8 +114,28 @@ void ecgSample(uint32_t now) {
     return;
   }
 
+  // Overstuurd (gezien: 65 % van de samples op 0 of 3,15 V door netbrom): een
+  // afgekapt signaal valt niet meer te filteren, de "slagen" zijn dan ruis.
+  // Per blok van 2 s kijken; dan geen hartslag, RR of RMSSD in plaats van onzin.
+  bool clipped = mv <= ECG_RAIL_LOW_MV || mv >= ECG_RAIL_HIGH_MV;
+  blockClipped += clipped;
+  if (++blockCount == CLIP_BLOCK) {
+    bool wasSaturated = saturated;
+    saturated = blockClipped > CLIP_BLOCK * MAX_CLIPPED_PCT / 100;
+    if (saturated && !wasSaturated) {
+      Serial.printf("ecg: signaal overstuurd (%d%% afgekapt), geen hartslag\n", blockClipped * 100 / CLIP_BLOCK);
+      peaks.reset();
+      recentCount = 0;
+      hr = 0;
+      rmssd = 0;
+      pendingCount = 0;
+    }
+    blockCount = blockClipped = 0;
+  }
+  if (saturated) return;
+
   uint16_t rr;
-  if (peaks.add(mv, now, rr)) addInterval(rr, peaks.lastBeat());
+  if (peaks.add(removeMains(mv), now, rr)) addInterval(rr, peaks.lastBeat());
 }
 
 void rrSend(uint32_t now) {
@@ -111,6 +156,7 @@ void ecgFill(Telemetry &t) {
     return;
   }
   t.flags |= ECG_LEADS_OK;
+  if (saturated) return;
   // na 3 s zonder slag geen hartslag meer noemen
   if (millis() - peaks.lastBeat() < 3000) t.hr_ecg = hr;
   t.rmssd = rmssd;
