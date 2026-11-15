@@ -9,8 +9,8 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 ## Vandaag nog, op volgorde
 
 1. [x] BLE-test op de laptop: verbinden en ontgrendelen werkt
-2. [ ] ⚠️ Sensordata kloppend maken in het dashboard *(bezig)*, daarna melding terug naar de pols en de SIM-labels nalopen
-3. [ ] Behuizing printen en alles erin
+2. [x] Sensordata klopt in het dashboard, melding terug naar de pols en SIM-labels nagelopen
+3. [x] Behuizing geprint en alles erin
 4. [ ] Video opnemen (kan met de demomodus als de hardware tegenzit)
 5. [ ] **18:00: geen nieuwe functies meer**
 6. [ ] Documentatie op orde (zie punt 6), projectpagina invullen, repo's openbaar
@@ -39,10 +39,11 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 
 - [x] Alle I2C-adressen gevonden, 0 fouten op de bus
 - [x] OLED, buzzer, SCD41, MPU-6050 (reserve-module), MAX30102 (reserve-module)
-- [ ] BMP180: leest af en toe onzin (~218 kPa), wordt weggefilterd. Soldeerpunten nalopen.
-- [ ] ⚠️ MAX30102: hartslag en SpO2 met een vinger erop, liefst naast een echte saturatiemeter
-- [ ] AD8232: ECG met elektrodes op de borst (plaatsing: `docs/ecg-elektrodes.md`)
-- [ ] GSR: reageert hij op de huid?
+- [x] BMP180: soldeerpunten nagelopen
+- [x] MAX30102 op de pols getest: gaf een te lage SpO2 (74–89 %) bij beweging of zwakke perfusie, die metingen worden nu genegeerd
+- [x] MAX30102 naast een echte saturatiemeter
+- [x] AD8232: ECG met elektrodes op de borst
+- [x] GSR: reageert op de huid
 - [ ] ~~Accuspanning~~ geen accu
 
 ## 3. Firmware
@@ -66,6 +67,8 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 - [ ] ~~BH1750~~ geschrapt (footprint klopte niet)
 - [ ] ~~Stroomverbruik meten~~ geen accu meer
 - [x] ⚠️ Getest met de laptop via BLE
+- [x] Geen valse alarmen: geen hartslag of SpO2 bij beweging, events blokkeren `loop()` niet meer
+- [x] Reden van de laatste herstart op de seriële poort
 
 ## 4. Dashboard
 
@@ -78,27 +81,27 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
 - [x] 🎯 Demomodus in het dashboard (gesimuleerd horloge, werkt zonder hardware)
 - [x] ➕ HRV-trend, lichaamskaart met tabs Systems en ECG leads (springt naar ECG leads als een elektrode los zit)
 - [x] YoupSpace-logo linksboven
-- [ ] Space Apps-logo: bestand toevoegen, de plek staat klaar
+- [x] Logo's toegevoegd
 - [x] ⚠️ Verbinding met het echte horloge werkt
-- [ ] ⚠️ Sensordata klopt in het dashboard *(bezig)*
+- [x] ⚠️ Sensordata klopt in het dashboard
 - [ ] Geschiedenis ophalen (`history`) wordt nog niet gebruikt
 - [ ] ~~PTT~~ alleen als echt alles af is
 - [ ] ~~AI-vermelding bovenaan elk bestand~~ besloten: niet in de bestanden, wel in de README en op de projectpagina
 
 ## 5. Behuizing
 
-- [ ] Ontwerp: USB-C (altijd aangesloten), antenne, geluidsgat, SCD41-rooster, venster voor de OLED, lussen voor het klittenband
-- [ ] Printen
-- [ ] Alles erin, om de pols: dubbeltik, schermstand en buzzer nog te horen?
+- [x] Ontwerp: USB-C (altijd aangesloten), antenne, geluidsgat, SCD41-rooster, venster voor de OLED, lussen voor het klittenband
+- [x] Printen
+- [x] Alles erin, om de pols: dubbeltik, schermstand en buzzer getest
 
 ---
 
 ## 6. Inleveren
 
 - [ ] ⚠️ **18:00: geen nieuwe functies meer**
-- [ ] ⚠️ Documenten samenvoegen: `nasa-std-3001.md`, `ontwerpkeuzes.md`, `ecg-elektrodes.md` (+ afbeelding), `pinout.md`, `pcb.md`, `stroombudget.md`, deze todo en de sensorcheck staan op de branch `ccr-5b998f8a-3pwruq`, niet op `setup/platformio`
-- [ ] ⚠️ Sectie "Gebruik van AI (SI)" terug in de README van de firmware (staat alleen op die andere branch), en controleren in die van het dashboard. Let op: daar staat nog "een opmerking in het betreffende bestand", dat klopt niet meer.
-- [ ] ⚠️ PR's mergen naar `main`, zodat de GitHub-link de laatste versie laat zien
+- [x] Documenten van de branch `ccr-5b998f8a-3pwruq` samengevoegd in `setup/platformio`
+- [x] Sectie "Use of AI" in beide READMEs
+- [ ] ⚠️ Mergen naar `main`, zodat de GitHub-link de laatste versie laat zien: firmware PR #1 (`setup/platformio`) staat open, het dashboard (`feature/dashboard`) heeft nog geen PR
 - [ ] SpO2-drempels (94 % / 90 %) nalezen in de WHO Pulse Oximetry Training Manual
 - [ ] Video **max 30 s**, **Engelse ondertitels**, geen personen onder de 18, op YouTube
   - Noem: zwaartekrachtpunt (`ontwerpkeuzes.md` punt 8), NASA-grens, lokaal + op afstand waarschuwen
@@ -111,9 +114,12 @@ Legenda: [x] klaar · [ ] open · ⚠️ belangrijk · 🎯 MVP (moet werken) ·
   - [ ] Use of SI
   - [ ] NASA Data (tekst in `docs/nasa-std-3001.md`, nieuwste revisie checken)
   - [ ] References: libraries, datasheets, NASA- en WHO-documenten
-- [ ] Bron van `docs/img/ecg-elektrodes.png` invullen (of een eigen tekening)
-- [ ] Engelse samenvatting in de READMEs
-- [ ] ⚠️ **Beide repo's openbaar**, links getest in een privévenster
+- [x] Bron van `docs/img/ecg-elektrodes.png`: Circuit Digest
+- [x] Beide READMEs in het Engels, met verwijzing naar elkaar en youpspace.com
+- [x] README van het dashboard bijgewerkt
+- [x] README van de firmware bijgewerkt
+- [x] ⚠️ **Beide repo's openbaar**
+- [ ] Links getest in een privévenster
 - [ ] Vinkjes "Terms and Conditions" + "Confirm All Work is Original"
 - [ ] ⚠️ **Submit for Judging vóór 22:00**
 - [ ] Certificaat downloaden
