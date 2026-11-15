@@ -13,7 +13,7 @@ static int count = 0, head = 0;
 static int32_t pressure = 0;
 static float trend = 0;  // Pa/min
 static float temperature = 0;  // alleen om de meting na te kijken
-static uint32_t lastRead = 0, lastPush = 0;
+static uint32_t lastRead = 0, lastGood = 0, lastPush = 0;
 
 bool bmp180Begin() {
   return bmp.begin(BMP085_ULTRAHIGHRES, &Wire);
@@ -52,12 +52,13 @@ void bmp180Update() {
     if (++bad >= 5) {
       bad = 0;
       bmp.begin(BMP085_ULTRAHIGHRES, &Wire);
-      Serial.println("bmp180: kalibratie opnieuw ingelezen");
+      Serial.printf("bmp180: kalibratie opnieuw ingelezen (laatste: %.1f C, %ld Pa)\n", temperature, (long)p);
     }
     return;
   }
   bad = 0;
   pressure = p;
+  lastGood = millis();
 
   history[head] = p;
   head = (head + 1) % TREND_SAMPLES;
@@ -72,7 +73,8 @@ void bmp180Update() {
 }
 
 void bmp180Fill(Telemetry &t) {
-  if (!pressure || millis() - lastRead > 5000) return;
+  // alleen een verse meting, een oude waarde zou een lek verbergen
+  if (!pressure || millis() - lastGood > 5000) return;
   t.flags |= HAS_PRESSURE;
   t.pressure_pa = pressure;
   t.pressure_trend = constrain(trend, -32000, 32000);
