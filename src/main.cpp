@@ -20,6 +20,11 @@ using namespace astronav;
 const uint32_t STATUS_EVERY_MS = 10000;
 const uint32_t BREATHE_MS = 2 * 60000;
 
+// Onder 0,5 % perfusie is de pulsgolf te klein voor een betrouwbare SpO2 of
+// hartslag; het Maxim-algoritme geeft dan lage SpO2 (gezien: 74-85 % bij een
+// gezonde pols). Met beweging (FLAG_MOTION_ARTIFACT) geldt hetzelfde.
+const uint8_t MIN_PERFUSION_C10 = 5;
+
 // teksten bij control 0x04 (message_id), zie docs/ble-protocol.md. In het Engels,
 // afgebroken voor het staande scherm (8 tekens breed).
 const char *MESSAGES[] = {
@@ -327,6 +332,14 @@ void updateTelemetry() {
   }
 
   sensors::fill(telemetry);
+
+  // een optische meting die we niet kunnen vertrouwen, bestaat niet: geen alarm,
+  // niet op het scherm, niet in de geschiedenis en niet naar het dashboard
+  bool moving = telemetry.vitals_flags & FLAG_MOTION_ARTIFACT;
+  if ((telemetry.flags & HAS_HEART) && (moving || telemetry.perfusion_c10 < MIN_PERFUSION_C10)) {
+    telemetry.flags &= ~HAS_HEART;
+  }
+
   if (simulate) {
     sim::fill(telemetry, sensors::ALL & ~sensors::groups());
     sim::fillLight(telemetry);
@@ -444,8 +457,38 @@ void recoverBus() {
   }
 }
 
+// Waarom het horloge opnieuw opstartte. Het openen van de usb-poort reset de
+// ESP32-S3 ook, dus de reden van de herstart daarvóór blijft in RTC-geheugen
+// staan (overleeft een reset, niet stroom eraf; dan is het POWERON).
+RTC_NOINIT_ATTR uint32_t previousResetReason;
+RTC_NOINIT_ATTR uint32_t resetMagic;
+
+const char *resetName(uint32_t r) {
+  switch (r) {
+    case ESP_RST_POWERON: return "stroom aan (of usb-stekker los geweest)";
+    case ESP_RST_SW: return "software-herstart";
+    case ESP_RST_PANIC: return "crash (panic)";
+    case ESP_RST_INT_WDT: return "interrupt-watchdog";
+    case ESP_RST_TASK_WDT: return "task-watchdog (loop of sampler hing)";
+    case ESP_RST_WDT: return "watchdog";
+    case ESP_RST_BROWNOUT: return "brownout (spanning te laag)";
+    default: return "anders (bijv. usb-poort geopend)";
+  }
+}
+
+void logResetReason() {
+  uint32_t now = esp_reset_reason();
+  bool known = resetMagic == 0xA57A0001;
+  Serial.printf("herstart: %s (%lu)", resetName(now), now);
+  if (known) Serial.printf(", daarvoor: %s (%lu)", resetName(previousResetReason), previousResetReason);
+  Serial.println();
+  previousResetReason = now;
+  resetMagic = 0xA57A0001;
+}
+
 void setup() {
   Serial.begin(115200);
+  logResetReason();
   recoverBus();
   Wire.begin(pins::I2C_SDA, pins::I2C_SCL, pins::I2C_FREQ_HZ);
   Wire.setTimeOut(50);
