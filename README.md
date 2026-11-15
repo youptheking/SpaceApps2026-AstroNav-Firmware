@@ -76,7 +76,7 @@ Per the Space Apps rules, we disclose where AI ("SI") was used.
 
 - **Idea and concept:** our own. The wrist station plus console and the choice of challenge were fixed before any AI was used.
 - **Claude (Anthropic)** was used to research parts, do power and pin calculations, look up limits in NASA-STD-3001, plan the weekend, draft the documentation, and write most of the code from our own design (protocol, alarm logic, limits, screen layout).
-- **Hardware** (PCB design, milling, soldering, case) and all testing on the real watch were done by hand. Everything AI produced was reviewed and tested on our own hardware. AI-assisted commits are marked in the git history.
+- **Hardware** (PCB design, milling, soldering, case) and all testing on the real watch were done by hand. Everything AI produced was reviewed and tested on our own hardware. AI use is credited here, in the project summary.
 
 ## Documentation (Dutch)
 
